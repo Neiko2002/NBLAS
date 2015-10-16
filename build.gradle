@@ -1,0 +1,39 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+version = '1.0'
+
+// wie soll das Projekt in Eclipse heißen
+eclipse.project.name = 'NBLAS'
+
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'NBLAS', 'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+	compile fileTree('lib'),			// putting all jars from 'lib' onto compile classpath
+		'org.jocl:jocl:0.1.9',
+		'org.jblas:jblas:1.2.4',
+		'ch.qos.logback:logback-classic:1.1.2';
+	testCompile 'junit:junit:4.+';		// jUnit für alle Tests 
+}
+
+/**
+ * https://gradle.org/docs/current/userguide/gradle_wrapper.html
+ * Erstellt die .bat und .sh Datei gradlew
+ */
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.7';
+	distributionUrl = 'https://services.gradle.org/distributions/gradle-2.7-all.zip';	
+}
