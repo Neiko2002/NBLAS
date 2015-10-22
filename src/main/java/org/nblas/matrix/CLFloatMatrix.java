@@ -8,6 +8,7 @@ import org.nblas.function.functionobjects.common.Arg;
 import org.nblas.function.functionobjects.common.Value;
 import org.nblas.function.functionobjects.generic.AFunctionObject;
 import org.nblas.function.functionobjects.predefined.binary.Add;
+import org.nblas.function.functionobjects.predefined.binary.Comparator;
 import org.nblas.function.functionobjects.predefined.binary.Div;
 import org.nblas.function.functionobjects.predefined.binary.Mul;
 import org.nblas.function.functionobjects.predefined.binary.Sub;
@@ -49,6 +50,12 @@ class CLFloatMatrix extends AMatrix {
 
     private static final String SET_ONE;
     private static final String COPY_MATRIX;
+    
+    // greater then scalar
+    private static final String GT_MATRIX;
+    private static final String GT_SCALAR;
+    private static final String GT_C_VECTOR;
+    private static final String GT_R_VECTOR;
 
     static {
         CLFloatFunctionBuilder builder = new CLFloatFunctionBuilder();
@@ -98,7 +105,15 @@ class CLFloatMatrix extends AMatrix {
         RDIV_R_VECTOR = buildPredefinedFunction(builder, rdiv, ArgumentType.ROW_VECTOR);
         RDIV_C_VECTOR = buildPredefinedFunction(builder, rdiv, ArgumentType.COLUMN_VECTOR);
 
-
+        
+        AFunctionObject greaterThen = new Comparator("<", new Arg(1), new Arg(0));
+        
+        GT_MATRIX = buildPredefinedFunction(builder, greaterThen, ArgumentType.MATRIX);
+        GT_SCALAR = buildPredefinedFunction(builder, greaterThen, ArgumentType.SCALAR);
+        GT_R_VECTOR = buildPredefinedFunction(builder, greaterThen, ArgumentType.ROW_VECTOR);
+        GT_C_VECTOR = buildPredefinedFunction(builder, greaterThen, ArgumentType.COLUMN_VECTOR);
+                
+        
         AFunctionObject one = new Value(1.0);
 
         String function = builder.buildFunction(one);
@@ -380,6 +395,32 @@ class CLFloatMatrix extends AMatrix {
         CORE.sgemm_nt(a.dataPointer, b.dataPointer, result.dataPointer, a.clRows, b.clRows, a.clColumns);
     }
 
+    // GREATER THEN
+    
+    public static void gt(CLFloatMatrix a, float scalar, CLFloatMatrix result) {
+        CLFloatMatrix b = new CLFloatMatrix(1, 1, scalar);
+        CORE.execute(GT_SCALAR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+        b.free();
+    }
+
+    public static void gt(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
+        checkSameSize(a, b, result);
+        CORE.execute(GT_MATRIX, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    }
+
+    public static void gtColumnVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
+        checkColumnVectorSize(a, b, result);
+        CORE.execute(GT_C_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    }
+
+    public static void gtRowVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
+        checkRowVectorSize(a, b, result);
+        CORE.execute(GT_R_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    }
+    
+    
+    
+    
     // TRANSPOSE
 
     public static void transpose(CLFloatMatrix matrix, CLFloatMatrix transposed) {

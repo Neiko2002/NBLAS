@@ -20,7 +20,7 @@ public class CLFloatMatrixTest {
 	public static void main(String[] args) throws Exception {
 		CLFloatMatrixTest testSuit = new CLFloatMatrixTest();
 		testSuit.setUp();
-		testSuit.rdivColumnVectorTest();
+		testSuit.gtTest();
 	}
 	
 	protected org.jblas.FloatMatrix matA_CPU;
@@ -340,6 +340,95 @@ public class CLFloatMatrixTest {
 		matC_GPU.free();
 	}
 	
+
+	
+	
+	@Test
+	public void gtTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.gt(matB_CPU);
+		
+		// Berechnung auf der GPU
+		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		CLFloatMatrix.gt(matA_GPU, matB_GPU, matC_GPU);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+
+	@Test
+	public void gtSclarTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.gt(0.5f);
+		
+		// Berechnung auf der GPU
+		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		CLFloatMatrix.gt(matA_GPU, 0.5f, matC_GPU);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+
+	@Test
+	public void gtColumnVectorTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix columnVector_CPU = org.jblas.FloatMatrix.rand(matA_CPU.getRows(), 1);
+		org.jblas.FloatMatrix matC_CPU = org.jblas.FloatMatrix.zeros(matA_CPU.getRows(), matA_CPU.getColumns());
+		for (int c = 0; c < matA_CPU.getRows(); c++)
+			matC_CPU.putRow(c, matA_CPU.getRow(c).gt(columnVector_CPU));
+		
+		// Berechnung auf der GPU
+		CLFloatMatrix columnVector_GPU = new CLFloatMatrix(matA_GPU.getRows(), 1, columnVector_CPU.toArray());
+		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		CLFloatMatrix.gtColumnVector(matA_GPU, columnVector_GPU, matC_GPU);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		columnVector_GPU.free();
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void gtRowVectorTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix rowVector_CPU = org.jblas.FloatMatrix.rand(1, matA_CPU.getColumns());
+		org.jblas.FloatMatrix matC_CPU = org.jblas.FloatMatrix.zeros(matA_CPU.getRows(), matA_CPU.getColumns());
+		for (int c = 0; c < matA_CPU.getColumns(); c++)
+			matC_CPU.putColumn(c, matA_CPU.getColumn(c).gt(rowVector_CPU));
+		
+		// Berechnung auf der GPU
+		CLFloatMatrix rowVector_GPU = new CLFloatMatrix(1, matA_GPU.getColumns(), rowVector_CPU.toArray());
+		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		CLFloatMatrix.gtRowVector(matA_GPU, rowVector_GPU, matC_GPU);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		rowVector_GPU.free();
+		matC_GPU.free();
+	}
+	
 	
 	@Test
 	public void maxTest() {
@@ -577,8 +666,8 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der CPU
 		org.jblas.FloatMatrix matC_CPU = org.jblas.FloatMatrix.zeros(matA_CPU.getRows(), matA_CPU.getColumns());
-		for (int c = 0; c < columnVector_arr.length; c++)
-			matC_CPU.putRow(c, matA_CPU.getRow(c).rdivi(columnVector_arr[c]));
+		for (int r = 0; r < columnVector_arr.length; r++)
+			matC_CPU.putRow(r, matA_CPU.getRow(r).rdivi(columnVector_arr[r]));
 
 		// Berechnung auf der GPU
 		CLFloatMatrix columnVector_GPU = new CLFloatMatrix(matA_GPU.getRows(), 1, columnVector_arr);
