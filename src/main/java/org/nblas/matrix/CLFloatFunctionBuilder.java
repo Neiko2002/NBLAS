@@ -13,7 +13,7 @@ class CLFloatFunctionBuilder extends AFunctionBuilder {
         for (int i = 0; i < args.length; i++) {
 
             String id = "arg" + String.format("%02d", i);
-            if (args[i] == ArgumentType.MATRIIX) {
+            if (args[i] == ArgumentType.MATRIX) {
                 function = function.replaceAll(id, id + "[id]");
             } else if (args[i] == ArgumentType.COLUMN_VECTOR) {
                 function = function.replaceAll(id, id + "[id0]");

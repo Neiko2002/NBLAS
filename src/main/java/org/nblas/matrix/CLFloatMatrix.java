@@ -55,7 +55,7 @@ class CLFloatMatrix extends AMatrix {
         // add Functions
         AFunctionObject add = new Add(new Arg(0), new Arg(1));
 
-        ADD_MATRIX = buildPredefinedFunction(builder, add, ArgumentType.MATRIIX);
+        ADD_MATRIX = buildPredefinedFunction(builder, add, ArgumentType.MATRIX);
         ADD_SCALAR = buildPredefinedFunction(builder, add, ArgumentType.SCALAR);
         ADD_R_VECTOR = buildPredefinedFunction(builder, add, ArgumentType.ROW_VECTOR);
         ADD_C_VECTOR = buildPredefinedFunction(builder, add, ArgumentType.COLUMN_VECTOR);
@@ -63,7 +63,7 @@ class CLFloatMatrix extends AMatrix {
 
         AFunctionObject mul = new Mul(new Arg(0), new Arg(1));
 
-        MUL_MATRIX = buildPredefinedFunction(builder, mul, ArgumentType.MATRIIX);
+        MUL_MATRIX = buildPredefinedFunction(builder, mul, ArgumentType.MATRIX);
         MUL_SCALAR = buildPredefinedFunction(builder, mul, ArgumentType.SCALAR);
         MUL_R_VECTOR = buildPredefinedFunction(builder, mul, ArgumentType.ROW_VECTOR);
         MUL_C_VECTOR = buildPredefinedFunction(builder, mul, ArgumentType.COLUMN_VECTOR);
@@ -71,7 +71,7 @@ class CLFloatMatrix extends AMatrix {
 
         AFunctionObject sub = new Sub(new Arg(0), new Arg(1));
 
-        SUB_MATRIX = buildPredefinedFunction(builder, sub, ArgumentType.MATRIIX);
+        SUB_MATRIX = buildPredefinedFunction(builder, sub, ArgumentType.MATRIX);
         SUB_SCALAR = buildPredefinedFunction(builder, sub, ArgumentType.SCALAR);
         SUB_R_VECTOR = buildPredefinedFunction(builder, sub, ArgumentType.ROW_VECTOR);
         SUB_C_VECTOR = buildPredefinedFunction(builder, sub, ArgumentType.COLUMN_VECTOR);
@@ -86,7 +86,7 @@ class CLFloatMatrix extends AMatrix {
 
         AFunctionObject div = new Div(new Arg(0), new Arg(1));
 
-        DIV_MATRIX = buildPredefinedFunction(builder, div, ArgumentType.MATRIIX);
+        DIV_MATRIX = buildPredefinedFunction(builder, div, ArgumentType.MATRIX);
         DIV_SCALAR = buildPredefinedFunction(builder, div, ArgumentType.SCALAR);
         DIV_R_VECTOR = buildPredefinedFunction(builder, div, ArgumentType.ROW_VECTOR);
         DIV_C_VECTOR = buildPredefinedFunction(builder, div, ArgumentType.COLUMN_VECTOR);
@@ -107,7 +107,7 @@ class CLFloatMatrix extends AMatrix {
 
 
         AFunctionObject copy = new Arg(0);
-        COPY_MATRIX = buildPredefinedFunctionSingle(builder, copy, ArgumentType.MATRIIX);
+        COPY_MATRIX = buildPredefinedFunctionSingle(builder, copy, ArgumentType.MATRIX);
 
         CORE.compileMatrixFunctions();
 
@@ -121,7 +121,7 @@ class CLFloatMatrix extends AMatrix {
     }
 
     private static String buildPredefinedFunction(AFunctionBuilder builder, AFunctionObject functionObject, ArgumentType argumentType) {
-        String function = builder.buildFunction(functionObject, ArgumentType.MATRIIX, argumentType);
+        String function = builder.buildFunction(functionObject, ArgumentType.MATRIX, argumentType);
         String functionName = builder.getFunctionName();
         CORE.loadFromGeneratedFunction(functionName, function);
         return functionName;
