@@ -94,7 +94,7 @@ abstract class AFunctionBuilder {
         } else if (aChar == '?') {
             builder.append("q_");
         } else if (aChar == '!') {
-            builder.append("r_");
+            builder.append("z_");
         } else if (aChar == ':') {
             builder.append("w_");
         } else if (aChar == '<') {

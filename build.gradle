@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
 	compile fileTree('lib'),			// putting all jars from 'lib' onto compile classpath
-		'org.jocl:jocl:0.1.9',
+		'org.jocl:jocl:0.1.9',		// for OpenCL 2.0 'org.jocl:jocl:0.2.0-RC00'
 		'org.jblas:jblas:1.2.4',
 		'ch.qos.logback:logback-classic:1.1.2';
 	testCompile 'junit:junit:4.+';		// jUnit für alle Tests 

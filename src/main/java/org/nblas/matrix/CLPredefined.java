@@ -369,7 +369,7 @@ public class CLPredefined {
         };
         kernels.put(rowMaxs[0], buildReductionKernel(rowMaxs, reductionRowFloats));
 
-        String[] rowMins = {"columnMinsFloats",
+        String[] rowMins = {"rowMinsFloats",
                 "\t\tshared[sIndex] = min(shared[sIndex], inputData[gid1 * get_global_size(0) + gid0]);\n",
                 "\t\t\tunsigned int sharedIndex = tid1 * get_local_size(0) + tid0;\n" +
                         "\t\t\tshared[sharedIndex] = min(shared[sharedIndex], shared[(tid1 + s) * get_local_size(0) + tid0]);\n"
