@@ -51,11 +51,41 @@ class CLFloatMatrix extends AMatrix {
     private static final String SET_ONE;
     private static final String COPY_MATRIX;
     
-    // greater then scalar
+    // greater than
     private static final String GT_MATRIX;
     private static final String GT_SCALAR;
     private static final String GT_C_VECTOR;
     private static final String GT_R_VECTOR;
+    
+    // greater than or equal
+    private static final String GE_MATRIX;
+    private static final String GE_SCALAR;
+    private static final String GE_C_VECTOR;
+    private static final String GE_R_VECTOR;
+    
+    // lower than
+    private static final String LT_MATRIX;
+    private static final String LT_SCALAR;
+    private static final String LT_C_VECTOR;
+    private static final String LT_R_VECTOR;
+    
+    // lower than or equal
+    private static final String LE_MATRIX;
+    private static final String LE_SCALAR;
+    private static final String LE_C_VECTOR;
+    private static final String LE_R_VECTOR;
+    
+    // equal
+    private static final String EQ_MATRIX;
+    private static final String EQ_SCALAR;
+    private static final String EQ_C_VECTOR;
+    private static final String EQ_R_VECTOR;
+    
+    // not equal
+    private static final String NE_MATRIX;
+    private static final String NE_SCALAR;
+    private static final String NE_C_VECTOR;
+    private static final String NE_R_VECTOR;
 
     static {
         CLFloatFunctionBuilder builder = new CLFloatFunctionBuilder();
@@ -106,13 +136,47 @@ class CLFloatMatrix extends AMatrix {
         RDIV_C_VECTOR = buildPredefinedFunction(builder, rdiv, ArgumentType.COLUMN_VECTOR);
 
         
-        AFunctionObject greaterThen = new Comparator("<", new Arg(1), new Arg(0));
+        AFunctionObject greaterThan = new Comparator(">", new Arg(0), new Arg(1));
         
-        GT_MATRIX = buildPredefinedFunction(builder, greaterThen, ArgumentType.MATRIX);
-        GT_SCALAR = buildPredefinedFunction(builder, greaterThen, ArgumentType.SCALAR);
-        GT_R_VECTOR = buildPredefinedFunction(builder, greaterThen, ArgumentType.ROW_VECTOR);
-        GT_C_VECTOR = buildPredefinedFunction(builder, greaterThen, ArgumentType.COLUMN_VECTOR);
-                
+        GT_MATRIX = buildPredefinedFunction(builder, greaterThan, ArgumentType.MATRIX);
+        GT_SCALAR = buildPredefinedFunction(builder, greaterThan, ArgumentType.SCALAR);
+        GT_R_VECTOR = buildPredefinedFunction(builder, greaterThan, ArgumentType.ROW_VECTOR);
+        GT_C_VECTOR = buildPredefinedFunction(builder, greaterThan, ArgumentType.COLUMN_VECTOR);                
+        
+        AFunctionObject greaterEqual = new Comparator(">=", new Arg(0), new Arg(1));
+        
+        GE_MATRIX = buildPredefinedFunction(builder, greaterEqual, ArgumentType.MATRIX);
+        GE_SCALAR = buildPredefinedFunction(builder, greaterEqual, ArgumentType.SCALAR);
+        GE_R_VECTOR = buildPredefinedFunction(builder, greaterEqual, ArgumentType.ROW_VECTOR);
+        GE_C_VECTOR = buildPredefinedFunction(builder, greaterEqual, ArgumentType.COLUMN_VECTOR);
+        
+        AFunctionObject lowerThan = new Comparator("<", new Arg(0), new Arg(1));
+        
+        LT_MATRIX = buildPredefinedFunction(builder, lowerThan, ArgumentType.MATRIX);
+        LT_SCALAR = buildPredefinedFunction(builder, lowerThan, ArgumentType.SCALAR);
+        LT_R_VECTOR = buildPredefinedFunction(builder, lowerThan, ArgumentType.ROW_VECTOR);
+        LT_C_VECTOR = buildPredefinedFunction(builder, lowerThan, ArgumentType.COLUMN_VECTOR);                
+        
+        AFunctionObject lowerEqual = new Comparator("<=", new Arg(0), new Arg(1));
+        
+        LE_MATRIX = buildPredefinedFunction(builder, lowerEqual, ArgumentType.MATRIX);
+        LE_SCALAR = buildPredefinedFunction(builder, lowerEqual, ArgumentType.SCALAR);
+        LE_R_VECTOR = buildPredefinedFunction(builder, lowerEqual, ArgumentType.ROW_VECTOR);
+        LE_C_VECTOR = buildPredefinedFunction(builder, lowerEqual, ArgumentType.COLUMN_VECTOR);
+        
+        AFunctionObject equal = new Comparator("==", new Arg(0), new Arg(1));
+        
+        EQ_MATRIX = buildPredefinedFunction(builder, equal, ArgumentType.MATRIX);
+        EQ_SCALAR = buildPredefinedFunction(builder, equal, ArgumentType.SCALAR);
+        EQ_R_VECTOR = buildPredefinedFunction(builder, equal, ArgumentType.ROW_VECTOR);
+        EQ_C_VECTOR = buildPredefinedFunction(builder, equal, ArgumentType.COLUMN_VECTOR);                
+        
+        AFunctionObject notEqual = new Comparator("!=", new Arg(0), new Arg(1));
+        
+        NE_MATRIX = buildPredefinedFunction(builder, notEqual, ArgumentType.MATRIX);
+        NE_SCALAR = buildPredefinedFunction(builder, notEqual, ArgumentType.SCALAR);
+        NE_R_VECTOR = buildPredefinedFunction(builder, notEqual, ArgumentType.ROW_VECTOR);
+        NE_C_VECTOR = buildPredefinedFunction(builder, notEqual, ArgumentType.COLUMN_VECTOR);
         
         AFunctionObject one = new Value(1.0);
 
@@ -346,23 +410,123 @@ class CLFloatMatrix extends AMatrix {
 
     
     
-    // GREATER THEN
+    // GREATER THAN
     
-    public static void gt(CLFloatMatrix a, float scalar, CLFloatMatrix result) {
-    	runMatrixScalarElementWiseOperation(GT_SCALAR, a, scalar, result);
+    public static void gt(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(GT_SCALAR, matrix, scalar, result);
     }
 
-    public static void gt(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-    	runMatrixMatrixElementWiseOperation(GT_MATRIX, a, b, result);
+    public static void gt(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
+    	runMatrixMatrixElementWiseOperation(GT_MATRIX, matrixA, matrixB, result);
     }
 
-    public static void gtColumnVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-    	runMatrixColumnVectorElementWiseOperation(GT_C_VECTOR, a, b, result);
+    public static void gtColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
+    	runMatrixColumnVectorElementWiseOperation(GT_C_VECTOR, matrix, columnVector, result);
     }
 
-    public static void gtRowVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-    	runMatrixRowVectorElementWiseOperation(GT_R_VECTOR, a, b, result);
+    public static void gtRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
+    	runMatrixRowVectorElementWiseOperation(GT_R_VECTOR, matrix, rowVector, result);
     }   
+    
+    
+    
+    // GREATER THAN OR EQUAL
+    
+    public static void ge(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(GE_SCALAR, matrix, scalar, result);
+    }
+
+    public static void ge(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
+    	runMatrixMatrixElementWiseOperation(GE_MATRIX, matrixA, matrixB, result);
+    }
+
+    public static void geColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
+    	runMatrixColumnVectorElementWiseOperation(GE_C_VECTOR, matrix, columnVector, result);
+    }
+
+    public static void geRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
+    	runMatrixRowVectorElementWiseOperation(GE_R_VECTOR, matrix, rowVector, result);
+    }   
+    
+    
+    
+    // LOWER THAN
+    
+    public static void lt(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(LT_SCALAR, matrix, scalar, result);
+    }
+
+    public static void lt(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
+    	runMatrixMatrixElementWiseOperation(LT_MATRIX, matrixA, matrixB, result);
+    }
+
+    public static void ltColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
+    	runMatrixColumnVectorElementWiseOperation(LT_C_VECTOR, matrix, columnVector, result);
+    }
+
+    public static void ltRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
+    	runMatrixRowVectorElementWiseOperation(LT_R_VECTOR, matrix, rowVector, result);
+    }   
+    
+    
+    
+    // LOWER THAN OR EQUAL
+    
+    public static void le(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(LE_SCALAR, matrix, scalar, result);
+    }
+
+    public static void le(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
+    	runMatrixMatrixElementWiseOperation(LE_MATRIX, matrixA, matrixB, result);
+    }
+
+    public static void leColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
+    	runMatrixColumnVectorElementWiseOperation(LE_C_VECTOR, matrix, columnVector, result);
+    }
+
+    public static void leRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
+    	runMatrixRowVectorElementWiseOperation(LE_R_VECTOR, matrix, rowVector, result);
+    } 
+    
+    
+    
+    // EQUAL
+    
+    public static void eq(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(EQ_SCALAR, matrix, scalar, result);
+    }
+
+    public static void eq(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
+    	runMatrixMatrixElementWiseOperation(EQ_MATRIX, matrixA, matrixB, result);
+    }
+
+    public static void eqColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
+    	runMatrixColumnVectorElementWiseOperation(EQ_C_VECTOR, matrix, columnVector, result);
+    }
+
+    public static void eqRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
+    	runMatrixRowVectorElementWiseOperation(EQ_R_VECTOR, matrix, rowVector, result);
+    }   
+    
+    
+    
+    // NOT EQUAL
+    
+    public static void ne(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(NE_SCALAR, matrix, scalar, result);
+    }
+
+    public static void ne(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
+    	runMatrixMatrixElementWiseOperation(NE_MATRIX, matrixA, matrixB, result);
+    }
+
+    public static void neColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
+    	runMatrixColumnVectorElementWiseOperation(NE_C_VECTOR, matrix, columnVector, result);
+    }
+
+    public static void neRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
+    	runMatrixRowVectorElementWiseOperation(NE_R_VECTOR, matrix, rowVector, result);
+    } 
     
     
     // TRANSPOSE

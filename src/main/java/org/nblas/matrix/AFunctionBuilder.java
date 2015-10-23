@@ -93,6 +93,8 @@ abstract class AFunctionBuilder {
             builder.append('n');
         } else if (aChar == '?') {
             builder.append("q_");
+        } else if (aChar == '!') {
+            builder.append("r_");
         } else if (aChar == ':') {
             builder.append("w_");
         } else if (aChar == '<') {
