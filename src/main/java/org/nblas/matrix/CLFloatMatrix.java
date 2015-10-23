@@ -226,161 +226,110 @@ class CLFloatMatrix extends AMatrix {
     public void setZero() {
         CORE.setZero(this.clRows, this.clColumns, dataPointer);
     }
+    
+    
+    // ADD
 
-    public static void add(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkSameSize(a, b, result);
-        CORE.execute(ADD_MATRIX, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void add(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
+    	runMatrixMatrixElementWiseOperation(ADD_MATRIX, matrixA, matrixB, result);
     }
 
-    public static void add(CLFloatMatrix a, float x, CLFloatMatrix result) {
-        CLFloatMatrix b = new CLFloatMatrix(1, 1, x);
-
-        CORE.execute(ADD_SCALAR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
-        b.free();
+    public static void add(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(ADD_SCALAR, matrix, scalar, result);
     }
 
-    public static void addColumnVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(ADD_C_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void addColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
+    	runMatrixColumnVectorElementWiseOperation(ADD_C_VECTOR, matrix, columnVector, result);
     }
 
-    public static void addRowVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(ADD_R_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void addRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
+    	runMatrixRowVectorElementWiseOperation(ADD_R_VECTOR, matrix, rowVector, result);
     }
 
 
+    
     // MUL
 
-    public static void mul(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkSameSize(a, b, result);
-        CORE.execute(MUL_MATRIX, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void mul(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
+    	runMatrixMatrixElementWiseOperation(MUL_MATRIX, matrixA, matrixB, result);
     }
 
-    public static void mul(CLFloatMatrix a, float x, CLFloatMatrix result) {
-        CLFloatMatrix b = new CLFloatMatrix(1, 1, x);
-
-        CORE.execute(MUL_SCALAR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
-        b.free();
+    public static void mul(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(MUL_SCALAR, matrix, scalar, result);
     }
 
-    public static void mulColumnVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(MUL_C_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void mulColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
+    	runMatrixColumnVectorElementWiseOperation(MUL_C_VECTOR, matrix, columnVector, result);
     }
 
-    public static void mulRowVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(MUL_R_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void mulRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
+    	runMatrixRowVectorElementWiseOperation(MUL_R_VECTOR, matrix, rowVector, result);
     }
 
 
+    
     // SUB
 
-    public static void sub(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkSameSize(a, b, result);
-        CORE.execute(SUB_MATRIX, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void sub(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
+    	runMatrixMatrixElementWiseOperation(SUB_MATRIX, matrixA, matrixB, result);
     }
 
-    public static void sub(CLFloatMatrix a, float x, CLFloatMatrix result) {
-        CLFloatMatrix b = new CLFloatMatrix(1, 1, x);
-
-        CORE.execute(SUB_SCALAR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
-        b.free();
+    public static void sub(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(SUB_SCALAR, matrix, scalar, result);
     }
 
-    public static void subColumnVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(SUB_C_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void subColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
+    	runMatrixColumnVectorElementWiseOperation(SUB_C_VECTOR, matrix, columnVector, result);
     }
 
-    public static void subRowVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(SUB_R_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void subRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
+    	runMatrixRowVectorElementWiseOperation(SUB_R_VECTOR, matrix, rowVector, result);
     }
 
-
-    public static void rsub(CLFloatMatrix a, float x, CLFloatMatrix result) {
-        CLFloatMatrix b = new CLFloatMatrix(1, 1, x);
-
-        CORE.execute(RSUB_SCALAR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
-        b.free();
+    public static void rsub(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(RSUB_SCALAR, matrix, scalar, result);
     }
 
-    public static void rsubColumnVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(RSUB_C_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void rsubColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
+    	runMatrixColumnVectorElementWiseOperation(RSUB_C_VECTOR, matrix, columnVector, result);
     }
 
-    public static void rsubRowVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(RSUB_R_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void rsubRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
+    	runMatrixRowVectorElementWiseOperation(RSUB_R_VECTOR, matrix, rowVector, result);
     }
 
 
     // DIV
 
-    public static void div(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkSameSize(a, b, result);
-        CORE.execute(DIV_MATRIX, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void div(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
+    	runMatrixMatrixElementWiseOperation(DIV_MATRIX, matrixA, matrixB, result);
     }
 
-    public static void div(CLFloatMatrix a, float x, CLFloatMatrix result) {
-        CLFloatMatrix b = new CLFloatMatrix(1, 1, x);
-
-        CORE.execute(DIV_SCALAR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
-        b.free();
+    public static void div(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(DIV_SCALAR, matrix, scalar, result);
     }
 
-    public static void divColumnVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(DIV_C_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void divColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
+    	runMatrixColumnVectorElementWiseOperation(DIV_C_VECTOR, matrix, columnVector, result);
     }
 
-    public static void divRowVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(DIV_R_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void divRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
+    	runMatrixRowVectorElementWiseOperation(DIV_R_VECTOR, matrix, rowVector, result);
     }
 
-
-    public static void rdiv(CLFloatMatrix a, float x, CLFloatMatrix result) {
-        CLFloatMatrix b = new CLFloatMatrix(1, 1, x);
-
-        CORE.execute(RDIV_SCALAR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
-        b.free();
+    public static void rdiv(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(RDIV_SCALAR, matrix, scalar, result);
     }
 
-    public static void rdivColumnVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(RDIV_C_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void rdivColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
+    	runMatrixColumnVectorElementWiseOperation(RDIV_C_VECTOR, matrix, columnVector, result);
     }
 
-    public static void rdivRowVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(RDIV_R_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public static void rdivRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
+    	runMatrixRowVectorElementWiseOperation(RDIV_R_VECTOR, matrix, rowVector, result);
     }
+    
+    
     //// MATRIX_MULTIPLICATION
 
     public static void mmul(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
@@ -395,30 +344,25 @@ class CLFloatMatrix extends AMatrix {
         CORE.sgemm_nt(a.dataPointer, b.dataPointer, result.dataPointer, a.clRows, b.clRows, a.clColumns);
     }
 
+    
+    
     // GREATER THEN
     
     public static void gt(CLFloatMatrix a, float scalar, CLFloatMatrix result) {
-        CLFloatMatrix b = new CLFloatMatrix(1, 1, scalar);
-        CORE.execute(GT_SCALAR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
-        b.free();
+    	runMatrixScalarElementWiseOperation(GT_SCALAR, a, scalar, result);
     }
 
     public static void gt(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkSameSize(a, b, result);
-        CORE.execute(GT_MATRIX, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixMatrixElementWiseOperation(GT_MATRIX, a, b, result);
     }
 
     public static void gtColumnVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(GT_C_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixColumnVectorElementWiseOperation(GT_C_VECTOR, a, b, result);
     }
 
     public static void gtRowVector(CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(GT_R_VECTOR, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
-    }
-    
-    
+    	runMatrixRowVectorElementWiseOperation(GT_R_VECTOR, a, b, result);
+    }   
     
     
     // TRANSPOSE
@@ -427,8 +371,9 @@ class CLFloatMatrix extends AMatrix {
         CORE.transpose(matrix.dataPointer, transposed.dataPointer, matrix.clRows, matrix.clColumns, matrix.rows, matrix.columns);
     }
 
+    
+    
     // REDUCE
-
 
     public static float sum(CLFloatMatrix matrix) {
         return CORE.reduce2D("sumFloats", matrix.dataPointer, matrix.rows, matrix.columns, 0);
@@ -502,6 +447,68 @@ class CLFloatMatrix extends AMatrix {
     public static void rowMins(CLFloatMatrix matrix, CLFloatMatrix result) {
         CORE.reduceRows("rowMinsFloats", matrix.dataPointer, result.dataPointer, matrix.rows, matrix.columns, Float.POSITIVE_INFINITY);
     }
+
+    
+    
+    /**
+     * Führe ein OpenCL Programm auf zwei gleich große Matrizen durch,
+     * das Resultat wird in eine dritte Matrix gespeichert
+     *  
+     * @param programId
+     * @param a
+     * @param b
+     * @param result
+     */
+	protected static void runMatrixMatrixElementWiseOperation(String programId, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
+		checkSameSize(a, b, result);
+        CORE.execute(programId, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+	}
+	
+	/**
+     * Führe ein OpenCL Programm auf einer Matrix und einem Scalar durch,
+     * das Resultat wird in eine zweite Matrix gespeichert
+     * 
+	 * @param programId
+	 * @param matrix
+	 * @param scalar
+	 * @param result
+	 */
+	protected static void runMatrixScalarElementWiseOperation(String programId, CLFloatMatrix a, float scalar, CLFloatMatrix result) {
+	    CLFloatMatrix b = new CLFloatMatrix(1, 1, scalar);
+        CORE.execute(programId, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+        b.free();
+	}
+	
+	/**
+     * Führe ein OpenCL Programm auf einer Matrix und einem Row Vector durch,
+     * das Resultat wird in eine zweite Matrix gespeichert
+     * 
+	 * @param programId
+	 * @param matrix 
+	 * @param row vector
+	 * @param result
+	 */
+	protected static void runMatrixRowVectorElementWiseOperation(String programId, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
+        checkRowVectorSize(a, b, result);
+        CORE.execute(programId, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+	}	
+	
+	
+	/**
+     * Führe ein OpenCL Programm auf einer Matrix und einem Column Vector durch,
+     * das Resultat wird in eine zweite Matrix gespeichert
+     * 
+	 * @param programId
+	 * @param matrix
+	 * @param column vector
+	 * @param result
+	 */
+	protected static void runMatrixColumnVectorElementWiseOperation(String programId, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
+		checkColumnVectorSize(a, b, result);
+		CORE.execute(programId, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+	}	
+
+   
 
 
     // RANDOM
