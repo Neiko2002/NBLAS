@@ -1,7 +1,7 @@
 package org.nblas.cuda;
 
 
-import org.nblas.generic.NativeMatrix;
+import org.nblas.generic.NativeFloatMatrix;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.common.Arg;
@@ -14,7 +14,7 @@ import org.nblas.function.predefined.binary.Sub;
 
 import jcuda.Pointer;
 
-public class CudaFloatMatrix extends NativeMatrix {
+public class CudaFloatMatrix extends NativeFloatMatrix {
 
     private static final CudaCore CORE = CudaCore.getCore();
     private static final String ADD_MATRIX;
@@ -136,6 +136,7 @@ public class CudaFloatMatrix extends NativeMatrix {
 
     private final Pointer dataPointer;
 
+    @Override
     public void free() {
         CORE.free(dataPointer);
     }
@@ -499,7 +500,7 @@ public class CudaFloatMatrix extends NativeMatrix {
         return result;
     }
 
-
+    @Override
     public void getColumnWiseOn(float[] values) {
         if (getRows() * getColumns() != values.length)
             throw new IllegalArgumentException("Array's length is not the size of rows times columns.");
@@ -513,73 +514,4 @@ public class CudaFloatMatrix extends NativeMatrix {
         CORE.setSubMatrix(dataPointer, matrix.dataPointer, matrix.rows, matrix.rows, rows, offsetRow, offsetColumn);
     }
 
-    // JAVA GETTER
-
-    public float[] toArray() {
-        float[] values = new float[getRows() * getColumns()];
-        getColumnWiseOn(values);
-        return values;
-    }
-
-    public float[][] toArray2() {
-        float[][] matrix = new float[rows][columns];
-        float[] array = toArray();
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                matrix[i][j] = array[i + j * rows];
-            }
-        }
-        return matrix;
-    }
-
-    // PRINT
-
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        float[][] matrix = toArray2();
-        builder.append("[");
-        for (int i = 0; i < rows - 1; i++) {
-            for (int j = 0; j < columns - 1; j++) {
-                builder.append(String.format("%.6f", matrix[i][j]));
-                builder.append(", ");
-            }
-
-            builder.append(String.format("%.6f", matrix[i][columns - 1]));
-            builder.append("; ");
-        }
-        for (int j = 0; j < columns - 1; j++) {
-            builder.append(String.format("%.6f", matrix[rows - 1][j]));
-            builder.append(", ");
-        }
-        builder.append(String.format("%.6f", matrix[rows - 1][columns - 1]));
-        builder.append("]");
-
-        return builder.toString();
-    }
-
-    public String toString2() {
-        StringBuilder builder = new StringBuilder();
-        float[][] matrix = toArray2();
-        for (int i = 0; i < rows - 1; i++) {
-            builder.append("[");
-            for (int j = 0; j < columns - 1; j++) {
-                builder.append(String.format("%.6f", matrix[i][j]));
-                builder.append(", ");
-            }
-
-            builder.append(String.format("%.6f", matrix[i][columns - 1]));
-            builder.append("]\n");
-        }
-
-        builder.append("[");
-        for (int j = 0; j < columns - 1; j++) {
-            builder.append(String.format("%.6f", matrix[rows - 1][j]));
-            builder.append(", ");
-        }
-        builder.append(String.format("%.6f", matrix[rows - 1][columns - 1]));
-        builder.append("]\n");
-
-        return builder.toString();
-    }
 }

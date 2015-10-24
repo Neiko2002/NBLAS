@@ -4,6 +4,7 @@ import org.nblas.cl.CLFloatMatrix;
 import org.nblas.cuda.CudaFloatMatrix;
 import org.nblas.exception.AccessViolationException;
 import org.nblas.function.Context;
+import org.nblas.generic.Matrix;
 import org.nblas.generic.NativeMatrix;
 
 public class FloatMatrix {
@@ -114,13 +115,13 @@ public class FloatMatrix {
 
     public int getRows() {
         if (CONTEXT.isGPU()) {
-            return ((NativeMatrix) matrix).getRows();
+            return ((Matrix) matrix).getRows();
         } else return ((org.jblas.FloatMatrix) matrix).getRows();
     }
 
     public int getColumns() {
         if (CONTEXT.isGPU()) {
-            return ((NativeMatrix) matrix).getColumns();
+            return ((Matrix) matrix).getColumns();
         } else return ((org.jblas.FloatMatrix) matrix).getColumns();
     }
     
