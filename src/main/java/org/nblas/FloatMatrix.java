@@ -4,8 +4,8 @@ import org.nblas.cl.CLFloatMatrix;
 import org.nblas.cuda.CudaFloatMatrix;
 import org.nblas.exception.AccessViolationException;
 import org.nblas.function.Context;
-import org.nblas.generic.Matrix;
-import org.nblas.generic.NativeMatrix;
+import org.nblas.generic.AMatrix;
+import org.nblas.generic.ANativeMatrix;
 
 public class FloatMatrix {
     private static Context CONTEXT = Context.createCudaSinglePrecisionContext();
@@ -98,7 +98,7 @@ public class FloatMatrix {
 
     public void free() {
         if (CONTEXT.isGPU()) {
-        	((NativeMatrix) matrix).isReleased();
+        	((ANativeMatrix) matrix).isReleased();
             if (CONTEXT.isCUDA()) {
                 ((CudaFloatMatrix) matrix).free();
             } else {
@@ -108,20 +108,20 @@ public class FloatMatrix {
     }
 
     private void isReleased() {
-    	 if (CONTEXT.isGPU() && ((NativeMatrix) matrix).isReleased())
+    	 if (CONTEXT.isGPU() && ((ANativeMatrix) matrix).isReleased())
 	            throw new AccessViolationException(
 	                    "Access violation on: " + this.getClass().getName() + "@" + Integer.toHexString(hashCode()));
     }
 
     public int getRows() {
         if (CONTEXT.isGPU()) {
-            return ((Matrix) matrix).getRows();
+            return ((AMatrix) matrix).getRows();
         } else return ((org.jblas.FloatMatrix) matrix).getRows();
     }
 
     public int getColumns() {
         if (CONTEXT.isGPU()) {
-            return ((Matrix) matrix).getColumns();
+            return ((AMatrix) matrix).getColumns();
         } else return ((org.jblas.FloatMatrix) matrix).getColumns();
     }
     

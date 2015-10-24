@@ -4,8 +4,8 @@ import org.nblas.function.generic.ABinaryBoolean;
 import org.nblas.function.generic.AFunctionObject;
 
 
-public class ATernary extends AFunctionObject {
-    public ATernary(ABinaryBoolean bool, AFunctionObject isTrue, AFunctionObject isFalse) {
+public class Ternary extends AFunctionObject {
+    public Ternary(ABinaryBoolean bool, AFunctionObject isTrue, AFunctionObject isFalse) {
         super(new AFunctionObject[]{bool, isTrue, isFalse});
     }
 

@@ -3,7 +3,7 @@ package org.nblas.cl;
 
 import org.jblas.util.Random;
 import org.jocl.cl_mem;
-import org.nblas.generic.NativeFloatMatrix;
+import org.nblas.generic.ANativeFloatMatrix;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.common.Arg;
@@ -17,7 +17,7 @@ import org.nblas.function.predefined.binary.Sub;
 
 import java.util.Optional;
 
-public class CLFloatMatrix extends NativeFloatMatrix {
+public class CLFloatMatrix extends ANativeFloatMatrix {
 
 
     private static final CLCore CORE = CLCore.getCore();

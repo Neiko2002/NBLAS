@@ -1,7 +1,7 @@
 package org.nblas.cuda;
 
 
-import org.nblas.generic.NativeFloatMatrix;
+import org.nblas.generic.ANativeFloatMatrix;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.common.Arg;
@@ -14,7 +14,7 @@ import org.nblas.function.predefined.binary.Sub;
 
 import jcuda.Pointer;
 
-public class CudaFloatMatrix extends NativeFloatMatrix {
+public class CudaFloatMatrix extends ANativeFloatMatrix {
 
     private static final CudaCore CORE = CudaCore.getCore();
     private static final String ADD_MATRIX;

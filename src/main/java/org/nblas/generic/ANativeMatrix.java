@@ -6,7 +6,7 @@ package org.nblas.generic;
  * @author Nico
  *
  */
-public abstract class NativeMatrix extends Matrix {
+public abstract class ANativeMatrix extends AMatrix {
    
     protected boolean released = true;
 

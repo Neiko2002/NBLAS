@@ -6,7 +6,7 @@ package org.nblas.generic;
  * @author Nico
  *
  */
-public abstract class NativeFloatMatrix extends NativeMatrix {
+public abstract class ANativeFloatMatrix extends ANativeMatrix {
    
 	protected abstract void getColumnWiseOn(float[] values);
 
