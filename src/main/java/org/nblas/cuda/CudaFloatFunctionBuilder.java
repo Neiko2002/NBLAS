@@ -7,6 +7,7 @@ import org.nblas.function.Context;
 
 class CudaFloatFunctionBuilder extends AFunctionBuilder {
 
+	protected Context context = Context.createCudaSinglePrecisionContext();
 
     protected String buildFunction(String function, ArgumentType[] args) {
         StringBuilder builder = new StringBuilder();
@@ -49,6 +50,6 @@ class CudaFloatFunctionBuilder extends AFunctionBuilder {
 
     @Override
     protected Context getContext() {
-        return Context.createCudaSinglePrecisionContext();
+        return context;
     }
 }

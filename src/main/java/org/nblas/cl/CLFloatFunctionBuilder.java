@@ -6,6 +6,8 @@ import org.nblas.function.Context;
 
 
 class CLFloatFunctionBuilder extends AFunctionBuilder {
+
+	protected Context context = Context.createOpenCLSinglePrecisionContext();
 	
     protected String buildFunction(String function, ArgumentType[] args) {
         StringBuilder builder = new StringBuilder();
@@ -50,6 +52,6 @@ class CLFloatFunctionBuilder extends AFunctionBuilder {
 
     @Override
     protected Context getContext() {
-        return Context.createOpenCLSinglePrecisionContext();
+        return context;
     }
 }
