@@ -8,6 +8,7 @@ import org.nblas.function.common.Arg;
 import org.nblas.function.common.Identity;
 import org.nblas.function.generic.AFunctionObject;
 import org.nblas.function.generic.ATypedFunctionObject;
+import org.nblas.generic.ASubprogram;
 
 
 public abstract class AFunctionBuilder {
@@ -18,7 +19,7 @@ public abstract class AFunctionBuilder {
         argumentsTest = new HashSet<>();
     }
 
-    public String buildFunction(AFunctionObject func, ArgumentType... argumentTypes) {
+    public ASubprogram buildFunction(AFunctionObject func, ArgumentType... argumentTypes) {
 
         argumentsTest.clear();
         AFunctionObject function = new Identity(func);
@@ -30,7 +31,7 @@ public abstract class AFunctionBuilder {
         return buildFunction(function.toString(), argumentTypes);
     }
 
-    protected abstract String buildFunction(String function, ArgumentType[] args);
+    protected abstract ASubprogram buildFunction(String function, ArgumentType[] args);
 
     protected String generateFunctionName(String function) {
         StringBuilder builder = new StringBuilder();

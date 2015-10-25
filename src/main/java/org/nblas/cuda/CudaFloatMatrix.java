@@ -2,6 +2,7 @@ package org.nblas.cuda;
 
 
 import org.nblas.generic.ANativeFloatMatrix;
+import org.nblas.generic.ASubprogram;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.common.Arg;
@@ -17,121 +18,113 @@ import jcuda.Pointer;
 public class CudaFloatMatrix extends ANativeFloatMatrix {
 
     private static final CudaCore CORE = CudaCore.getCore();
-    private static final String ADD_MATRIX;
-    private static final String ADD_SCALAR;
-    private static final String ADD_C_VECTOR;
-    private static final String ADD_R_VECTOR;
+    
+    private static final ASubprogram ADD_MATRIX;
+    private static final ASubprogram ADD_SCALAR;
+    private static final ASubprogram ADD_C_VECTOR;
+    private static final ASubprogram ADD_R_VECTOR;
 
-    private static final String MUL_MATRIX;
-    private static final String MUL_SCALAR;
-    private static final String MUL_C_VECTOR;
-    private static final String MUL_R_VECTOR;
+    private static final ASubprogram MUL_MATRIX;
+    private static final ASubprogram MUL_SCALAR;
+    private static final ASubprogram MUL_C_VECTOR;
+    private static final ASubprogram MUL_R_VECTOR;
 
-    private static final String SUB_MATRIX;
-    private static final String SUB_SCALAR;
-    private static final String SUB_C_VECTOR;
-    private static final String SUB_R_VECTOR;
+    private static final ASubprogram SUB_MATRIX;
+    private static final ASubprogram SUB_SCALAR;
+    private static final ASubprogram SUB_C_VECTOR;
+    private static final ASubprogram SUB_R_VECTOR;
 
-    private static final String RSUB_SCALAR;
-    private static final String RSUB_C_VECTOR;
-    private static final String RSUB_R_VECTOR;
+    private static final ASubprogram RSUB_SCALAR;
+    private static final ASubprogram RSUB_C_VECTOR;
+    private static final ASubprogram RSUB_R_VECTOR;
 
-    private static final String DIV_MATRIX;
-    private static final String DIV_SCALAR;
-    private static final String DIV_C_VECTOR;
-    private static final String DIV_R_VECTOR;
+    private static final ASubprogram DIV_MATRIX;
+    private static final ASubprogram DIV_SCALAR;
+    private static final ASubprogram DIV_C_VECTOR;
+    private static final ASubprogram DIV_R_VECTOR;
 
-    private static final String RDIV_SCALAR;
-    private static final String RDIV_C_VECTOR;
-    private static final String RDIV_R_VECTOR;
+    private static final ASubprogram RDIV_SCALAR;
+    private static final ASubprogram RDIV_C_VECTOR;
+    private static final ASubprogram RDIV_R_VECTOR;
 
-    private static final String SET_ZERO;
-    private static final String SET_ONE;
-    private static final String COPY_MATRIX;
+    private static final ASubprogram SET_ZERO;
+    private static final ASubprogram SET_ONE;
+    private static final ASubprogram COPY_MATRIX;
 
     static {
         CudaFloatFunctionBuilder builder = new CudaFloatFunctionBuilder();
         // add Functions
         AFunctionObject add = new Add(new Arg(0), new Arg(1));
 
-        ADD_MATRIX = buildPredefinedFunction(builder, add, ArgumentType.MATRIX);
-        ADD_SCALAR = buildPredefinedFunction(builder, add, ArgumentType.SCALAR);
-        ADD_R_VECTOR = buildPredefinedFunction(builder, add, ArgumentType.ROW_VECTOR);
-        ADD_C_VECTOR = buildPredefinedFunction(builder, add, ArgumentType.COLUMN_VECTOR);
+        ADD_MATRIX = buildPredefinedFunction(builder, add, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        ADD_SCALAR = buildPredefinedFunction(builder, add, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        ADD_R_VECTOR = buildPredefinedFunction(builder, add, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        ADD_C_VECTOR = buildPredefinedFunction(builder, add, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
 
         AFunctionObject mul = new Mul(new Arg(0), new Arg(1));
 
-        MUL_MATRIX = buildPredefinedFunction(builder, mul, ArgumentType.MATRIX);
-        MUL_SCALAR = buildPredefinedFunction(builder, mul, ArgumentType.SCALAR);
-        MUL_R_VECTOR = buildPredefinedFunction(builder, mul, ArgumentType.ROW_VECTOR);
-        MUL_C_VECTOR = buildPredefinedFunction(builder, mul, ArgumentType.COLUMN_VECTOR);
+        MUL_MATRIX = buildPredefinedFunction(builder, mul, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        MUL_SCALAR = buildPredefinedFunction(builder, mul, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        MUL_R_VECTOR = buildPredefinedFunction(builder, mul, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        MUL_C_VECTOR = buildPredefinedFunction(builder, mul, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
 
         AFunctionObject sub = new Sub(new Arg(0), new Arg(1));
 
-        SUB_MATRIX = buildPredefinedFunction(builder, sub, ArgumentType.MATRIX);
-        SUB_SCALAR = buildPredefinedFunction(builder, sub, ArgumentType.SCALAR);
-        SUB_R_VECTOR = buildPredefinedFunction(builder, sub, ArgumentType.ROW_VECTOR);
-        SUB_C_VECTOR = buildPredefinedFunction(builder, sub, ArgumentType.COLUMN_VECTOR);
+        SUB_MATRIX = buildPredefinedFunction(builder, sub, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        SUB_SCALAR = buildPredefinedFunction(builder, sub, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        SUB_R_VECTOR = buildPredefinedFunction(builder, sub, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        SUB_C_VECTOR = buildPredefinedFunction(builder, sub, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
 
         AFunctionObject rsub = new Sub(new Arg(1), new Arg(0));
 
-        RSUB_SCALAR = buildPredefinedFunction(builder, rsub, ArgumentType.SCALAR);
-        RSUB_R_VECTOR = buildPredefinedFunction(builder, rsub, ArgumentType.ROW_VECTOR);
-        RSUB_C_VECTOR = buildPredefinedFunction(builder, rsub, ArgumentType.COLUMN_VECTOR);
+        RSUB_SCALAR = buildPredefinedFunction(builder, rsub, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        RSUB_R_VECTOR = buildPredefinedFunction(builder, rsub, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        RSUB_C_VECTOR = buildPredefinedFunction(builder, rsub, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
 
         AFunctionObject div = new Div(new Arg(0), new Arg(1));
 
-        DIV_MATRIX = buildPredefinedFunction(builder, div, ArgumentType.MATRIX);
-        DIV_SCALAR = buildPredefinedFunction(builder, div, ArgumentType.SCALAR);
-        DIV_R_VECTOR = buildPredefinedFunction(builder, div, ArgumentType.ROW_VECTOR);
-        DIV_C_VECTOR = buildPredefinedFunction(builder, div, ArgumentType.COLUMN_VECTOR);
+        DIV_MATRIX = buildPredefinedFunction(builder, div, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        DIV_SCALAR = buildPredefinedFunction(builder, div, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        DIV_R_VECTOR = buildPredefinedFunction(builder, div, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        DIV_C_VECTOR = buildPredefinedFunction(builder, div, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
 
         AFunctionObject rdiv = new Div(new Arg(1), new Arg(0));
 
-        RDIV_SCALAR = buildPredefinedFunction(builder, rdiv, ArgumentType.SCALAR);
-        RDIV_R_VECTOR = buildPredefinedFunction(builder, rdiv, ArgumentType.ROW_VECTOR);
-        RDIV_C_VECTOR = buildPredefinedFunction(builder, rdiv, ArgumentType.COLUMN_VECTOR);
+        RDIV_SCALAR = buildPredefinedFunction(builder, rdiv, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        RDIV_R_VECTOR = buildPredefinedFunction(builder, rdiv, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        RDIV_C_VECTOR = buildPredefinedFunction(builder, rdiv, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
-
+        
         AFunctionObject zero = new Value(0.0);
 
-        String function = builder.buildFunction(zero);
-        SET_ZERO = builder.getFunctionName();
-        CORE.loadFromGeneratedFunction(SET_ZERO, function);
+        SET_ZERO = buildPredefinedFunction(builder, zero);
 
+        
         AFunctionObject one = new Value(1.0);
 
-        function = builder.buildFunction(one);
-        SET_ONE = builder.getFunctionName();
-        CORE.loadFromGeneratedFunction(SET_ONE, function);
-
-
+        SET_ONE = buildPredefinedFunction(builder, one);
+       
+        
         AFunctionObject copy = new Arg(0);
-        COPY_MATRIX = buildPredefinedFunctionSingle(builder, copy, ArgumentType.MATRIX);
+        
+        COPY_MATRIX = buildPredefinedFunction(builder, copy, ArgumentType.MATRIX);
 
-        for (String functionName : CudaPredefined.kernels.keySet()) {
-            CORE.loadFromGeneratedFunction(functionName, CudaPredefined.kernels.get(functionName));
+        
+        for (ASubprogram subprogram : CudaPredefined.kernels.values()) {
+            CORE.loadFromGeneratedFunction(subprogram);
         }
-
     }
 
-    private static String buildPredefinedFunctionSingle(AFunctionBuilder builder, AFunctionObject functionObject, ArgumentType argumentType) {
-        String function = builder.buildFunction(functionObject, argumentType);
-        String functionName = builder.getFunctionName();
-        CORE.loadFromGeneratedFunction(functionName, function);
-        return functionName;
-    }
-
-    private static String buildPredefinedFunction(AFunctionBuilder builder, AFunctionObject functionObject, ArgumentType argumentType) {
-        String function = builder.buildFunction(functionObject, ArgumentType.MATRIX, argumentType);
-        String functionName = builder.getFunctionName();
-        CORE.loadFromGeneratedFunction(functionName, function);
-        return functionName;
+    private static ASubprogram buildPredefinedFunction(AFunctionBuilder builder, AFunctionObject functionObject, ArgumentType... argumentTypes) {
+        ASubprogram subprogram = builder.buildFunction(functionObject, argumentTypes);
+        subprogram.setStandardProgram(true);
+        CORE.loadFromGeneratedFunction(subprogram);
+        return subprogram;
     }
 
     private final Pointer dataPointer;
@@ -206,16 +199,16 @@ public class CudaFloatMatrix extends ANativeFloatMatrix {
     }
 
     public void setOne() {
-        CORE.execute(SET_ONE, this.rows, this.columns, dataPointer);
+        CORE.execute(SET_ONE.getProgramName(), this.rows, this.columns, dataPointer);
     }
 
     public void setZero() {
-        CORE.execute(SET_ZERO, this.rows, this.columns, dataPointer);
+        CORE.execute(SET_ZERO.getProgramName(), this.rows, this.columns, dataPointer);
     }
 
     public static void copy(CudaFloatMatrix source, CudaFloatMatrix copy) {
         checkSameSize(source, copy);
-        CORE.execute(COPY_MATRIX, source.rows, source.columns, copy.dataPointer, source.dataPointer);
+        CORE.execute(COPY_MATRIX.getProgramName(), source.rows, source.columns, copy.dataPointer, source.dataPointer);
     }
 
 
@@ -226,27 +219,27 @@ public class CudaFloatMatrix extends ANativeFloatMatrix {
 
     public static void add(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkSameSize(a, b, result);
-        CORE.execute(ADD_MATRIX, result.rows, result.columns, result.dataPointer,
+        CORE.execute(ADD_MATRIX.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
     public static void add(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
         CudaFloatMatrix b = new CudaFloatMatrix(1, 1, x);
 
-        CORE.execute(ADD_SCALAR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(ADD_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
         b.free();
     }
 
     public static void addColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkColumnVectorSize(a, b, result);
-        CORE.execute(ADD_C_VECTOR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(ADD_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
     public static void addRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkRowVectorSize(a, b, result);
-        CORE.execute(ADD_R_VECTOR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(ADD_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
@@ -255,27 +248,27 @@ public class CudaFloatMatrix extends ANativeFloatMatrix {
 
     public static void mul(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkSameSize(a, b, result);
-        CORE.execute(MUL_MATRIX, result.rows, result.columns, result.dataPointer,
+        CORE.execute(MUL_MATRIX.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
     public static void mul(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
         CudaFloatMatrix b = new CudaFloatMatrix(1, 1, x);
 
-        CORE.execute(MUL_SCALAR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(MUL_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
         b.free();
     }
 
     public static void mulColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkColumnVectorSize(a, b, result);
-        CORE.execute(MUL_C_VECTOR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(MUL_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
     public static void mulRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkRowVectorSize(a, b, result);
-        CORE.execute(MUL_R_VECTOR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(MUL_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
@@ -284,27 +277,27 @@ public class CudaFloatMatrix extends ANativeFloatMatrix {
 
     public static void sub(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkSameSize(a, b, result);
-        CORE.execute(SUB_MATRIX, result.rows, result.columns, result.dataPointer,
+        CORE.execute(SUB_MATRIX.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
     public static void sub(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
         CudaFloatMatrix b = new CudaFloatMatrix(1, 1, x);
 
-        CORE.execute(SUB_SCALAR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(SUB_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
         b.free();
     }
 
     public static void subColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkColumnVectorSize(a, b, result);
-        CORE.execute(SUB_C_VECTOR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(SUB_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
     public static void subRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkRowVectorSize(a, b, result);
-        CORE.execute(SUB_R_VECTOR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(SUB_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
@@ -312,20 +305,20 @@ public class CudaFloatMatrix extends ANativeFloatMatrix {
     public static void rsub(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
         CudaFloatMatrix b = new CudaFloatMatrix(1, 1, x);
 
-        CORE.execute(RSUB_SCALAR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(RSUB_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
         b.free();
     }
 
     public static void rsubColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkColumnVectorSize(a, b, result);
-        CORE.execute(RSUB_C_VECTOR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(RSUB_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
     public static void rsubRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkRowVectorSize(a, b, result);
-        CORE.execute(RSUB_R_VECTOR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(RSUB_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
@@ -334,27 +327,27 @@ public class CudaFloatMatrix extends ANativeFloatMatrix {
 
     public static void div(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkSameSize(a, b, result);
-        CORE.execute(DIV_MATRIX, result.rows, result.columns, result.dataPointer,
+        CORE.execute(DIV_MATRIX.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
     public static void div(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
         CudaFloatMatrix b = new CudaFloatMatrix(1, 1, x);
 
-        CORE.execute(DIV_SCALAR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(DIV_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
         b.free();
     }
 
     public static void divColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkColumnVectorSize(a, b, result);
-        CORE.execute(DIV_C_VECTOR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(DIV_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
     public static void divRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkRowVectorSize(a, b, result);
-        CORE.execute(DIV_R_VECTOR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(DIV_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
@@ -362,20 +355,20 @@ public class CudaFloatMatrix extends ANativeFloatMatrix {
     public static void rdiv(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
         CudaFloatMatrix b = new CudaFloatMatrix(1, 1, x);
 
-        CORE.execute(RDIV_SCALAR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(RDIV_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
         b.free();
     }
 
     public static void rdivColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkColumnVectorSize(a, b, result);
-        CORE.execute(RDIV_C_VECTOR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(RDIV_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 
     public static void rdivRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkRowVectorSize(a, b, result);
-        CORE.execute(RDIV_R_VECTOR, result.rows, result.columns, result.dataPointer,
+        CORE.execute(RDIV_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
 

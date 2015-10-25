@@ -3,6 +3,7 @@ package org.nblas.cl;
 import org.jocl.*;
 import org.jocl.Pointer;
 import org.jocl.Sizeof;
+import org.nblas.generic.ASubprogram;
 
 import java.io.IOException;
 import java.lang.reflect.*;
@@ -11,8 +12,6 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-
-import static org.jocl.CL.*;
 
 class CLCore {
 
@@ -29,8 +28,8 @@ class CLCore {
     private HashMap<String, cl_kernel> matrixKernels;
     private HashMap<String, cl_kernel> customKernels;
 
-    private HashMap<String, String> customKernelsSource;
-    private HashMap<String, String> matrixKernelsSource;
+    private HashMap<String, ASubprogram> customKernelsSource;
+    private HashMap<String, ASubprogram> matrixKernelsSource;
 
     private int threadCount_X;
     private int threadCount_Y;
@@ -39,18 +38,18 @@ class CLCore {
     private CLCore() {
 
         CL.setExceptionsEnabled(true);
-        deviceType = CL_DEVICE_TYPE_GPU;
+        deviceType = CL.CL_DEVICE_TYPE_GPU;
         if (!getFastestDevice(deviceType)) {
             throw new CLException("No OpenCL-Device found!\n " +
                     "Please reconsider that all OpenCL-Drivers and OpenCL-Platforms are installed properly.");
         }
 
         // CL_DEVICE_NAME
-        String deviceName = getString(device, CL_DEVICE_NAME);
+        String deviceName = getString(device, CL.CL_DEVICE_NAME);
         System.out.printf("Using OpenCL Device: \t%s\n", deviceName);
 
 
-        threadCount = (int) getSize(device, CL_DEVICE_MAX_WORK_GROUP_SIZE);
+        threadCount = (int) getSize(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE);
         int logBlockSize = (int) Math.round(Math.log(threadCount) / Math.log(2));
         int logBlockSizeX = logBlockSize / 2;
         int logBlockSizeY = (logBlockSize % 2 == 0) ? logBlockSizeX : logBlockSizeX + 1;
@@ -59,11 +58,11 @@ class CLCore {
 
 
         contextProperties = new cl_context_properties();
-        contextProperties.addProperty(CL_CONTEXT_PLATFORM, platform);
-        context = clCreateContext(
+        contextProperties.addProperty(CL.CL_CONTEXT_PLATFORM, platform);
+        context = CL.clCreateContext(
                 contextProperties, 1, new cl_device_id[]{device},
                 null, null, null);
-        commandQueue = clCreateCommandQueue(context, device, 0, null);
+        commandQueue = CL.clCreateCommandQueue(context, device, 0, null);
 
         customKernelsSource = new HashMap<>();
         matrixKernelsSource = new HashMap<>();
@@ -259,11 +258,11 @@ class CLCore {
     {
         // Obtain the length of the string that will be queried
         long size[] = new long[1];
-        clGetPlatformInfo(platform, paramName, 0, null, size);
+        CL.clGetPlatformInfo(platform, paramName, 0, null, size);
 
         // Create a buffer of the appropriate size and fill it with the info
         byte buffer[] = new byte[(int)size[0]];
-        clGetPlatformInfo(platform, paramName, buffer.length, Pointer.to(buffer), null);
+        CL.clGetPlatformInfo(platform, paramName, buffer.length, Pointer.to(buffer), null);
 
         // Create a string from the buffer (excluding the trailing \0 byte)
         return new String(buffer, 0, buffer.length-1);
@@ -272,11 +271,11 @@ class CLCore {
     private String getString(cl_device_id device, int paramName) {
         // Obtain the length of the string that will be queried
         long size[] = new long[1];
-        clGetDeviceInfo(device, paramName, 0, null, size);
+        CL.clGetDeviceInfo(device, paramName, 0, null, size);
 
         // Create a buffer of the appropriate size and fill it with the info
         byte buffer[] = new byte[(int) size[0]];
-        clGetDeviceInfo(device, paramName, buffer.length, Pointer.to(buffer), null);
+        CL.clGetDeviceInfo(device, paramName, buffer.length, Pointer.to(buffer), null);
 
         // Create a string from the buffer (excluding the trailing \0 byte)
         return new String(buffer, 0, buffer.length - 1);
@@ -287,29 +286,29 @@ class CLCore {
 
         boolean found = false;
         int numPlatformsPointer[] = new int[1];
-        clGetPlatformIDs(0, null, numPlatformsPointer);
+        CL.clGetPlatformIDs(0, null, numPlatformsPointer);
         int numPlatforms = numPlatformsPointer[0];
 
         cl_platform_id platforms[] = new cl_platform_id[numPlatforms];
-        clGetPlatformIDs(platforms.length, platforms, null);
+        CL.clGetPlatformIDs(platforms.length, platforms, null);
         long maxTheoreticalComputingPower = 0;
         for (cl_platform_id platform : platforms) {
 
             int numDevicesPointer[] = new int[1];
             try {
-                clGetDeviceIDs(platform, deviceType, 0, null, numDevicesPointer);
+            	CL.clGetDeviceIDs(platform, deviceType, 0, null, numDevicesPointer);
             } catch (CLException ex) {
                 numDevicesPointer[0] = 0;
             }
             int numDevices = numDevicesPointer[0];
             if (numDevices > 0) {
                 cl_device_id devices[] = new cl_device_id[numDevices];
-                clGetDeviceIDs(platform, deviceType, numDevices, devices, null);
+                CL.clGetDeviceIDs(platform, deviceType, numDevices, devices, null);
 
                 for (cl_device_id device : devices) {
 
-                    int maxComputeUnits = getInt(device, CL_DEVICE_MAX_COMPUTE_UNITS);
-                    long maxClockFrequency = getLong(device, CL_DEVICE_MAX_CLOCK_FREQUENCY);
+                    int maxComputeUnits = getInt(device, CL.CL_DEVICE_MAX_COMPUTE_UNITS);
+                    long maxClockFrequency = getLong(device, CL.CL_DEVICE_MAX_CLOCK_FREQUENCY);
 
                     long currentComputingPower = maxComputeUnits * maxClockFrequency;
                     if (maxTheoreticalComputingPower < currentComputingPower) {
@@ -337,7 +336,7 @@ class CLCore {
 
     private long[] getLongs(cl_device_id device, int paramName, int numValues) {
         long values[] = new long[numValues];
-        clGetDeviceInfo(device, paramName, Sizeof.cl_long * numValues, Pointer.to(values), null);
+        CL.clGetDeviceInfo(device, paramName, Sizeof.cl_long * numValues, Pointer.to(values), null);
         return values;
     }
 
@@ -348,7 +347,7 @@ class CLCore {
 
     private int[] getInts(cl_device_id device, int paramName, int numValues) {
         int values[] = new int[numValues];
-        clGetDeviceInfo(device, paramName, Sizeof.cl_int * numValues, Pointer.to(values), null);
+        CL.clGetDeviceInfo(device, paramName, Sizeof.cl_int * numValues, Pointer.to(values), null);
         return values;
     }
 
@@ -367,7 +366,7 @@ class CLCore {
         // the size of a size_t, which is handled here
         ByteBuffer buffer = ByteBuffer.allocate(
                 numValues * Sizeof.size_t).order(ByteOrder.nativeOrder());
-        clGetDeviceInfo(device, paramName, Sizeof.size_t * numValues,
+        CL.clGetDeviceInfo(device, paramName, Sizeof.size_t * numValues,
                 Pointer.to(buffer), null);
         long values[] = new long[numValues];
         if (Sizeof.size_t == 4) {
@@ -394,13 +393,9 @@ class CLCore {
         CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
-    public void loadFromGeneratedFunction(String functionName, String function) {
-        loadFromGeneratedFunction(functionName, function, true);
-    }
-
-    public void loadFromGeneratedFunction(String functionName, String function, boolean standardFunction) {
-        if (standardFunction) {
-            matrixKernelsSource.put(functionName, function);
+    public void loadFromGeneratedSubprogram(ASubprogram subprogram) {
+        if (subprogram.isStandardProgram()) {
+            matrixKernelsSource.put(subprogram.getProgramName(), subprogram);
         } else {
             // remove kernels to recompile;
             if (customProgram != null) {
@@ -410,7 +405,7 @@ class CLCore {
                 customProgram = null;
             }
             // get all kernels
-            customKernelsSource.put(functionName, function);
+            customKernelsSource.put(subprogram.getProgramName(), subprogram);
 
             StringBuilder builder = new StringBuilder();
             customKernelsSource.values().forEach(builder::append);
@@ -419,12 +414,12 @@ class CLCore {
             String programSource = builder.toString();
 
 
-            customProgram = clCreateProgramWithSource(context,
+            customProgram = CL.clCreateProgramWithSource(context,
                     1, new String[]{programSource}, null, null);
-            clBuildProgram(customProgram, 0, null, null, null, null);
+            CL.clBuildProgram(customProgram, 0, null, null, null, null);
 
             for (String kernelName : customKernelsSource.keySet()) {
-                customKernels.put(kernelName, clCreateKernel(customProgram, kernelName, null));
+                customKernels.put(kernelName, CL.clCreateKernel(customProgram, kernelName, null));
             }
         }
 
@@ -435,19 +430,23 @@ class CLCore {
 
         StringBuilder builder = new StringBuilder();
 
+        // lade alle Predefined Kernels
         for (String functionName : CLPredefined.kernels.keySet()) {
-            loadFromGeneratedFunction(functionName, CLPredefined.kernels.get(functionName));
+        	loadFromGeneratedSubprogram(CLPredefined.kernels.get(functionName));
         }
-        matrixKernelsSource.values().forEach(builder::append);
+        
+        // Verbinde den Sourcecode aller Kernels
+        for (ASubprogram subprogram : matrixKernelsSource.values()) {
+        	builder.append(subprogram.getSourceCode());
+		}
 
         // create program source from all custom kernels
         String programSource = builder.toString();
-        matrixProgram = clCreateProgramWithSource(context,
-                1, new String[]{programSource}, null, null);
-        clBuildProgram(matrixProgram, 0, null, null, null, null);
+        matrixProgram = CL.clCreateProgramWithSource(context, 1, new String[]{programSource}, null, null);
+        CL.clBuildProgram(matrixProgram, 0, null, null, null, null);
 
         for (String kernelName : matrixKernelsSource.keySet()) {
-            matrixKernels.put(kernelName, clCreateKernel(matrixProgram, kernelName, null));
+            matrixKernels.put(kernelName, CL.clCreateKernel(matrixProgram, kernelName, null));
         }
     }
 

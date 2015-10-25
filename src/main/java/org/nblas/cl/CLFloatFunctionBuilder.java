@@ -3,13 +3,14 @@ package org.nblas.cl;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.Context;
+import org.nblas.generic.ASubprogram;
 
 
 class CLFloatFunctionBuilder extends AFunctionBuilder {
 
 	protected Context context = Context.createOpenCLSinglePrecisionContext();
 	
-    protected String buildFunction(String function, ArgumentType[] args) {
+    protected ASubprogram buildFunction(String function, ArgumentType[] args) {
         StringBuilder builder = new StringBuilder();
         StringBuilder parameters = new StringBuilder();
         for (int i = 0; i < args.length; i++) {
@@ -27,7 +28,7 @@ class CLFloatFunctionBuilder extends AFunctionBuilder {
             parameters.append(", __global const float* arg" + String.format("%02d", i));
         }
 
-        functionName = generateFunctionName(function);
+        String functionName = generateFunctionName(function);
 
         builder.append("__kernel void " + functionName + "(");
         builder.append("__global float* result");
@@ -47,7 +48,7 @@ class CLFloatFunctionBuilder extends AFunctionBuilder {
         builder.append(";\n");
         builder.append("}\n");
 
-        return builder.toString();
+        return new ASubprogram(functionName, builder.toString(), false);
     }
 
     @Override

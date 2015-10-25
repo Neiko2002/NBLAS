@@ -4,6 +4,7 @@ package org.nblas.cl;
 import org.jblas.util.Random;
 import org.jocl.cl_mem;
 import org.nblas.generic.ANativeFloatMatrix;
+import org.nblas.generic.ASubprogram;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.common.Arg;
@@ -22,190 +23,181 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 
     private static final CLCore CORE = CLCore.getCore();
 
-    private static final String ADD_MATRIX;
-    private static final String ADD_SCALAR;
-    private static final String ADD_C_VECTOR;
-    private static final String ADD_R_VECTOR;
+    private static final ASubprogram ADD_MATRIX;
+    private static final ASubprogram ADD_SCALAR;
+    private static final ASubprogram ADD_C_VECTOR;
+    private static final ASubprogram ADD_R_VECTOR;
 
-    private static final String MUL_MATRIX;
-    private static final String MUL_SCALAR;
-    private static final String MUL_C_VECTOR;
-    private static final String MUL_R_VECTOR;
+    private static final ASubprogram MUL_MATRIX;
+    private static final ASubprogram MUL_SCALAR;
+    private static final ASubprogram MUL_C_VECTOR;
+    private static final ASubprogram MUL_R_VECTOR;
 
-    private static final String SUB_MATRIX;
-    private static final String SUB_SCALAR;
-    private static final String SUB_C_VECTOR;
-    private static final String SUB_R_VECTOR;
+    private static final ASubprogram SUB_MATRIX;
+    private static final ASubprogram SUB_SCALAR;
+    private static final ASubprogram SUB_C_VECTOR;
+    private static final ASubprogram SUB_R_VECTOR;
 
-    private static final String RSUB_SCALAR;
-    private static final String RSUB_C_VECTOR;
-    private static final String RSUB_R_VECTOR;
+    private static final ASubprogram RSUB_SCALAR;
+    private static final ASubprogram RSUB_C_VECTOR;
+    private static final ASubprogram RSUB_R_VECTOR;
 
-    private static final String DIV_MATRIX;
-    private static final String DIV_SCALAR;
-    private static final String DIV_C_VECTOR;
-    private static final String DIV_R_VECTOR;
+    private static final ASubprogram DIV_MATRIX;
+    private static final ASubprogram DIV_SCALAR;
+    private static final ASubprogram DIV_C_VECTOR;
+    private static final ASubprogram DIV_R_VECTOR;
 
-    private static final String RDIV_SCALAR;
-    private static final String RDIV_C_VECTOR;
-    private static final String RDIV_R_VECTOR;
+    private static final ASubprogram RDIV_SCALAR;
+    private static final ASubprogram RDIV_C_VECTOR;
+    private static final ASubprogram RDIV_R_VECTOR;
 
-    private static final String SET_ONE;
-    private static final String COPY_MATRIX;
+    private static final ASubprogram SET_ONE;
+    private static final ASubprogram COPY_MATRIX;
     
     // greater than
-    private static final String GT_MATRIX;
-    private static final String GT_SCALAR;
-    private static final String GT_C_VECTOR;
-    private static final String GT_R_VECTOR;
+    private static final ASubprogram GT_MATRIX;
+    private static final ASubprogram GT_SCALAR;
+    private static final ASubprogram GT_C_VECTOR;
+    private static final ASubprogram GT_R_VECTOR;
     
     // greater than or equal
-    private static final String GE_MATRIX;
-    private static final String GE_SCALAR;
-    private static final String GE_C_VECTOR;
-    private static final String GE_R_VECTOR;
+    private static final ASubprogram GE_MATRIX;
+    private static final ASubprogram GE_SCALAR;
+    private static final ASubprogram GE_C_VECTOR;
+    private static final ASubprogram GE_R_VECTOR;
     
     // lower than
-    private static final String LT_MATRIX;
-    private static final String LT_SCALAR;
-    private static final String LT_C_VECTOR;
-    private static final String LT_R_VECTOR;
+    private static final ASubprogram LT_MATRIX;
+    private static final ASubprogram LT_SCALAR;
+    private static final ASubprogram LT_C_VECTOR;
+    private static final ASubprogram LT_R_VECTOR;
     
     // lower than or equal
-    private static final String LE_MATRIX;
-    private static final String LE_SCALAR;
-    private static final String LE_C_VECTOR;
-    private static final String LE_R_VECTOR;
+    private static final ASubprogram LE_MATRIX;
+    private static final ASubprogram LE_SCALAR;
+    private static final ASubprogram LE_C_VECTOR;
+    private static final ASubprogram LE_R_VECTOR;
     
     // equal
-    private static final String EQ_MATRIX;
-    private static final String EQ_SCALAR;
-    private static final String EQ_C_VECTOR;
-    private static final String EQ_R_VECTOR;
+    private static final ASubprogram EQ_MATRIX;
+    private static final ASubprogram EQ_SCALAR;
+    private static final ASubprogram EQ_C_VECTOR;
+    private static final ASubprogram EQ_R_VECTOR;
     
     // not equal
-    private static final String NE_MATRIX;
-    private static final String NE_SCALAR;
-    private static final String NE_C_VECTOR;
-    private static final String NE_R_VECTOR;
+    private static final ASubprogram NE_MATRIX;
+    private static final ASubprogram NE_SCALAR;
+    private static final ASubprogram NE_C_VECTOR;
+    private static final ASubprogram NE_R_VECTOR;
 
     static {
         CLFloatFunctionBuilder builder = new CLFloatFunctionBuilder();
         // add Functions
         AFunctionObject add = new Add(new Arg(0), new Arg(1));
 
-        ADD_MATRIX = buildPredefinedFunction(builder, add, ArgumentType.MATRIX);
-        ADD_SCALAR = buildPredefinedFunction(builder, add, ArgumentType.SCALAR);
-        ADD_R_VECTOR = buildPredefinedFunction(builder, add, ArgumentType.ROW_VECTOR);
-        ADD_C_VECTOR = buildPredefinedFunction(builder, add, ArgumentType.COLUMN_VECTOR);
+        ADD_MATRIX = buildPredefinedFunction(builder, add, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        ADD_SCALAR = buildPredefinedFunction(builder, add, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        ADD_R_VECTOR = buildPredefinedFunction(builder, add, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        ADD_C_VECTOR = buildPredefinedFunction(builder, add, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
 
         AFunctionObject mul = new Mul(new Arg(0), new Arg(1));
 
-        MUL_MATRIX = buildPredefinedFunction(builder, mul, ArgumentType.MATRIX);
-        MUL_SCALAR = buildPredefinedFunction(builder, mul, ArgumentType.SCALAR);
-        MUL_R_VECTOR = buildPredefinedFunction(builder, mul, ArgumentType.ROW_VECTOR);
-        MUL_C_VECTOR = buildPredefinedFunction(builder, mul, ArgumentType.COLUMN_VECTOR);
+        MUL_MATRIX = buildPredefinedFunction(builder, mul, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        MUL_SCALAR = buildPredefinedFunction(builder, mul, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        MUL_R_VECTOR = buildPredefinedFunction(builder, mul, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        MUL_C_VECTOR = buildPredefinedFunction(builder, mul, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
 
         AFunctionObject sub = new Sub(new Arg(0), new Arg(1));
 
-        SUB_MATRIX = buildPredefinedFunction(builder, sub, ArgumentType.MATRIX);
-        SUB_SCALAR = buildPredefinedFunction(builder, sub, ArgumentType.SCALAR);
-        SUB_R_VECTOR = buildPredefinedFunction(builder, sub, ArgumentType.ROW_VECTOR);
-        SUB_C_VECTOR = buildPredefinedFunction(builder, sub, ArgumentType.COLUMN_VECTOR);
+        SUB_MATRIX = buildPredefinedFunction(builder, sub, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        SUB_SCALAR = buildPredefinedFunction(builder, sub, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        SUB_R_VECTOR = buildPredefinedFunction(builder, sub, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        SUB_C_VECTOR = buildPredefinedFunction(builder, sub, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
 
         AFunctionObject rsub = new Sub(new Arg(1), new Arg(0));
 
-        RSUB_SCALAR = buildPredefinedFunction(builder, rsub, ArgumentType.SCALAR);
-        RSUB_R_VECTOR = buildPredefinedFunction(builder, rsub, ArgumentType.ROW_VECTOR);
-        RSUB_C_VECTOR = buildPredefinedFunction(builder, rsub, ArgumentType.COLUMN_VECTOR);
+        RSUB_SCALAR = buildPredefinedFunction(builder, rsub, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        RSUB_R_VECTOR = buildPredefinedFunction(builder, rsub, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        RSUB_C_VECTOR = buildPredefinedFunction(builder, rsub, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
 
         AFunctionObject div = new Div(new Arg(0), new Arg(1));
 
-        DIV_MATRIX = buildPredefinedFunction(builder, div, ArgumentType.MATRIX);
-        DIV_SCALAR = buildPredefinedFunction(builder, div, ArgumentType.SCALAR);
-        DIV_R_VECTOR = buildPredefinedFunction(builder, div, ArgumentType.ROW_VECTOR);
-        DIV_C_VECTOR = buildPredefinedFunction(builder, div, ArgumentType.COLUMN_VECTOR);
+        DIV_MATRIX = buildPredefinedFunction(builder, div, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        DIV_SCALAR = buildPredefinedFunction(builder, div, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        DIV_R_VECTOR = buildPredefinedFunction(builder, div, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        DIV_C_VECTOR = buildPredefinedFunction(builder, div, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
 
         AFunctionObject rdiv = new Div(new Arg(1), new Arg(0));
 
-        RDIV_SCALAR = buildPredefinedFunction(builder, rdiv, ArgumentType.SCALAR);
-        RDIV_R_VECTOR = buildPredefinedFunction(builder, rdiv, ArgumentType.ROW_VECTOR);
-        RDIV_C_VECTOR = buildPredefinedFunction(builder, rdiv, ArgumentType.COLUMN_VECTOR);
+        RDIV_SCALAR = buildPredefinedFunction(builder, rdiv, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        RDIV_R_VECTOR = buildPredefinedFunction(builder, rdiv, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        RDIV_C_VECTOR = buildPredefinedFunction(builder, rdiv, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
         
         AFunctionObject greaterThan = new Comparator(">", new Arg(0), new Arg(1));
         
-        GT_MATRIX = buildPredefinedFunction(builder, greaterThan, ArgumentType.MATRIX);
-        GT_SCALAR = buildPredefinedFunction(builder, greaterThan, ArgumentType.SCALAR);
-        GT_R_VECTOR = buildPredefinedFunction(builder, greaterThan, ArgumentType.ROW_VECTOR);
-        GT_C_VECTOR = buildPredefinedFunction(builder, greaterThan, ArgumentType.COLUMN_VECTOR);                
+        GT_MATRIX = buildPredefinedFunction(builder, greaterThan, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        GT_SCALAR = buildPredefinedFunction(builder, greaterThan, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        GT_R_VECTOR = buildPredefinedFunction(builder, greaterThan, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        GT_C_VECTOR = buildPredefinedFunction(builder, greaterThan, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);                
         
         AFunctionObject greaterEqual = new Comparator(">=", new Arg(0), new Arg(1));
         
-        GE_MATRIX = buildPredefinedFunction(builder, greaterEqual, ArgumentType.MATRIX);
-        GE_SCALAR = buildPredefinedFunction(builder, greaterEqual, ArgumentType.SCALAR);
-        GE_R_VECTOR = buildPredefinedFunction(builder, greaterEqual, ArgumentType.ROW_VECTOR);
-        GE_C_VECTOR = buildPredefinedFunction(builder, greaterEqual, ArgumentType.COLUMN_VECTOR);
+        GE_MATRIX = buildPredefinedFunction(builder, greaterEqual, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        GE_SCALAR = buildPredefinedFunction(builder, greaterEqual, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        GE_R_VECTOR = buildPredefinedFunction(builder, greaterEqual, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        GE_C_VECTOR = buildPredefinedFunction(builder, greaterEqual, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
         
         AFunctionObject lowerThan = new Comparator("<", new Arg(0), new Arg(1));
         
-        LT_MATRIX = buildPredefinedFunction(builder, lowerThan, ArgumentType.MATRIX);
-        LT_SCALAR = buildPredefinedFunction(builder, lowerThan, ArgumentType.SCALAR);
-        LT_R_VECTOR = buildPredefinedFunction(builder, lowerThan, ArgumentType.ROW_VECTOR);
-        LT_C_VECTOR = buildPredefinedFunction(builder, lowerThan, ArgumentType.COLUMN_VECTOR);                
+        LT_MATRIX = buildPredefinedFunction(builder, lowerThan, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        LT_SCALAR = buildPredefinedFunction(builder, lowerThan, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        LT_R_VECTOR = buildPredefinedFunction(builder, lowerThan, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        LT_C_VECTOR = buildPredefinedFunction(builder, lowerThan, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);                
         
         AFunctionObject lowerEqual = new Comparator("<=", new Arg(0), new Arg(1));
         
-        LE_MATRIX = buildPredefinedFunction(builder, lowerEqual, ArgumentType.MATRIX);
-        LE_SCALAR = buildPredefinedFunction(builder, lowerEqual, ArgumentType.SCALAR);
-        LE_R_VECTOR = buildPredefinedFunction(builder, lowerEqual, ArgumentType.ROW_VECTOR);
-        LE_C_VECTOR = buildPredefinedFunction(builder, lowerEqual, ArgumentType.COLUMN_VECTOR);
+        LE_MATRIX = buildPredefinedFunction(builder, lowerEqual, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        LE_SCALAR = buildPredefinedFunction(builder, lowerEqual, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        LE_R_VECTOR = buildPredefinedFunction(builder, lowerEqual, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        LE_C_VECTOR = buildPredefinedFunction(builder, lowerEqual, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
         
         AFunctionObject equal = new Comparator("==", new Arg(0), new Arg(1));
         
-        EQ_MATRIX = buildPredefinedFunction(builder, equal, ArgumentType.MATRIX);
-        EQ_SCALAR = buildPredefinedFunction(builder, equal, ArgumentType.SCALAR);
-        EQ_R_VECTOR = buildPredefinedFunction(builder, equal, ArgumentType.ROW_VECTOR);
-        EQ_C_VECTOR = buildPredefinedFunction(builder, equal, ArgumentType.COLUMN_VECTOR);                
+        EQ_MATRIX = buildPredefinedFunction(builder, equal, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        EQ_SCALAR = buildPredefinedFunction(builder, equal, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        EQ_R_VECTOR = buildPredefinedFunction(builder, equal, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        EQ_C_VECTOR = buildPredefinedFunction(builder, equal, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);                
         
         AFunctionObject notEqual = new Comparator("!=", new Arg(0), new Arg(1));
         
-        NE_MATRIX = buildPredefinedFunction(builder, notEqual, ArgumentType.MATRIX);
-        NE_SCALAR = buildPredefinedFunction(builder, notEqual, ArgumentType.SCALAR);
-        NE_R_VECTOR = buildPredefinedFunction(builder, notEqual, ArgumentType.ROW_VECTOR);
-        NE_C_VECTOR = buildPredefinedFunction(builder, notEqual, ArgumentType.COLUMN_VECTOR);
+        NE_MATRIX = buildPredefinedFunction(builder, notEqual, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        NE_SCALAR = buildPredefinedFunction(builder, notEqual, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        NE_R_VECTOR = buildPredefinedFunction(builder, notEqual, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        NE_C_VECTOR = buildPredefinedFunction(builder, notEqual, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
         
         AFunctionObject one = new Value(1.0);
 
-        String function = builder.buildFunction(one);
-        SET_ONE = builder.getFunctionName();
-        CORE.loadFromGeneratedFunction(SET_ONE, function);
-
-
+        SET_ONE = buildPredefinedFunction(builder, one);
+        
         AFunctionObject copy = new Arg(0);
-        COPY_MATRIX = buildPredefinedFunctionSingle(builder, copy, ArgumentType.MATRIX);
+        
+        COPY_MATRIX = buildPredefinedFunction(builder, copy, ArgumentType.MATRIX);
 
+        
         CORE.compileMatrixFunctions();
-
     }
 
-    private static String buildPredefinedFunctionSingle(AFunctionBuilder builder, AFunctionObject functionObject, ArgumentType argumentType) {
-        String function = builder.buildFunction(functionObject, argumentType);
-        String functionName = builder.getFunctionName();
-        CORE.loadFromGeneratedFunction(functionName, function);
-        return functionName;
-    }
-
-    private static String buildPredefinedFunction(AFunctionBuilder builder, AFunctionObject functionObject, ArgumentType argumentType) {
-        String function = builder.buildFunction(functionObject, ArgumentType.MATRIX, argumentType);
-        String functionName = builder.getFunctionName();
-        CORE.loadFromGeneratedFunction(functionName, function);
-        return functionName;
+    private static ASubprogram buildPredefinedFunction(AFunctionBuilder builder, AFunctionObject functionObject, ArgumentType... argumentTypes) {
+    	ASubprogram subprogram = builder.buildFunction(functionObject, argumentTypes);
+    	subprogram.setStandardProgram(true);
+        CORE.loadFromGeneratedSubprogram(subprogram);
+        return subprogram;
     }
 
     private cl_mem dataPointer;
@@ -286,7 +278,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 
 
     public void setOne() {
-        CORE.execute(SET_ONE, this.clRows, this.clColumns, this.rows, this.columns, dataPointer);
+        CORE.execute(SET_ONE.getProgramName(), this.clRows, this.clColumns, this.rows, this.columns, dataPointer);
     }
 
     public void setZero() {
@@ -625,9 +617,9 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
      * @param b
      * @param result
      */
-	protected static void runMatrixMatrixElementWiseOperation(String programId, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
+	protected static void runMatrixMatrixElementWiseOperation(ASubprogram subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
 		checkSameSize(a, b, result);
-        CORE.execute(programId, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+        CORE.execute(subprogram.getProgramName(), a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
 	}
 	
 	/**
@@ -639,9 +631,9 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 	 * @param scalar
 	 * @param result
 	 */
-	protected static void runMatrixScalarElementWiseOperation(String programId, CLFloatMatrix a, float scalar, CLFloatMatrix result) {
+	protected static void runMatrixScalarElementWiseOperation(ASubprogram subprogram, CLFloatMatrix a, float scalar, CLFloatMatrix result) {
 	    CLFloatMatrix b = new CLFloatMatrix(1, 1, scalar);
-        CORE.execute(programId, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+        CORE.execute(subprogram.getProgramName(), a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
         b.free();
 	}
 	
@@ -654,9 +646,9 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 	 * @param row vector
 	 * @param result
 	 */
-	protected static void runMatrixRowVectorElementWiseOperation(String programId, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
+	protected static void runMatrixRowVectorElementWiseOperation(ASubprogram subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
         checkRowVectorSize(a, b, result);
-        CORE.execute(programId, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+        CORE.execute(subprogram.getProgramName(), a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
 	}	
 	
 	
@@ -669,9 +661,9 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 	 * @param column vector
 	 * @param result
 	 */
-	protected static void runMatrixColumnVectorElementWiseOperation(String programId, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
+	protected static void runMatrixColumnVectorElementWiseOperation(ASubprogram subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
 		checkColumnVectorSize(a, b, result);
-		CORE.execute(programId, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+		CORE.execute(subprogram.getProgramName(), a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
 	}	
 
    

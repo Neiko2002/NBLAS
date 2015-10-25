@@ -2,6 +2,8 @@ package org.nblas.cl;
 
 import java.util.HashMap;
 
+import org.nblas.generic.ASubprogram;
+
 /**
  * Created by Moritz on 7/7/2015.
  */
@@ -298,83 +300,83 @@ class CLPredefined {
             "    c[gid1 * M + gid0] = result;\n" +
             "}";
 
-    public static final HashMap<String, String> kernels;
+    public static final HashMap<String, ASubprogram> kernels;
 
     static {
         kernels = new HashMap<>();
-        kernels.put("auniform", uniform);
-        kernels.put("boxmuller", boxmuller);
-        kernels.put("copy1D", copy1D);
-        kernels.put("transpose", transpose);
-        kernels.put("setZero", setZero);
-        kernels.put("sgemm_nn", sgemm_nn);
-        kernels.put("sgemm_nt", sgemm_nt);
-        kernels.put("sgemm_tn", sgemm_tn);
+        kernels.put("auniform", new ASubprogram("auniform", uniform, true));
+        kernels.put("boxmuller", new ASubprogram("boxmuller", boxmuller, true));
+        kernels.put("copy1D", new ASubprogram("copy1D", copy1D, true));
+        kernels.put("transpose", new ASubprogram("transpose", transpose, true));
+        kernels.put("setZero", new ASubprogram("setZero", setZero, true));
+        kernels.put("sgemm_nn", new ASubprogram("sgemm_nn", sgemm_nn, true));
+        kernels.put("sgemm_nt", new ASubprogram("sgemm_nt", sgemm_nt, true));
+        kernels.put("sgemm_tn", new ASubprogram("sgemm_tn", sgemm_tn, true));
         String[] sum = {"sumFloats",
                 "\t\tshared[sIndex] += inputData[gid1 * get_global_size(0) + gid0];\n",
                 "\t\tshared[sIndex] += shared[sIndex + s];\n"};
-        kernels.put(sum[0], buildReductionKernel(sum, reductionFloats));
+        kernels.put(sum[0], new ASubprogram(sum[0], buildReductionKernel(sum, reductionFloats), true));
 
         String[] product = {"productFloats",
                 "\t\tshared[sIndex] *= inputData[gid1 * get_global_size(0) + gid0];\n",
                 "\t\tshared[sIndex] *= shared[sIndex + s];\n"};
-        kernels.put(product[0], buildReductionKernel(product, reductionFloats));
+        kernels.put(product[0], new ASubprogram(product[0], buildReductionKernel(product, reductionFloats), true));
 
         String[] max = {"maxFloats",
                 "\t\tshared[sIndex] = max(shared[sIndex], inputData[gid1 * get_global_size(0) + gid0]);\n",
                 "\t\t\tshared[sIndex] = max(shared[sIndex], shared[sIndex + s]);\n"};
-        kernels.put(max[0], buildReductionKernel(max, reductionFloats));
+        kernels.put(max[0], new ASubprogram(max[0], buildReductionKernel(max, reductionFloats), true));
 
         String[] min = {"minFloats",
                 "\t\tshared[sIndex] = min(shared[sIndex], inputData[gid1 * get_global_size(0) + gid0]);\n",
                 "\t\t\tshared[sIndex] = min(shared[sIndex], shared[sIndex + s]);\n"};
-        kernels.put(min[0], buildReductionKernel(min, reductionFloats));
+        kernels.put(min[0], new ASubprogram(min[0], buildReductionKernel(min, reductionFloats), true));
 
         String[] columnSums = {"columnSumsFloats",
                 "\t\tshared[sIndex] += inputData[gid1 * get_global_size(0) + gid0];\n",
                 "\t\t\tshared[id] += shared[id + s];\n"};
-        kernels.put(columnSums[0], buildReductionKernel(columnSums, reductionColumnFloats));
+        kernels.put(columnSums[0], new ASubprogram(columnSums[0], buildReductionKernel(columnSums, reductionColumnFloats), true));
 
         String[] columnProducts = {"columnProductsFloats",
                 "\t\tshared[sIndex] *= inputData[gid1 * get_global_size(0) + gid0];\n",
                 "\t\t\tshared[id] *= shared[id + s];\n"};
-        kernels.put(columnProducts[0], buildReductionKernel(columnProducts, reductionColumnFloats));
+        kernels.put(columnProducts[0], new ASubprogram(columnProducts[0], buildReductionKernel(columnProducts, reductionColumnFloats), true));
 
         String[] columnMaxs = {"columnMaxsFloats",
                 "\t\tshared[sIndex] = max(shared[sIndex], inputData[gid1 * get_global_size(0) + gid0]);\n",
                 "\t\t\tshared[id] = max(shared[id], shared[id + s]);\n"};
-        kernels.put(columnMaxs[0], buildReductionKernel(columnMaxs, reductionColumnFloats));
+        kernels.put(columnMaxs[0], new ASubprogram(columnMaxs[0], buildReductionKernel(columnMaxs, reductionColumnFloats), true));
 
         String[] columnMins = {"columnMinsFloats",
                 "\t\tshared[sIndex] = min(shared[sIndex], inputData[gid1 * get_global_size(0) + gid0]);\n",
                 "\t\t\tshared[id] = min(shared[id], shared[id + s]);\n"};
-        kernels.put(columnMins[0], buildReductionKernel(columnMins, reductionColumnFloats));
+        kernels.put(columnMins[0], new ASubprogram(columnMins[0], buildReductionKernel(columnMins, reductionColumnFloats), true));
 
         String[] rowSums = {"rowSumsFloats",
                 "\t\tshared[sIndex] += inputData[gid1 * get_global_size(0) + gid0];\n",
                 "\t\t\tshared[tid1 * get_local_size(0) + tid0] += shared[(tid1 + s) * get_local_size(0) + tid0];\n"
         };
-        kernels.put(rowSums[0], buildReductionKernel(rowSums, reductionRowFloats));
+        kernels.put(rowSums[0], new ASubprogram(rowSums[0], buildReductionKernel(rowSums, reductionRowFloats), true));
 
         String[] rowProducts = {"rowProductsFloats",
                 "\t\tshared[sIndex] *= inputData[gid1 * get_global_size(0) + gid0];\n",
                 "\t\t\tshared[tid1 * get_local_size(0) + tid0] *= shared[(tid1 + s) * get_local_size(0) + tid0];\n"
         };
-        kernels.put(rowProducts[0], buildReductionKernel(rowProducts, reductionRowFloats));
+        kernels.put(rowProducts[0], new ASubprogram(rowProducts[0], buildReductionKernel(rowProducts, reductionRowFloats), true));
 
         String[] rowMaxs = {"rowMaxsFloats",
                 "\t\tshared[sIndex] = max(shared[sIndex], inputData[gid1 * get_global_size(0) + gid0]);\n",
                 "\t\t\tunsigned int sharedIndex = tid1 * get_local_size(0) + tid0;\n" +
                         "\t\t\tshared[sharedIndex] = max(shared[sharedIndex], shared[(tid1 + s) * get_local_size(0) + tid0]);\n"
         };
-        kernels.put(rowMaxs[0], buildReductionKernel(rowMaxs, reductionRowFloats));
+        kernels.put(rowMaxs[0], new ASubprogram(rowMaxs[0], buildReductionKernel(rowMaxs, reductionRowFloats), true));
 
         String[] rowMins = {"rowMinsFloats",
                 "\t\tshared[sIndex] = min(shared[sIndex], inputData[gid1 * get_global_size(0) + gid0]);\n",
                 "\t\t\tunsigned int sharedIndex = tid1 * get_local_size(0) + tid0;\n" +
                         "\t\t\tshared[sharedIndex] = min(shared[sharedIndex], shared[(tid1 + s) * get_local_size(0) + tid0]);\n"
         };
-        kernels.put(rowMins[0], buildReductionKernel(rowMins, reductionRowFloats));
+        kernels.put(rowMins[0], new ASubprogram(rowMins[0], buildReductionKernel(rowMins, reductionRowFloats), true));
 
     }
 

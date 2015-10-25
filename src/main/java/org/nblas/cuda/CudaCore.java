@@ -26,8 +26,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import org.nblas.generic.ASubprogram;
 
 import jcuda.Pointer;
 import jcuda.Sizeof;
@@ -99,14 +104,10 @@ class CudaCore {
 
         JCusolver.initialize();
 
-        loadFromGeneratedFunction("copy1D", CudaPredefined.kernels.get("copy1D"));
-        loadFromGeneratedFunction("transpose", CudaPredefined.kernels.get("transpose"));
-        loadFunction("getsub", "cuda/getsub.cu");
-        loadFunction("setsub", "cuda/setsub.cu");
-
-        for (String name : CudaPredefined.kernels.keySet()) {
-            loadFromGeneratedFunction(name, CudaPredefined.kernels.get(name));
-        }
+        loadFromGeneratedFunction(CudaPredefined.kernels.get("copy1D"));
+        loadFromGeneratedFunction(CudaPredefined.kernels.get("transpose"));
+        loadFunction("getsub", Paths.get("cuda/getsub.cu"));
+        loadFunction("setsub", Paths.get("cuda/setsub.cu"));
     }
 
     public void execute(String functionName, int rows, int columns, Pointer result, Pointer... args) {
@@ -354,18 +355,23 @@ class CudaCore {
     }
 
 
-    public void loadFromGeneratedFunction(String functionName, String function) {
-        String path = "c:\\temp\\" + functionName + ".cu";
+    public void loadFromGeneratedFunction(ASubprogram subprogram) {    	
+    	try {
 
-        try (PrintWriter out = new PrintWriter(path)) {
-            out.write(function);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        loadFunction(functionName, path);
+    		Path cuFilePath = Files.createTempFile(subprogram.getProgramName(), ".cu");
+    		
+    		try(PrintWriter out = new PrintWriter(cuFilePath.toFile())) {
+    			out.write(subprogram.getSourceCode());
+    		} 
+    		
+    		loadFunction(subprogram.getProgramName(), cuFilePath);
+    		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
     }
 
-    public void loadFunction(String name, String cuFilePath) {
+    public void loadFunction(String name, Path cuFilePath) {
 
         try {
             String ptxFileName = compilePtxFile(cuFilePath);
@@ -382,7 +388,9 @@ class CudaCore {
         }
     }
 
-    private String compilePtxFile(String cuFileName) throws IOException {
+    private String compilePtxFile(Path cuFile) throws IOException {
+    	
+    	String cuFileName = cuFile.getFileName().toString();
         int endIndex = cuFileName.lastIndexOf('.');
         if (endIndex == -1) {
             endIndex = cuFileName.length() - 1;
@@ -393,22 +401,19 @@ class CudaCore {
             return ptxFileName;
         }
 
-        File cuFile = new File(cuFileName);
-        if (!cuFile.exists()) {
+        if (Files.exists(cuFile) == false) {
             throw new IOException("Input file not found: " + cuFileName);
         }
+        
         String modelString = "-m" + System.getProperty("sun.arch.data.model");
-        String command =
-                "nvcc " + modelString + " -ptx " +
-                        cuFile.getPath() + " -o " + ptxFileName;
+        String command = "nvcc " + modelString + " -ptx " + cuFile.toString() + " -o " + ptxFileName;
 
         System.out.println("Executing\n" + command);
         Process process = Runtime.getRuntime().exec(command);
 
-        String errorMessage =
-                new String(toByteArray(process.getErrorStream()));
-        String outputMessage =
-                new String(toByteArray(process.getInputStream()));
+        String errorMessage = new String(toByteArray(process.getErrorStream()));
+        String outputMessage = new String(toByteArray(process.getInputStream()));
+        
         int exitValue = 0;
         try {
             exitValue = process.waitFor();
