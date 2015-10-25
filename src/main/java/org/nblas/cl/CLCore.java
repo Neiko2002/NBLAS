@@ -24,7 +24,6 @@ class CLCore {
     private cl_device_id device;
     private cl_context context;
     private cl_command_queue commandQueue;
-    private CLBLAS clblas;
     private cl_program matrixProgram;
     private cl_program customProgram = null;
     private HashMap<String, cl_kernel> matrixKernels;
