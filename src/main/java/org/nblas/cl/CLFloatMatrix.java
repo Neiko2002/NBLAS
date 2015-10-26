@@ -283,7 +283,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
     }
 
     public void setZero() {
-        CORE.execute(CLPredefined.kernels.get("setZero"), this.clRows, this.clColumns, dataPointer);
+        CORE.execute(CLPredefined.getSubprogram("setZero"), this.clRows, this.clColumns, dataPointer);
     }
     
     

@@ -1,6 +1,8 @@
 package org.nblas.cl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.jocl.cl_kernel;
 import org.nblas.generic.Subprogram;
@@ -301,84 +303,100 @@ class CLPredefined {
             "    c[gid1 * M + gid0] = result;\n" +
             "}";
 
-    public static final HashMap<String, Subprogram<cl_kernel>> kernels;
+    private static final List<Subprogram<cl_kernel>> subprograms;
+    private static final HashMap<String, Subprogram<cl_kernel>> nameToSubprogramMap;
 
     static {
-        kernels = new HashMap<>();
-        kernels.put("auniform", new Subprogram<cl_kernel>("auniform", uniform, false));
-        kernels.put("boxmuller", new Subprogram<cl_kernel>("boxmuller", boxmuller, false));
-        kernels.put("copy1D", new Subprogram<cl_kernel>("copy1D", copy1D, false));
-        kernels.put("transpose", new Subprogram<cl_kernel>("transpose", transpose, false));
-        kernels.put("setZero", new Subprogram<cl_kernel>("setZero", setZero, false));
-        kernels.put("sgemm_nn", new Subprogram<cl_kernel>("sgemm_nn", sgemm_nn, false));
-        kernels.put("sgemm_nt", new Subprogram<cl_kernel>("sgemm_nt", sgemm_nt, false));
-        kernels.put("sgemm_tn", new Subprogram<cl_kernel>("sgemm_tn", sgemm_tn, false));
+        subprograms = new ArrayList<>();
+        nameToSubprogramMap = new HashMap<>();
+        
+        addSubprogram(new Subprogram<cl_kernel>("auniform", uniform, false));
+        addSubprogram(new Subprogram<cl_kernel>("boxmuller", boxmuller, false));
+        addSubprogram(new Subprogram<cl_kernel>("copy1D", copy1D, false));
+        addSubprogram(new Subprogram<cl_kernel>("transpose", transpose, false));
+        addSubprogram(new Subprogram<cl_kernel>("setZero", setZero, false));
+        addSubprogram(new Subprogram<cl_kernel>("sgemm_nn", sgemm_nn, false));
+        addSubprogram(new Subprogram<cl_kernel>("sgemm_nt", sgemm_nt, false));
+        addSubprogram(new Subprogram<cl_kernel>("sgemm_tn", sgemm_tn, false));
         String[] sum = {"sumFloats",
                 "\t\tshared[sIndex] += inputData[gid1 * get_global_size(0) + gid0];\n",
                 "\t\tshared[sIndex] += shared[sIndex + s];\n"};
-        kernels.put(sum[0], new Subprogram<cl_kernel>(sum[0], buildReductionKernel(sum, reductionFloats), false));
+        addSubprogram(new Subprogram<cl_kernel>(sum[0], buildReductionKernel(sum, reductionFloats), false));
 
         String[] product = {"productFloats",
                 "\t\tshared[sIndex] *= inputData[gid1 * get_global_size(0) + gid0];\n",
                 "\t\tshared[sIndex] *= shared[sIndex + s];\n"};
-        kernels.put(product[0], new Subprogram<cl_kernel>(product[0], buildReductionKernel(product, reductionFloats), false));
+        addSubprogram(new Subprogram<cl_kernel>(product[0], buildReductionKernel(product, reductionFloats), false));
 
         String[] max = {"maxFloats",
                 "\t\tshared[sIndex] = max(shared[sIndex], inputData[gid1 * get_global_size(0) + gid0]);\n",
                 "\t\t\tshared[sIndex] = max(shared[sIndex], shared[sIndex + s]);\n"};
-        kernels.put(max[0], new Subprogram<cl_kernel>(max[0], buildReductionKernel(max, reductionFloats), false));
+        addSubprogram(new Subprogram<cl_kernel>(max[0], buildReductionKernel(max, reductionFloats), false));
 
         String[] min = {"minFloats",
                 "\t\tshared[sIndex] = min(shared[sIndex], inputData[gid1 * get_global_size(0) + gid0]);\n",
                 "\t\t\tshared[sIndex] = min(shared[sIndex], shared[sIndex + s]);\n"};
-        kernels.put(min[0], new Subprogram<cl_kernel>(min[0], buildReductionKernel(min, reductionFloats), false));
+        addSubprogram(new Subprogram<cl_kernel>(min[0], buildReductionKernel(min, reductionFloats), false));
 
         String[] columnSums = {"columnSumsFloats",
                 "\t\tshared[sIndex] += inputData[gid1 * get_global_size(0) + gid0];\n",
                 "\t\t\tshared[id] += shared[id + s];\n"};
-        kernels.put(columnSums[0], new Subprogram<cl_kernel>(columnSums[0], buildReductionKernel(columnSums, reductionColumnFloats), false));
+        addSubprogram(new Subprogram<cl_kernel>(columnSums[0], buildReductionKernel(columnSums, reductionColumnFloats), false));
 
         String[] columnProducts = {"columnProductsFloats",
                 "\t\tshared[sIndex] *= inputData[gid1 * get_global_size(0) + gid0];\n",
                 "\t\t\tshared[id] *= shared[id + s];\n"};
-        kernels.put(columnProducts[0], new Subprogram<cl_kernel>(columnProducts[0], buildReductionKernel(columnProducts, reductionColumnFloats), false));
+        addSubprogram(new Subprogram<cl_kernel>(columnProducts[0], buildReductionKernel(columnProducts, reductionColumnFloats), false));
 
         String[] columnMaxs = {"columnMaxsFloats",
                 "\t\tshared[sIndex] = max(shared[sIndex], inputData[gid1 * get_global_size(0) + gid0]);\n",
                 "\t\t\tshared[id] = max(shared[id], shared[id + s]);\n"};
-        kernels.put(columnMaxs[0], new Subprogram<cl_kernel>(columnMaxs[0], buildReductionKernel(columnMaxs, reductionColumnFloats), false));
+        addSubprogram(new Subprogram<cl_kernel>(columnMaxs[0], buildReductionKernel(columnMaxs, reductionColumnFloats), false));
 
         String[] columnMins = {"columnMinsFloats",
                 "\t\tshared[sIndex] = min(shared[sIndex], inputData[gid1 * get_global_size(0) + gid0]);\n",
                 "\t\t\tshared[id] = min(shared[id], shared[id + s]);\n"};
-        kernels.put(columnMins[0], new Subprogram<cl_kernel>(columnMins[0], buildReductionKernel(columnMins, reductionColumnFloats), false));
+        addSubprogram(new Subprogram<cl_kernel>(columnMins[0], buildReductionKernel(columnMins, reductionColumnFloats), false));
 
         String[] rowSums = {"rowSumsFloats",
                 "\t\tshared[sIndex] += inputData[gid1 * get_global_size(0) + gid0];\n",
                 "\t\t\tshared[tid1 * get_local_size(0) + tid0] += shared[(tid1 + s) * get_local_size(0) + tid0];\n"
         };
-        kernels.put(rowSums[0], new Subprogram<cl_kernel>(rowSums[0], buildReductionKernel(rowSums, reductionRowFloats), false));
+        addSubprogram(new Subprogram<cl_kernel>(rowSums[0], buildReductionKernel(rowSums, reductionRowFloats), false));
 
         String[] rowProducts = {"rowProductsFloats",
                 "\t\tshared[sIndex] *= inputData[gid1 * get_global_size(0) + gid0];\n",
                 "\t\t\tshared[tid1 * get_local_size(0) + tid0] *= shared[(tid1 + s) * get_local_size(0) + tid0];\n"
         };
-        kernels.put(rowProducts[0], new Subprogram<cl_kernel>(rowProducts[0], buildReductionKernel(rowProducts, reductionRowFloats), false));
+        addSubprogram( new Subprogram<cl_kernel>(rowProducts[0], buildReductionKernel(rowProducts, reductionRowFloats), false));
 
         String[] rowMaxs = {"rowMaxsFloats",
                 "\t\tshared[sIndex] = max(shared[sIndex], inputData[gid1 * get_global_size(0) + gid0]);\n",
                 "\t\t\tunsigned int sharedIndex = tid1 * get_local_size(0) + tid0;\n" +
                         "\t\t\tshared[sharedIndex] = max(shared[sharedIndex], shared[(tid1 + s) * get_local_size(0) + tid0]);\n"
         };
-        kernels.put(rowMaxs[0], new Subprogram<cl_kernel>(rowMaxs[0], buildReductionKernel(rowMaxs, reductionRowFloats), false));
+        addSubprogram(new Subprogram<cl_kernel>(rowMaxs[0], buildReductionKernel(rowMaxs, reductionRowFloats), false));
 
         String[] rowMins = {"rowMinsFloats",
                 "\t\tshared[sIndex] = min(shared[sIndex], inputData[gid1 * get_global_size(0) + gid0]);\n",
                 "\t\t\tunsigned int sharedIndex = tid1 * get_local_size(0) + tid0;\n" +
                         "\t\t\tshared[sharedIndex] = min(shared[sharedIndex], shared[(tid1 + s) * get_local_size(0) + tid0]);\n"
         };
-        kernels.put(rowMins[0], new Subprogram<cl_kernel>(rowMins[0], buildReductionKernel(rowMins, reductionRowFloats), false));
+        addSubprogram(new Subprogram<cl_kernel>(rowMins[0], buildReductionKernel(rowMins, reductionRowFloats), false));
 
+    }
+    
+    private static void addSubprogram(Subprogram<cl_kernel> subprogram) {
+        subprograms.add(subprogram);
+        nameToSubprogramMap.put(subprogram.getProgramName(), subprogram);
+    }
+    
+    public static List<Subprogram<cl_kernel>>getAllSubPrograms() {
+    	return subprograms;
+    }
+    
+    public static Subprogram<cl_kernel> getSubprogram(String name) {
+    	return nameToSubprogramMap.get(name);
     }
 
 
