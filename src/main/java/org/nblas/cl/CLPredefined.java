@@ -11,7 +11,54 @@ import org.nblas.generic.Subprogram;
  * Created by Moritz on 7/7/2015.
  */
 class CLPredefined {
-
+		
+	private static final String repmat = "__kernel void repmat(__global const float* source, __global float* result, \n" +
+		"const uint m, const uint n, const uint subM, const uint subN, const uint subStride)\n" +
+		"{\n" +
+		"    uint id0 = get_global_id(0);\n" +
+		"    uint id1 = get_global_id(1);\n" +
+		"    uint id = id1 * get_global_size(0) + id0;\n" +
+		"    if(id0 >= m || id1 >= n )\n" +
+		"    {\n" +
+		"       result[id] = 0.0f;\n" +
+		"       return;\n" +
+		"    }\n" +
+		"    uint sid = (id1 % subN) * subStride + (id0 % subM);\n" +
+		"    result[id] = source[sid];\n" +
+		"}\n";
+    
+    private static final String setSubMatrix = " __kernel void setSubMatrix(__global const float* source, __global float* result, \n" +
+    	"const uint m, const uint n, const uint offsetM, const uint offsetN, const uint resultStride)\n" +
+		"{\n" +
+		"	uint id0 = get_global_id(0);\n" +
+		"	uint id1 = get_global_id(1);\n" +
+		"\n" +
+		"	if(id0 >= m || id1 >= n ) return;\n" +
+		"\n" +
+		"	uint id = id1 * get_global_size(0) + id0;\n" +
+		"	uint rid = (id1 + offsetN) * resultStride + id0 + offsetM;\n" +
+		"\n" +
+		"	result[rid] = source[id];\n" +
+		"}\n";
+    
+    private static final String getSubMatrix = " __kernel void getSubMatrix(__global const float* source, __global float* result, \n" +
+    	"const uint m, const uint n, const uint offsetM, const uint offsetN, const uint sourceStride)\n" +
+    	"{\n" +
+    	"	uint id0 = get_global_id(0);\n" +
+    	"	uint id1 = get_global_id(1);\n" +
+    	"\n" +
+    	"	uint id = id1 * get_global_size(0) + id0;\n" +
+    	"\n" +
+    	"	if(id0 >= m || id1 >= n )\n" +
+    	"	{\n" +
+    	"   	result[id] = 0.0f;\n" +
+    	"   	return;\n" +
+    	"	}\n" +
+    	"	uint sid = (id1 + offsetN) * sourceStride + id0 + offsetM;\n" +
+    	"\n" +
+    	"	result[id] = source[sid];\n" +
+    	"}\n";
+	
     private static final String uniform = "int xorshift(__global uint4* vec)\n" +
             "{\n" +
             "    uint t = vec[0].x ^ (vec[0].x << 11);\n" +
@@ -309,7 +356,9 @@ class CLPredefined {
     static {
         subprograms = new ArrayList<>();
         nameToSubprogramMap = new HashMap<>();
-        
+        addSubprogram(new Subprogram<cl_kernel>("repmat", repmat, false));
+        addSubprogram(new Subprogram<cl_kernel>("getSubMatrix", getSubMatrix, false));
+        addSubprogram(new Subprogram<cl_kernel>("setSubMatrix", setSubMatrix, false));
         addSubprogram(new Subprogram<cl_kernel>("auniform", uniform, false));
         addSubprogram(new Subprogram<cl_kernel>("boxmuller", boxmuller, false));
         addSubprogram(new Subprogram<cl_kernel>("copy1D", copy1D, false));

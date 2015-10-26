@@ -286,6 +286,28 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
         CORE.execute(CLPredefined.getSubprogram("setZero"), this.clRows, this.clColumns, dataPointer);
     }
     
+    public CLFloatMatrix repmat(int rowTimes, int columnTimes) {
+        CLFloatMatrix result = new CLFloatMatrix(rows * rowTimes, columns * columnTimes);
+        CORE.repmat(dataPointer, result.dataPointer,
+                result.clRows, result.clColumns,
+                result.rows, result.columns, rows, columns, clRows);
+        return result;
+    }
+
+    public void setSubMatrix(CLFloatMatrix matrix, int rowOffset, int columnOffset) {
+    	CORE.setSubMatrix(matrix.dataPointer, dataPointer,
+                matrix.clRows, matrix.clColumns,
+                matrix.rows, matrix.columns, rowOffset, columnOffset, clRows);
+    }
+
+    public CLFloatMatrix getSubMatrix(int rowOffset, int columnOffset, int rows, int columns) {
+        CLFloatMatrix result = new CLFloatMatrix(rows, columns);
+        CORE.getSubMatrix(dataPointer, result.dataPointer,
+                result.clRows, result.clColumns,
+                result.rows, result.columns, rowOffset, columnOffset, clRows);
+        return result;
+    }
+    
     
     // ADD
 

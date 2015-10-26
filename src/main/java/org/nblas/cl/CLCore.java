@@ -439,7 +439,6 @@ class CLCore {
         String programSource = builder.toString();
         matrixProgram = CL.clCreateProgramWithSource(context, 1, new String[]{programSource}, null, null);
         int result = CL.clBuildProgram(matrixProgram, 0, null, null, null, null);
-        System.out.println("Matrix Programm Build result: "+result+" - "+CL.CL_SUCCESS);
 
         for (Subprogram<cl_kernel> subprogram : matrixSubprograms) {
 	        String kernelName = subprogram.getProgramName();
