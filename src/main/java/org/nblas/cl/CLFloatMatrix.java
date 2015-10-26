@@ -2,9 +2,10 @@ package org.nblas.cl;
 
 
 import org.jblas.util.Random;
+import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
 import org.nblas.generic.ANativeFloatMatrix;
-import org.nblas.generic.ASubprogram;
+import org.nblas.generic.Subprogram;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.common.Arg;
@@ -23,72 +24,72 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 
     private static final CLCore CORE = CLCore.getCore();
 
-    private static final ASubprogram ADD_MATRIX;
-    private static final ASubprogram ADD_SCALAR;
-    private static final ASubprogram ADD_C_VECTOR;
-    private static final ASubprogram ADD_R_VECTOR;
+    private static final Subprogram<cl_kernel> ADD_MATRIX;
+    private static final Subprogram<cl_kernel> ADD_SCALAR;
+    private static final Subprogram<cl_kernel> ADD_C_VECTOR;
+    private static final Subprogram<cl_kernel> ADD_R_VECTOR;
 
-    private static final ASubprogram MUL_MATRIX;
-    private static final ASubprogram MUL_SCALAR;
-    private static final ASubprogram MUL_C_VECTOR;
-    private static final ASubprogram MUL_R_VECTOR;
+    private static final Subprogram<cl_kernel> MUL_MATRIX;
+    private static final Subprogram<cl_kernel> MUL_SCALAR;
+    private static final Subprogram<cl_kernel> MUL_C_VECTOR;
+    private static final Subprogram<cl_kernel> MUL_R_VECTOR;
 
-    private static final ASubprogram SUB_MATRIX;
-    private static final ASubprogram SUB_SCALAR;
-    private static final ASubprogram SUB_C_VECTOR;
-    private static final ASubprogram SUB_R_VECTOR;
+    private static final Subprogram<cl_kernel> SUB_MATRIX;
+    private static final Subprogram<cl_kernel> SUB_SCALAR;
+    private static final Subprogram<cl_kernel> SUB_C_VECTOR;
+    private static final Subprogram<cl_kernel> SUB_R_VECTOR;
 
-    private static final ASubprogram RSUB_SCALAR;
-    private static final ASubprogram RSUB_C_VECTOR;
-    private static final ASubprogram RSUB_R_VECTOR;
+    private static final Subprogram<cl_kernel> RSUB_SCALAR;
+    private static final Subprogram<cl_kernel> RSUB_C_VECTOR;
+    private static final Subprogram<cl_kernel> RSUB_R_VECTOR;
 
-    private static final ASubprogram DIV_MATRIX;
-    private static final ASubprogram DIV_SCALAR;
-    private static final ASubprogram DIV_C_VECTOR;
-    private static final ASubprogram DIV_R_VECTOR;
+    private static final Subprogram<cl_kernel> DIV_MATRIX;
+    private static final Subprogram<cl_kernel> DIV_SCALAR;
+    private static final Subprogram<cl_kernel> DIV_C_VECTOR;
+    private static final Subprogram<cl_kernel> DIV_R_VECTOR;
 
-    private static final ASubprogram RDIV_SCALAR;
-    private static final ASubprogram RDIV_C_VECTOR;
-    private static final ASubprogram RDIV_R_VECTOR;
+    private static final Subprogram<cl_kernel> RDIV_SCALAR;
+    private static final Subprogram<cl_kernel> RDIV_C_VECTOR;
+    private static final Subprogram<cl_kernel> RDIV_R_VECTOR;
 
-    private static final ASubprogram SET_ONE;
-    private static final ASubprogram COPY_MATRIX;
+    private static final Subprogram<cl_kernel> SET_ONE;
+    private static final Subprogram<cl_kernel> COPY_MATRIX;
     
     // greater than
-    private static final ASubprogram GT_MATRIX;
-    private static final ASubprogram GT_SCALAR;
-    private static final ASubprogram GT_C_VECTOR;
-    private static final ASubprogram GT_R_VECTOR;
+    private static final Subprogram<cl_kernel> GT_MATRIX;
+    private static final Subprogram<cl_kernel> GT_SCALAR;
+    private static final Subprogram<cl_kernel> GT_C_VECTOR;
+    private static final Subprogram<cl_kernel> GT_R_VECTOR;
     
     // greater than or equal
-    private static final ASubprogram GE_MATRIX;
-    private static final ASubprogram GE_SCALAR;
-    private static final ASubprogram GE_C_VECTOR;
-    private static final ASubprogram GE_R_VECTOR;
+    private static final Subprogram<cl_kernel> GE_MATRIX;
+    private static final Subprogram<cl_kernel> GE_SCALAR;
+    private static final Subprogram<cl_kernel> GE_C_VECTOR;
+    private static final Subprogram<cl_kernel> GE_R_VECTOR;
     
     // lower than
-    private static final ASubprogram LT_MATRIX;
-    private static final ASubprogram LT_SCALAR;
-    private static final ASubprogram LT_C_VECTOR;
-    private static final ASubprogram LT_R_VECTOR;
+    private static final Subprogram<cl_kernel> LT_MATRIX;
+    private static final Subprogram<cl_kernel> LT_SCALAR;
+    private static final Subprogram<cl_kernel> LT_C_VECTOR;
+    private static final Subprogram<cl_kernel> LT_R_VECTOR;
     
     // lower than or equal
-    private static final ASubprogram LE_MATRIX;
-    private static final ASubprogram LE_SCALAR;
-    private static final ASubprogram LE_C_VECTOR;
-    private static final ASubprogram LE_R_VECTOR;
+    private static final Subprogram<cl_kernel> LE_MATRIX;
+    private static final Subprogram<cl_kernel> LE_SCALAR;
+    private static final Subprogram<cl_kernel> LE_C_VECTOR;
+    private static final Subprogram<cl_kernel> LE_R_VECTOR;
     
     // equal
-    private static final ASubprogram EQ_MATRIX;
-    private static final ASubprogram EQ_SCALAR;
-    private static final ASubprogram EQ_C_VECTOR;
-    private static final ASubprogram EQ_R_VECTOR;
+    private static final Subprogram<cl_kernel> EQ_MATRIX;
+    private static final Subprogram<cl_kernel> EQ_SCALAR;
+    private static final Subprogram<cl_kernel> EQ_C_VECTOR;
+    private static final Subprogram<cl_kernel> EQ_R_VECTOR;
     
     // not equal
-    private static final ASubprogram NE_MATRIX;
-    private static final ASubprogram NE_SCALAR;
-    private static final ASubprogram NE_C_VECTOR;
-    private static final ASubprogram NE_R_VECTOR;
+    private static final Subprogram<cl_kernel> NE_MATRIX;
+    private static final Subprogram<cl_kernel> NE_SCALAR;
+    private static final Subprogram<cl_kernel> NE_C_VECTOR;
+    private static final Subprogram<cl_kernel> NE_R_VECTOR;
 
     static {
         CLFloatFunctionBuilder builder = new CLFloatFunctionBuilder();
@@ -193,9 +194,9 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
         CORE.compileMatrixFunctions();
     }
 
-    private static ASubprogram buildPredefinedFunction(AFunctionBuilder builder, AFunctionObject functionObject, ArgumentType... argumentTypes) {
-    	ASubprogram subprogram = builder.buildFunction(functionObject, argumentTypes);
-    	subprogram.setStandardProgram(true);
+    private static Subprogram<cl_kernel> buildPredefinedFunction(AFunctionBuilder<cl_kernel> builder, AFunctionObject functionObject, ArgumentType... argumentTypes) {
+    	Subprogram<cl_kernel> subprogram = builder.buildFunction(functionObject, argumentTypes);
+    	subprogram.setCustom(false);
         CORE.loadFromGeneratedSubprogram(subprogram);
         return subprogram;
     }
@@ -617,7 +618,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
      * @param b
      * @param result
      */
-	protected static void runMatrixMatrixElementWiseOperation(ASubprogram subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
+	protected static void runMatrixMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
 		checkSameSize(a, b, result);
         CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
 	}
@@ -631,7 +632,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 	 * @param scalar
 	 * @param result
 	 */
-	protected static void runMatrixScalarElementWiseOperation(ASubprogram subprogram, CLFloatMatrix a, float scalar, CLFloatMatrix result) {
+	protected static void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLFloatMatrix a, float scalar, CLFloatMatrix result) {
 	    CLFloatMatrix b = new CLFloatMatrix(1, 1, scalar);
         CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
         b.free();
@@ -646,7 +647,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 	 * @param row vector
 	 * @param result
 	 */
-	protected static void runMatrixRowVectorElementWiseOperation(ASubprogram subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
+	protected static void runMatrixRowVectorElementWiseOperation(Subprogram<cl_kernel> subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
         checkRowVectorSize(a, b, result);
         CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
 	}	
@@ -661,7 +662,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 	 * @param column vector
 	 * @param result
 	 */
-	protected static void runMatrixColumnVectorElementWiseOperation(ASubprogram subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
+	protected static void runMatrixColumnVectorElementWiseOperation(Subprogram<cl_kernel> subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
 		checkColumnVectorSize(a, b, result);
 		CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
 	}	

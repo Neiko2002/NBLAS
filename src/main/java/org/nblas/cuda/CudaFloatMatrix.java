@@ -2,7 +2,7 @@ package org.nblas.cuda;
 
 
 import org.nblas.generic.ANativeFloatMatrix;
-import org.nblas.generic.ASubprogram;
+import org.nblas.generic.Subprogram;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.common.Arg;
@@ -14,42 +14,43 @@ import org.nblas.function.predefined.binary.Mul;
 import org.nblas.function.predefined.binary.Sub;
 
 import jcuda.Pointer;
+import jcuda.driver.CUfunction;
 
 public class CudaFloatMatrix extends ANativeFloatMatrix {
 
     private static final CudaCore CORE = CudaCore.getCore();
     
-    private static final ASubprogram ADD_MATRIX;
-    private static final ASubprogram ADD_SCALAR;
-    private static final ASubprogram ADD_C_VECTOR;
-    private static final ASubprogram ADD_R_VECTOR;
+    private static final Subprogram<CUfunction> ADD_MATRIX;
+    private static final Subprogram<CUfunction> ADD_SCALAR;
+    private static final Subprogram<CUfunction> ADD_C_VECTOR;
+    private static final Subprogram<CUfunction> ADD_R_VECTOR;
 
-    private static final ASubprogram MUL_MATRIX;
-    private static final ASubprogram MUL_SCALAR;
-    private static final ASubprogram MUL_C_VECTOR;
-    private static final ASubprogram MUL_R_VECTOR;
+    private static final Subprogram<CUfunction> MUL_MATRIX;
+    private static final Subprogram<CUfunction> MUL_SCALAR;
+    private static final Subprogram<CUfunction> MUL_C_VECTOR;
+    private static final Subprogram<CUfunction> MUL_R_VECTOR;
 
-    private static final ASubprogram SUB_MATRIX;
-    private static final ASubprogram SUB_SCALAR;
-    private static final ASubprogram SUB_C_VECTOR;
-    private static final ASubprogram SUB_R_VECTOR;
+    private static final Subprogram<CUfunction> SUB_MATRIX;
+    private static final Subprogram<CUfunction> SUB_SCALAR;
+    private static final Subprogram<CUfunction> SUB_C_VECTOR;
+    private static final Subprogram<CUfunction> SUB_R_VECTOR;
 
-    private static final ASubprogram RSUB_SCALAR;
-    private static final ASubprogram RSUB_C_VECTOR;
-    private static final ASubprogram RSUB_R_VECTOR;
+    private static final Subprogram<CUfunction> RSUB_SCALAR;
+    private static final Subprogram<CUfunction> RSUB_C_VECTOR;
+    private static final Subprogram<CUfunction> RSUB_R_VECTOR;
 
-    private static final ASubprogram DIV_MATRIX;
-    private static final ASubprogram DIV_SCALAR;
-    private static final ASubprogram DIV_C_VECTOR;
-    private static final ASubprogram DIV_R_VECTOR;
+    private static final Subprogram<CUfunction> DIV_MATRIX;
+    private static final Subprogram<CUfunction> DIV_SCALAR;
+    private static final Subprogram<CUfunction> DIV_C_VECTOR;
+    private static final Subprogram<CUfunction> DIV_R_VECTOR;
 
-    private static final ASubprogram RDIV_SCALAR;
-    private static final ASubprogram RDIV_C_VECTOR;
-    private static final ASubprogram RDIV_R_VECTOR;
+    private static final Subprogram<CUfunction> RDIV_SCALAR;
+    private static final Subprogram<CUfunction> RDIV_C_VECTOR;
+    private static final Subprogram<CUfunction> RDIV_R_VECTOR;
 
-    private static final ASubprogram SET_ZERO;
-    private static final ASubprogram SET_ONE;
-    private static final ASubprogram COPY_MATRIX;
+    private static final Subprogram<CUfunction> SET_ZERO;
+    private static final Subprogram<CUfunction> SET_ONE;
+    private static final Subprogram<CUfunction> COPY_MATRIX;
 
     static {
         CudaFloatFunctionBuilder builder = new CudaFloatFunctionBuilder();
@@ -115,14 +116,14 @@ public class CudaFloatMatrix extends ANativeFloatMatrix {
         COPY_MATRIX = buildPredefinedFunction(builder, copy, ArgumentType.MATRIX);
 
         
-        for (ASubprogram subprogram : CudaPredefined.kernels.values()) {
+        for (Subprogram<CUfunction> subprogram : CudaPredefined.kernels.values()) {
             CORE.loadFromGeneratedFunction(subprogram);
         }
     }
 
-    private static ASubprogram buildPredefinedFunction(AFunctionBuilder builder, AFunctionObject functionObject, ArgumentType... argumentTypes) {
-        ASubprogram subprogram = builder.buildFunction(functionObject, argumentTypes);
-        subprogram.setStandardProgram(true);
+    private static Subprogram<CUfunction> buildPredefinedFunction(AFunctionBuilder<CUfunction> builder, AFunctionObject functionObject, ArgumentType... argumentTypes) {
+        Subprogram<CUfunction> subprogram = builder.buildFunction(functionObject, argumentTypes);
+        subprogram.setCustom(false);
         CORE.loadFromGeneratedFunction(subprogram);
         return subprogram;
     }

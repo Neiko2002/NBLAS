@@ -22,7 +22,6 @@ import static jcuda.runtime.JCuda.cudaMalloc;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -32,7 +31,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.nblas.generic.ASubprogram;
+import org.nblas.generic.Subprogram;
 
 import jcuda.Pointer;
 import jcuda.Sizeof;
@@ -355,7 +354,7 @@ class CudaCore {
     }
 
 
-    public void loadFromGeneratedFunction(ASubprogram subprogram) {    	
+    public void loadFromGeneratedFunction(Subprogram<CUfunction> subprogram) {    	
     	try {
 
     		Path cuFilePath = Files.createTempFile(subprogram.getProgramName(), ".cu");

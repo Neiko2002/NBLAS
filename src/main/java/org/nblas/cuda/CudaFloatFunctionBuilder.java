@@ -3,14 +3,16 @@ package org.nblas.cuda;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.Context;
-import org.nblas.generic.ASubprogram;
+import org.nblas.generic.Subprogram;
+
+import jcuda.driver.CUfunction;
 
 
-class CudaFloatFunctionBuilder extends AFunctionBuilder {
+class CudaFloatFunctionBuilder extends AFunctionBuilder<CUfunction> {
 
 	protected Context context = Context.createCudaSinglePrecisionContext();
 
-    protected ASubprogram buildFunction(String function, ArgumentType[] args) {
+    protected Subprogram<CUfunction> buildFunction(String function, ArgumentType[] args) {
         StringBuilder builder = new StringBuilder();
         StringBuilder parameters = new StringBuilder();
         for (int i = 0; i < args.length; i++) {
@@ -46,7 +48,7 @@ class CudaFloatFunctionBuilder extends AFunctionBuilder {
         builder.append(";\n");
         builder.append("}\n");
 
-        return new ASubprogram(functionName, builder.toString(), false);
+        return new Subprogram<CUfunction>(functionName, builder.toString(), true);
     }
 
     @Override

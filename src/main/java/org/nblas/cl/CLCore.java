@@ -3,7 +3,7 @@ package org.nblas.cl;
 import org.jocl.*;
 import org.jocl.Pointer;
 import org.jocl.Sizeof;
-import org.nblas.generic.ASubprogram;
+import org.nblas.generic.Subprogram;
 
 import java.io.IOException;
 import java.lang.reflect.*;
@@ -12,6 +12,8 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 class CLCore {
 
@@ -23,13 +25,12 @@ class CLCore {
     private cl_device_id device;
     private cl_context context;
     private cl_command_queue commandQueue;
-    private cl_program matrixProgram;
+    
+    private Set<Subprogram<cl_kernel>> customSubprograms;
     private cl_program customProgram = null;
-    private HashMap<String, cl_kernel> matrixKernels;
-    private HashMap<String, cl_kernel> customKernels;
-
-    private HashMap<String, ASubprogram> customKernelsSource;
-    private HashMap<String, ASubprogram> matrixKernelsSource;
+    
+    private Set<Subprogram<cl_kernel>> matrixSubprograms;
+    private cl_program matrixProgram = null;
 
     private int threadCount_X;
     private int threadCount_Y;
@@ -64,11 +65,8 @@ class CLCore {
                 null, null, null);
         commandQueue = CL.clCreateCommandQueue(context, device, 0, null);
 
-        customKernelsSource = new HashMap<>();
-        matrixKernelsSource = new HashMap<>();
-
-        matrixKernels = new HashMap<>();
-        customKernels = new HashMap<>();
+        customSubprograms = new HashSet<>();
+        matrixSubprograms = new HashSet<>();
 
         try {
             this.nativePointerField = NativePointerObject.class.getDeclaredField("nativePointer");
@@ -99,7 +97,7 @@ class CLCore {
 
     public void copy(cl_mem input, cl_mem copy, int m, int n) {
 
-        cl_kernel kernel = matrixKernels.get("copy");
+        cl_kernel kernel = CLPredefined.kernels.get("copy").getKernel();
         cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(input));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(copy));
@@ -112,7 +110,7 @@ class CLCore {
 
     public void repmat(cl_mem source, cl_mem result, int m, int n, int outputRows, int outputColumns, int inputRows, int inputColumns, int stride) {
 
-        cl_kernel kernel = matrixKernels.get("repmat");
+        cl_kernel kernel = CLPredefined.kernels.get("repmat").getKernel();
         cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(source));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
@@ -130,7 +128,7 @@ class CLCore {
 
     public void setSubMatrix(cl_mem source, cl_mem result, int m, int n, int sourceRows, int sourceColumns, int offsetRows, int offsetColumns, int resultStride) {
 
-        cl_kernel kernel = matrixKernels.get("setSubMatrix");
+        cl_kernel kernel = CLPredefined.kernels.get("setSubMatrix").getKernel();
         cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(source));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
@@ -148,7 +146,7 @@ class CLCore {
 
     public void getSubMatrix(cl_mem source, cl_mem result, int m, int n, int resultRows, int resultColumns, int offsetRows, int offsetColumns, int sourceStride) {
 
-        cl_kernel kernel = matrixKernels.get("getSubMatrix");
+        cl_kernel kernel = CLPredefined.kernels.get("getSubMatrix").getKernel();
         cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(source));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
@@ -166,7 +164,7 @@ class CLCore {
 
 
     public void transpose(cl_mem in, cl_mem out, int clRows, int clColumns, int rows, int columns) {
-        cl_kernel kernel = matrixKernels.get("transpose");
+        cl_kernel kernel = CLPredefined.kernels.get("transpose").getKernel();
 
         cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(in));
@@ -181,30 +179,21 @@ class CLCore {
     }
 
     public void sgemm_nn(cl_mem a, cl_mem b, cl_mem result, int clM, int clN, int clK) {
-        cl_kernel kernel = matrixKernels.get("sgemm_nn");
-    	sgemmCall(a, b, result, clM, clN, clK, kernel);
-    	
-//        try {
-//            cl_event event = new cl_event();
-//            clblas.sgemmNN(clM, clN, clK, 1.0f,
-//                    getNativePointer(a), getNativePointer(b),
-//                    0.0f,
-//                    getNativePointer(result),
-//                    getNativePointer(event));
-//            CL.clWaitForEvents(1, new cl_event[]{event});
-//        } catch (IllegalAccessException e) {
-//            e.printStackTrace();
-//        }
+        Subprogram<cl_kernel> subprogram = CLPredefined.kernels.get("sgemm_nn");
+        if(subprogram.isBuild())
+        	sgemmCall(a, b, result, clM, clN, clK, subprogram.getKernel());
     }
 
     public void sgemm_nt(cl_mem a, cl_mem b, cl_mem result, int clM, int clN, int clK) {
-        cl_kernel kernel = matrixKernels.get("sgemm_nt");
-        sgemmCall(a, b, result, clM, clN, clK, kernel);
+        Subprogram<cl_kernel> subprogram = CLPredefined.kernels.get("sgemm_nt");
+        if(subprogram.isBuild())
+        	sgemmCall(a, b, result, clM, clN, clK, subprogram.getKernel());
     }
 
     public void sgemm_tn(cl_mem a, cl_mem b, cl_mem result, int clM, int clN, int clK) {
-        cl_kernel kernel = matrixKernels.get("sgemm_tn");
-        sgemmCall(a, b, result, clM, clN, clK, kernel);
+        Subprogram<cl_kernel> subprogram = CLPredefined.kernels.get("sgemm_tn");
+        if(subprogram.isBuild())
+        	sgemmCall(a, b, result, clM, clN, clK, subprogram.getKernel());
     }
 
 
@@ -224,12 +213,12 @@ class CLCore {
     }
 
     public void boxMuller(cl_mem dataPointer, cl_mem random, int clRows, int clColumns, int rows, int columns) {
-        cl_kernel kernel = matrixKernels.get("boxmuller");
+        cl_kernel kernel = CLPredefined.kernels.get("boxmuller").getKernel();
         random(dataPointer, random, clRows, rows, columns, kernel);
     }
 
     public void uniform(cl_mem dataPointer, cl_mem random, int clRows, int clColumns, int rows, int columns) {
-        cl_kernel kernel = matrixKernels.get("auniform");
+        cl_kernel kernel = CLPredefined.kernels.get("auniform").getKernel();
         random(dataPointer, random, clRows, rows, columns, kernel);
     }
 
@@ -393,33 +382,37 @@ class CLCore {
         CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
-    public void loadFromGeneratedSubprogram(ASubprogram subprogram) {
-        if (subprogram.isStandardProgram()) {
-            matrixKernelsSource.put(subprogram.getProgramName(), subprogram);
+    public void loadFromGeneratedSubprogram(Subprogram<cl_kernel> subprogram) {
+        if (subprogram.isCustom() == false) {
+        	matrixSubprograms.add(subprogram);
         } else {
             // remove kernels to recompile;
-            if (customProgram != null) {
-                customKernels.values().forEach(CL::clReleaseKernel);
-                customKernels.clear();
+            if (customSubprograms != null) {
+            	
+            	for (Subprogram<cl_kernel> customSubprogram : customSubprograms) {
+            		CL.clReleaseKernel(customSubprogram.getKernel());
+            		customSubprogram.setKernel(null);
+				}
                 CL.clReleaseProgram(customProgram);
                 customProgram = null;
             }
             // get all kernels
-            customKernelsSource.put(subprogram.getProgramName(), subprogram);
+            customSubprograms.add(subprogram);
 
             StringBuilder builder = new StringBuilder();
-            customKernelsSource.values().forEach(builder::append);
+            for (Subprogram<cl_kernel> customSubprogram : customSubprograms)
+            	builder.append(customSubprogram.getSourceCode());
 
             // create program source from all custom kernels
             String programSource = builder.toString();
 
-
             customProgram = CL.clCreateProgramWithSource(context,
                     1, new String[]{programSource}, null, null);
             CL.clBuildProgram(customProgram, 0, null, null, null, null);
-
-            for (String kernelName : customKernelsSource.keySet()) {
-                customKernels.put(kernelName, CL.clCreateKernel(customProgram, kernelName, null));
+            
+            for (Subprogram<cl_kernel> customSubprogram : customSubprograms) {
+            	String kernelName = customSubprogram.getProgramName();
+            	customSubprogram.setKernel(CL.clCreateKernel(customProgram, kernelName, null));
             }
         }
 
@@ -436,7 +429,7 @@ class CLCore {
         }
         
         // Verbinde den Sourcecode aller Kernels
-        for (ASubprogram subprogram : matrixKernelsSource.values()) {
+        for (Subprogram<cl_kernel> subprogram : matrixSubprograms) {
         	builder.append(subprogram.getSourceCode());
 		}
 
@@ -445,8 +438,9 @@ class CLCore {
         matrixProgram = CL.clCreateProgramWithSource(context, 1, new String[]{programSource}, null, null);
         CL.clBuildProgram(matrixProgram, 0, null, null, null, null);
 
-        for (String kernelName : matrixKernelsSource.keySet()) {
-            matrixKernels.put(kernelName, CL.clCreateKernel(matrixProgram, kernelName, null));
+        for (Subprogram<cl_kernel> subprogram : matrixSubprograms) {
+        	String kernelName = subprogram.getProgramName();
+        	subprogram.setKernel(CL.clCreateKernel(matrixProgram, kernelName, null));
         }
     }
     
@@ -456,7 +450,7 @@ class CLCore {
 
         int size = (int) Math.ceil((double) n / threadCount) * threadCount;
         cl_event event = new cl_event();
-        cl_kernel kernel = matrixKernels.get("copy1D");
+        cl_kernel kernel = CLPredefined.kernels.get("copy1D").getKernel();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(data));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_int, Pointer.to(new int[]{n}));
@@ -467,8 +461,8 @@ class CLCore {
         CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
-    public void execute(ASubprogram subprogram, int clRows, int clColumns, int rows, int columns, cl_mem result, cl_mem... dataPointer) {
-        cl_kernel kernel = subprogram.isStandardProgram() ? matrixKernels.get(subprogram.getProgramName()) : customKernels.get(subprogram.getProgramName());
+    public void execute(Subprogram<cl_kernel> subprogram, int clRows, int clColumns, int rows, int columns, cl_mem result, cl_mem... dataPointer) {
+        cl_kernel kernel = subprogram.getKernel();
         cl_event event = new cl_event();
         
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(result));
@@ -484,9 +478,9 @@ class CLCore {
         CL.clWaitForEvents(1, new cl_event[]{event});
     }
     
-    public void execute(ASubprogram subprogram, int clRows, int clColumns, cl_mem result) {
-        cl_kernel kernel = subprogram.isStandardProgram() ? matrixKernels.get(subprogram.getProgramName()) : customKernels.get(subprogram.getProgramName());
-        cl_event event = new cl_event();
+    public void execute(Subprogram<cl_kernel> subprogram, int clRows, int clColumns, cl_mem result) {
+    	cl_kernel kernel = subprogram.getKernel();
+    	cl_event event = new cl_event();
         
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(result));
         
@@ -503,7 +497,7 @@ class CLCore {
         int size = tempSize * threadCount;
 
         cl_mem temp = malloc(tempSize);
-        cl_kernel kernel = matrixKernels.get(reductionName);
+        cl_kernel kernel = CLPredefined.kernels.get(reductionName).getKernel();
         reduceCall(kernel, data, temp, n, initValue, size);
 
         while (tempSize > 1) {
@@ -542,7 +536,7 @@ class CLCore {
         int sizeY = tempSizeY * threadCount_Y;
 
         cl_mem temp = malloc(tempSizeY * tempSizeX);
-        cl_kernel kernel = matrixKernels.get(reductionName);
+        cl_kernel kernel = CLPredefined.kernels.get(reductionName).getKernel();
         reduceCall(kernel, data, temp, rows, columns, initValue, sizeX, sizeY);
 
         while (tempSizeX > 1 || tempSizeY > 1) {
@@ -566,7 +560,7 @@ class CLCore {
         int sizeX = tempSizeX * threadCount_X;
         int sizeY = tempSizeY * threadCount_Y;
 
-        cl_kernel kernel = matrixKernels.get(reductionName);
+        cl_kernel kernel = CLPredefined.kernels.get(reductionName).getKernel();
         reduceCall(kernel, data, result, rows, columns, initValue, sizeX, sizeY);
     }
 
@@ -578,7 +572,7 @@ class CLCore {
         int sizeY = tempSizeY * threadCount_Y;
 
         cl_mem temp = malloc(columns * tempSizeX);
-        cl_kernel kernel = matrixKernels.get(reductionName);
+        cl_kernel kernel = CLPredefined.kernels.get(reductionName).getKernel();
         reduceCall(kernel, data, temp, rows, columns, initValue, sizeX, sizeY);
 
         while (tempSizeX > 1) {
@@ -600,7 +594,7 @@ class CLCore {
         int sizeY = tempSizeY * threadCount_Y;
 
         cl_mem temp = malloc(rows * tempSizeY);
-        cl_kernel kernel = matrixKernels.get(reductionName);
+        cl_kernel kernel = CLPredefined.kernels.get(reductionName).getKernel();
         reduceCall(kernel, data, temp, rows, columns, initValue, sizeX, sizeY);
 
         while (tempSizeY > 1) {

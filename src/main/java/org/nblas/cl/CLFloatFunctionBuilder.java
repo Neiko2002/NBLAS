@@ -1,16 +1,17 @@
 package org.nblas.cl;
 
+import org.jocl.cl_kernel;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.Context;
-import org.nblas.generic.ASubprogram;
+import org.nblas.generic.Subprogram;
 
 
-class CLFloatFunctionBuilder extends AFunctionBuilder {
+class CLFloatFunctionBuilder extends AFunctionBuilder<cl_kernel> {
 
 	protected Context context = Context.createOpenCLSinglePrecisionContext();
 	
-    protected ASubprogram buildFunction(String function, ArgumentType[] args) {
+    protected Subprogram<cl_kernel> buildFunction(String function, ArgumentType[] args) {
         StringBuilder builder = new StringBuilder();
         StringBuilder parameters = new StringBuilder();
         for (int i = 0; i < args.length; i++) {
@@ -48,7 +49,7 @@ class CLFloatFunctionBuilder extends AFunctionBuilder {
         builder.append(";\n");
         builder.append("}\n");
 
-        return new ASubprogram(functionName, builder.toString(), false);
+        return new Subprogram<cl_kernel>(functionName, builder.toString(), true);
     }
 
     @Override

@@ -2,14 +2,16 @@ package org.nblas.cuda;
 
 import java.util.HashMap;
 
-import org.nblas.generic.ASubprogram;
+import org.nblas.generic.Subprogram;
+
+import jcuda.driver.CUfunction;
 
 /**
  * Created by Moritz on 6/1/2015.
  */
 class CudaPredefined {
 
-    public static final HashMap<String, ASubprogram> kernels;
+    public static final HashMap<String, Subprogram<CUfunction>> kernels;
 
 
     private final static String copy1D = "extern \"C\"\n" +
@@ -147,73 +149,73 @@ class CudaPredefined {
 
     static {
         kernels = new HashMap<>();
-        kernels.put("copy1D", new ASubprogram("copy1D", copy1D, true));
-        kernels.put("transpose", new ASubprogram("copy1D", transpose, true));
+        kernels.put("copy1D", new Subprogram<CUfunction>("copy1D", copy1D, false));
+        kernels.put("transpose", new Subprogram<CUfunction>("copy1D", transpose, false));
         String[] sum = {"sumFloats",
                 "\t\tshared[tid] += inputData[gid];\n",
                 "\t\tshared[tid] += shared[tid + s];\n"};
-        kernels.put(sum[0], new ASubprogram(sum[0], getFunction(sum, reductionFloats), true));
+        kernels.put(sum[0], new Subprogram<CUfunction>(sum[0], getFunction(sum, reductionFloats), false));
 
         String[] product = {"productFloats",
                 "\t\tshared[tid] *= inputData[gid];\n",
                 "\t\tshared[tid] *= shared[tid + s];\n"};
-        kernels.put(product[0], new ASubprogram(product[0], getFunction(product, reductionFloats), true));
+        kernels.put(product[0], new Subprogram<CUfunction>(product[0], getFunction(product, reductionFloats), false));
 
         String[] max = {"maxFloats",
                 "\t\tshared[tid] = max(shared[tid], inputData[gid]);\n",
                 "\t\tshared[tid] = max(shared[tid], shared[tid + s]);\n"};
-        kernels.put(max[0], new ASubprogram(max[0], getFunction(max, reductionFloats), true));
+        kernels.put(max[0], new Subprogram<CUfunction>(max[0], getFunction(max, reductionFloats), false));
 
         String[] min = {"minFloats",
                 "\t\tshared[tid] = min(shared[tid], inputData[gid]);\n",
                 "\t\tshared[tid] = min(shared[tid], shared[tid + s]);\n"};
-        kernels.put(min[0], new ASubprogram(min[0], getFunction(min, reductionFloats), true));
+        kernels.put(min[0], new Subprogram<CUfunction>(min[0], getFunction(min, reductionFloats), false));
 
         String[] columnSums = {"columnSumsFloats",
                 "\t\tshared[sIndex] += inputData[gid1 * rows + gid0];\n",
                 "\t\t\tshared[id] += shared[id + s];\n"};
-        kernels.put(columnSums[0], new ASubprogram(sum[0], getFunction(columnSums, reductionColumnFloats), true));
+        kernels.put(columnSums[0], new Subprogram<CUfunction>(sum[0], getFunction(columnSums, reductionColumnFloats), false));
 
         String[] columnProducts = {"columnProductsFloats",
                 "\t\tshared[sIndex] *= inputData[gid1 * rows + gid0];\n",
                 "\t\t\tshared[id] *= shared[id + s];\n"};
-        kernels.put(columnProducts[0], new ASubprogram(columnProducts[0], getFunction(columnProducts, reductionColumnFloats), true));
+        kernels.put(columnProducts[0], new Subprogram<CUfunction>(columnProducts[0], getFunction(columnProducts, reductionColumnFloats), false));
 
         String[] columnMaxs = {"columnMaxsFloats",
                 "\t\tshared[sIndex] = max(shared[sIndex], inputData[gid1 * rows + gid0]);\n",
                 "\t\t\tshared[id] = max(shared[id], shared[id + s]);\n"};
-        kernels.put(columnMaxs[0], new ASubprogram(columnMaxs[0], getFunction(columnMaxs, reductionColumnFloats), true));
+        kernels.put(columnMaxs[0], new Subprogram<CUfunction>(columnMaxs[0], getFunction(columnMaxs, reductionColumnFloats), false));
 
         String[] columnMins = {"columnMinsFloats",
                 "\t\tshared[sIndex] = min(shared[sIndex], inputData[gid1 * rows + gid0]);\n",
                 "\t\t\tshared[id] = min(shared[id], shared[id + s]);\n"};
-        kernels.put(columnMins[0], new ASubprogram(columnMins[0], getFunction(columnMins, reductionColumnFloats), true));
+        kernels.put(columnMins[0], new Subprogram<CUfunction>(columnMins[0], getFunction(columnMins, reductionColumnFloats), false));
 
         String[] rowSums = {"rowSumsFloats",
                 "\t\tshared[sIndex] += inputData[gid1 * rows + gid0];\n",
                 "\t\t\tshared[tid1 * blockDim.x + tid0] += shared[(tid1 + s) * blockDim.x + tid0];\n"
         };
-        kernels.put(rowSums[0], new ASubprogram(rowSums[0], getFunction(rowSums, reductionRowFloats), true));
+        kernels.put(rowSums[0], new Subprogram<CUfunction>(rowSums[0], getFunction(rowSums, reductionRowFloats), false));
 
         String[] rowProducts = {"rowProductsFloats",
                 "\t\tshared[sIndex] *= inputData[gid1 * rows + gid0];\n",
                 "\t\t\tshared[tid1 * blockDim.x + tid0] *= shared[(tid1 + s) * blockDim.x + tid0];\n"
         };
-        kernels.put(rowProducts[0], new ASubprogram(rowProducts[0], getFunction(rowProducts, reductionRowFloats), true));
+        kernels.put(rowProducts[0], new Subprogram<CUfunction>(rowProducts[0], getFunction(rowProducts, reductionRowFloats), false));
 
         String[] rowMaxs = {"rowMaxsFloats",
                 "\t\tshared[sIndex] = max(shared[sIndex], inputData[gid1 * rows + gid0]);\n",
                 "\t\t\tunsigned int sharedIndex = tid1 * blockDim.x + tid0;\n" +
                         "\t\t\tshared[sharedIndex] = max(shared[sharedIndex], shared[(tid1 + s) * blockDim.x + tid0]);\n"
         };
-        kernels.put(rowMaxs[0], new ASubprogram(rowMaxs[0], getFunction(rowMaxs, reductionRowFloats), true));
+        kernels.put(rowMaxs[0], new Subprogram<CUfunction>(rowMaxs[0], getFunction(rowMaxs, reductionRowFloats), false));
 
         String[] rowMins = {"columnMinsFloats",
                 "\t\tshared[sIndex] = min(shared[sIndex], inputData[gid1 * rows + gid0]);\n",
                 "\t\t\tunsigned int sharedIndex = tid1 * blockDim.x + tid0;\n" +
                         "\t\t\tshared[sharedIndex] = min(shared[sharedIndex], shared[(tid1 + s) * blockDim.x + tid0]);\n"
         };
-        kernels.put(rowMins[0], new ASubprogram(rowMins[0], getFunction(rowMins, reductionRowFloats), true));
+        kernels.put(rowMins[0], new Subprogram<CUfunction>(rowMins[0], getFunction(rowMins, reductionRowFloats), false));
     }
 
     private static String getFunction(String[] function, String[] reduction) {
