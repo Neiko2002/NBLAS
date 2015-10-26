@@ -449,6 +449,8 @@ class CLCore {
             matrixKernels.put(kernelName, CL.clCreateKernel(matrixProgram, kernelName, null));
         }
     }
+    
+    
 
     private void copy1d(cl_mem data, cl_mem result, int n) {
 
@@ -465,26 +467,33 @@ class CLCore {
         CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
-    public void execute(String functionName, int clRows, int clColumns, int rows, int columns, cl_mem result, cl_mem... dataPointer) {
-        execute(false, functionName, clRows, clColumns, rows, columns, result, dataPointer);
-    }
-
-    public void execute(boolean isCustom, String functionName, int clRows, int clColumns, int rows, int columns, cl_mem result, cl_mem... dataPointer) {
-        cl_kernel kernel = isCustom ? customKernels.get(functionName) : matrixKernels.get(functionName);
+    public void execute(ASubprogram subprogram, int clRows, int clColumns, int rows, int columns, cl_mem result, cl_mem... dataPointer) {
+        cl_kernel kernel = subprogram.isStandardProgram() ? matrixKernels.get(subprogram.getProgramName()) : customKernels.get(subprogram.getProgramName());
         cl_event event = new cl_event();
+        
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(result));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_int, Pointer.to(new int[]{columns}));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_int, Pointer.to(new int[]{rows}));
         for (int i = 0; i < dataPointer.length; i++) {
             CL.clSetKernelArg(kernel, i + 3, Sizeof.cl_mem, Pointer.to(dataPointer[i]));
         }
-
-
+        
         CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null,
                 new long[]{clRows, clColumns},
                 new long[]{threadCount_X, threadCount_Y}, 0, null, event);
         CL.clWaitForEvents(1, new cl_event[]{event});
-
+    }
+    
+    public void execute(ASubprogram subprogram, int clRows, int clColumns, cl_mem result) {
+        cl_kernel kernel = subprogram.isStandardProgram() ? matrixKernels.get(subprogram.getProgramName()) : customKernels.get(subprogram.getProgramName());
+        cl_event event = new cl_event();
+        
+        CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(result));
+        
+        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null,
+                new long[]{clRows, clColumns},
+                new long[]{threadCount_X, threadCount_Y}, 0, null, event);
+        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
     @Deprecated
@@ -618,7 +627,6 @@ class CLCore {
         CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
-
     public cl_mem malloc(float[] values) {
 
         Pointer pointer = Pointer.to(values);
@@ -648,17 +656,6 @@ class CLCore {
 
     public void free(cl_mem buffer) {
         CL.clReleaseMemObject(buffer);
-    }
+    }  
 
-    public void setZero(int clRows, int clColumns, cl_mem dataPointer) {
-        cl_kernel kernel = matrixKernels.get("setZero");
-        cl_event event = new cl_event();
-        CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(dataPointer));
-
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null,
-                new long[]{clRows, clColumns},
-                new long[]{threadCount_X, threadCount_Y}, 0, null, event);
-
-        CL.clWaitForEvents(1, new cl_event[]{event});
-    }
 }

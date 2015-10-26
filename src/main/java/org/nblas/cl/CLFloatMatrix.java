@@ -278,11 +278,11 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 
 
     public void setOne() {
-        CORE.execute(SET_ONE.getProgramName(), this.clRows, this.clColumns, this.rows, this.columns, dataPointer);
+        CORE.execute(SET_ONE, this.clRows, this.clColumns, this.rows, this.columns, dataPointer);
     }
 
     public void setZero() {
-        CORE.setZero(this.clRows, this.clColumns, dataPointer);
+        CORE.execute(CLPredefined.kernels.get("setZero"), this.clRows, this.clColumns, dataPointer);
     }
     
     
@@ -619,7 +619,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
      */
 	protected static void runMatrixMatrixElementWiseOperation(ASubprogram subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
 		checkSameSize(a, b, result);
-        CORE.execute(subprogram.getProgramName(), a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+        CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
 	}
 	
 	/**
@@ -633,7 +633,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 	 */
 	protected static void runMatrixScalarElementWiseOperation(ASubprogram subprogram, CLFloatMatrix a, float scalar, CLFloatMatrix result) {
 	    CLFloatMatrix b = new CLFloatMatrix(1, 1, scalar);
-        CORE.execute(subprogram.getProgramName(), a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+        CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
         b.free();
 	}
 	
@@ -648,7 +648,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 	 */
 	protected static void runMatrixRowVectorElementWiseOperation(ASubprogram subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
         checkRowVectorSize(a, b, result);
-        CORE.execute(subprogram.getProgramName(), a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+        CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
 	}	
 	
 	
@@ -663,7 +663,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 	 */
 	protected static void runMatrixColumnVectorElementWiseOperation(ASubprogram subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
 		checkColumnVectorSize(a, b, result);
-		CORE.execute(subprogram.getProgramName(), a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+		CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
 	}	
 
    
