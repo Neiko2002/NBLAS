@@ -396,6 +396,67 @@ public class FloatMatrix {
         return result;
     }
     
+    public static void gt(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
+        a.isReleased();
+        b.isReleased();
+        result.isReleased();
+        if (CONTEXT.isGPU()) {
+            if (CONTEXT.isCUDA()) {
+            	throw new NotImplementedException();
+            } else {
+                CLFloatMatrix.gt((CLFloatMatrix) a.matrix, (CLFloatMatrix) b.matrix, (CLFloatMatrix) result.matrix);
+            }
+        } else {
+            ((org.jblas.FloatMatrix) a.matrix).gti((org.jblas.FloatMatrix) b.matrix, (org.jblas.FloatMatrix) result.matrix);
+        }
+    }
+    
+    public static void gt(FloatMatrix a, float scalar, FloatMatrix result) {
+        a.isReleased();
+        result.isReleased();
+        if (CONTEXT.isGPU()) {
+            if (CONTEXT.isCUDA()) {
+            	throw new NotImplementedException();
+            } else {
+                CLFloatMatrix.gt((CLFloatMatrix) a.matrix, scalar, (CLFloatMatrix) result.matrix);
+            }
+        } else {
+            ((org.jblas.FloatMatrix) a.matrix).gti(scalar, (org.jblas.FloatMatrix) result.matrix);
+        }
+    }
+
+    public FloatMatrix gt(FloatMatrix b, FloatMatrix result) {
+        FloatMatrix.mul(this, b, result);
+        return result;
+    }
+
+    public FloatMatrix gti(FloatMatrix b) {
+        FloatMatrix.mul(this, b, this);
+        return this;
+    }
+
+    public FloatMatrix gt(FloatMatrix b) {
+        FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns());
+        FloatMatrix.mul(this, b, result);
+        return result;
+    }
+    
+    public FloatMatrix gt(float scalar, FloatMatrix result) {
+        FloatMatrix.mul(this, scalar, result);
+        return result;
+    }
+
+    public FloatMatrix gti(float scalar) {
+        FloatMatrix.mul(this, scalar, this);
+        return this;
+    }
+
+    public FloatMatrix gt(float scalar) {
+        FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
+        FloatMatrix.mul(this, scalar, result);
+        return result;
+    }
+    
     public void getColumnWiseOn(float[] values) {
         if (CONTEXT.isGPU()) {
             if (CONTEXT.isCUDA()) {
