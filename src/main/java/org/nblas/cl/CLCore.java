@@ -105,20 +105,20 @@ class CLCore {
     public void copy(cl_mem input, cl_mem copy, int m, int n) {
 
         cl_kernel kernel = CLPredefined.getSubprogram("copy").getKernel();
-        cl_event event = new cl_event();
+//        cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(input));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(copy));
 
         long[] local_work_size = getLocalWorkSize(m, n);
 
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{m, n}, local_work_size, 0, null, event);
-        CL.clWaitForEvents(1, new cl_event[]{event});
+        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{m, n}, local_work_size, 0, null, null);
+//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
     public void repmat(cl_mem source, cl_mem result, int m, int n, int outputRows, int outputColumns, int inputRows, int inputColumns, int stride) {
 
         cl_kernel kernel = CLPredefined.getSubprogram("repmat").getKernel();
-        cl_event event = new cl_event();
+//        cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(source));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_uint, Pointer.to(new int[]{outputRows}));
@@ -129,14 +129,14 @@ class CLCore {
 
         long[] local_work_size = getLocalWorkSize(m, n);
 
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{m, n}, local_work_size, 0, null, event);
-        CL.clWaitForEvents(1, new cl_event[]{event});
+        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{m, n}, local_work_size, 0, null, null);
+//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
     public void setSubMatrix(cl_mem source, cl_mem result, int m, int n, int sourceRows, int sourceColumns, int offsetRows, int offsetColumns, int resultStride) {
 
         cl_kernel kernel = CLPredefined.getSubprogram("setSubMatrix").getKernel();
-        cl_event event = new cl_event();
+//        cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(source));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_uint, Pointer.to(new int[]{sourceRows}));
@@ -147,14 +147,14 @@ class CLCore {
 
         long[] local_work_size = getLocalWorkSize(m, n);
 
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{m, n}, local_work_size, 0, null, event);
-        CL.clWaitForEvents(1, new cl_event[]{event});
+        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{m, n}, local_work_size, 0, null, null);
+//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
     public void getSubMatrix(cl_mem source, cl_mem result, int m, int n, int resultRows, int resultColumns, int offsetRows, int offsetColumns, int sourceStride) {
 
         cl_kernel kernel = CLPredefined.getSubprogram("getSubMatrix").getKernel();
-        cl_event event = new cl_event();
+//        cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(source));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_uint, Pointer.to(new int[]{resultRows}));
@@ -165,15 +165,15 @@ class CLCore {
 
         long[] local_work_size = getLocalWorkSize(m, n);
 
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{m, n}, local_work_size, 0, null, event);
-        CL.clWaitForEvents(1, new cl_event[]{event});
+        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{m, n}, local_work_size, 0, null, null);
+//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
 
     public void transpose(cl_mem in, cl_mem out, int clRows, int clColumns, int rows, int columns) {
         cl_kernel kernel = CLPredefined.getSubprogram("transpose").getKernel();
 
-        cl_event event = new cl_event();
+//        cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(in));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(out));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * threadCount, null);
@@ -181,8 +181,8 @@ class CLCore {
         CL.clSetKernelArg(kernel, 4, Sizeof.cl_int, Pointer.to(new int[]{columns}));
 
 
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{clRows, clColumns}, new long[]{threadCount_X, threadCount_Y}, 0, null, event);
-        CL.clWaitForEvents(1, new cl_event[]{event});
+        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{clRows, clColumns}, new long[]{threadCount_X, threadCount_Y}, 0, null, null);
+//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
     public void sgemm_nn(cl_mem a, cl_mem b, cl_mem result, int clM, int clN, int clK) {
@@ -205,7 +205,7 @@ class CLCore {
 
 
     private void sgemmCall(cl_mem a, cl_mem b, cl_mem result, int clM, int clN, int clK, cl_kernel kernel) {
-        cl_event event = new cl_event();
+//        cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(a));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(b));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(result));
@@ -215,8 +215,8 @@ class CLCore {
         CL.clSetKernelArg(kernel, 6, Sizeof.cl_int, Pointer.to(new int[]{clN}));
         CL.clSetKernelArg(kernel, 7, Sizeof.cl_int, Pointer.to(new int[]{clK}));
 
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{clM, clN}, new long[]{threadCount_X, threadCount_Y}, 0, null, event);
-        CL.clWaitForEvents(1, new cl_event[]{event});
+        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{clM, clN}, new long[]{threadCount_X, threadCount_Y}, 0, null, null);
+//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
     public void boxMuller(cl_mem dataPointer, cl_mem random, int clRows, int clColumns, int rows, int columns) {
@@ -230,15 +230,15 @@ class CLCore {
     }
 
     private void random(cl_mem dataPointer, cl_mem random, int clRows, int rows, int columns, cl_kernel kernel) {
-        cl_event event = new cl_event();
+//        cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(random));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(dataPointer));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_int, Pointer.to(new int[]{clRows}));
         CL.clSetKernelArg(kernel, 3, Sizeof.cl_int, Pointer.to(new int[]{rows}));
         CL.clSetKernelArg(kernel, 4, Sizeof.cl_int, Pointer.to(new int[]{columns}));
         CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{threadCount_X, threadCount_Y},
-                new long[]{threadCount_X, threadCount_Y}, 0, null, event);
-        CL.clWaitForEvents(1, new cl_event[]{event});
+                new long[]{threadCount_X, threadCount_Y}, 0, null, null);
+//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
 
@@ -384,9 +384,10 @@ class CLCore {
 
     public void getData(cl_mem buffer, float[] n) {
         Pointer pointer = Pointer.to(n);
-        cl_event event = new cl_event();
-        CL.clEnqueueReadBuffer(commandQueue, buffer, CL.CL_TRUE, 0, n.length * Sizeof.cl_float, pointer, 0, null, event);
-        CL.clWaitForEvents(1, new cl_event[]{event});
+//        cl_event event = new cl_event();
+        waitOnComplete();
+        CL.clEnqueueReadBuffer(commandQueue, buffer, CL.CL_TRUE, 0, n.length * Sizeof.cl_float, pointer, 0, null, null);
+//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
     public void loadFromGeneratedSubprogram(Subprogram<cl_kernel> subprogram) {
@@ -451,21 +452,21 @@ class CLCore {
     private void copy1d(cl_mem data, cl_mem result, int n) {
 
         int size = (int) Math.ceil((double) n / threadCount) * threadCount;
-        cl_event event = new cl_event();
+//        cl_event event = new cl_event();
         cl_kernel kernel = CLPredefined.getSubprogram("copy1D").getKernel();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(data));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_int, Pointer.to(new int[]{n}));
         CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
                 new long[]{size},
-                new long[]{threadCount}, 0, null, event);
+                new long[]{threadCount}, 0, null, null);
 
-        CL.clWaitForEvents(1, new cl_event[]{event});
+//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
     public void execute(Subprogram<cl_kernel> subprogram, int clRows, int clColumns, int rows, int columns, cl_mem result, cl_mem... dataPointer) {
         cl_kernel kernel = subprogram.getKernel();
-        cl_event event = new cl_event();
+//        cl_event event = new cl_event();
         
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(result));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_int, Pointer.to(new int[]{columns}));
@@ -476,20 +477,20 @@ class CLCore {
         
         CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null,
                 new long[]{clRows, clColumns},
-                new long[]{threadCount_X, threadCount_Y}, 0, null, event);
-        CL.clWaitForEvents(1, new cl_event[]{event});
+                new long[]{threadCount_X, threadCount_Y}, 0, null, null);
+//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
     
     public void execute(Subprogram<cl_kernel> subprogram, int clRows, int clColumns, cl_mem result) {
     	cl_kernel kernel = subprogram.getKernel();
-    	cl_event event = new cl_event();
+//    	cl_event event = new cl_event();
         
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(result));
         
         CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null,
                 new long[]{clRows, clColumns},
-                new long[]{threadCount_X, threadCount_Y}, 0, null, event);
-        CL.clWaitForEvents(1, new cl_event[]{event});
+                new long[]{threadCount_X, threadCount_Y}, 0, null, null);
+//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
     @Deprecated
@@ -517,7 +518,7 @@ class CLCore {
 
     @Deprecated
     private void reduceCall(cl_kernel kernel, cl_mem data, cl_mem temp, int n, float initValue, int size) {
-        cl_event event = new cl_event();
+//        cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(data));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(temp));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * threadCount, null);
@@ -525,9 +526,9 @@ class CLCore {
         CL.clSetKernelArg(kernel, 4, Sizeof.cl_float, Pointer.to(new float[]{initValue}));
         CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
                 new long[]{size},
-                new long[]{threadCount}, 0, null, event);
+                new long[]{threadCount}, 0, null, null);
 
-        CL.clWaitForEvents(1, new cl_event[]{event});
+//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
     public float reduce2D(String reductionName, cl_mem data, int rows, int columns, float initValue) {
@@ -609,7 +610,7 @@ class CLCore {
     }
 
     private void reduceCall(cl_kernel kernel, cl_mem data, cl_mem result, int rows, int columns, float initValue, int sizeX, int sizeY) {
-        cl_event event = new cl_event();
+//        cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(data));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * threadCount, null);
@@ -618,9 +619,9 @@ class CLCore {
         CL.clSetKernelArg(kernel, 5, Sizeof.cl_float, Pointer.to(new float[]{initValue}));
         CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null,
                 new long[]{sizeX, sizeY},
-                new long[]{threadCount_X, threadCount_Y}, 0, null, event);
+                new long[]{threadCount_X, threadCount_Y}, 0, null, null);
 
-        CL.clWaitForEvents(1, new cl_event[]{event});
+//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
     public cl_mem malloc(float[] values) {
@@ -653,5 +654,10 @@ class CLCore {
     public void free(cl_mem buffer) {
         CL.clReleaseMemObject(buffer);
     }  
+    
+    public void waitOnComplete() {
+    	CL.clFinish(commandQueue);
+    } 
+  
 
 }

@@ -703,6 +703,11 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
         CORE.boxMuller(dataPointer, randomDataPointer.get(), this.clRows, this.clColumns, this.rows, this.columns);
     }
 
+    public static void waitOnComplete() {
+        CORE.waitOnComplete();
+    }
+    
+    
     @Override
     public void free() {
         CORE.free(dataPointer);
