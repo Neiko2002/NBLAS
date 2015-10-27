@@ -2,6 +2,8 @@ package org.nblas.matrix;
 
 import java.util.Random;
 
+import org.jblas.ranges.IntervalRange;
+import org.jblas.ranges.RangeUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,7 +23,7 @@ public class CLFloatMatrixTest {
 	public static void main(String[] args) throws Exception {
 		CLFloatMatrixTest testSuit = new CLFloatMatrixTest();
 		testSuit.setUp();
-		testSuit.gtTest();
+		testSuit.getSubMatrixTest();
 	}
 	
 	protected org.jblas.FloatMatrix matA_CPU;
@@ -59,6 +61,63 @@ public class CLFloatMatrixTest {
 		matB_GPU.free();
 	}
 
+	@Test
+	public void repmatTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.repmat(1, 2);
+		
+		// Berechnung auf der GPU
+		CLFloatMatrix matC_GPU = matA_GPU.repmat(1, 2);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void setSubMatrixTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = org.jblas.FloatMatrix.concatHorizontally(org.jblas.FloatMatrix.ones(matA_CPU.getRows(),1), matA_CPU);
+		matC_CPU = org.jblas.FloatMatrix.concatVertically(org.jblas.FloatMatrix.ones(1, matC_CPU.getColumns()), matC_CPU);
+		
+		// Berechnung auf der GPU
+		CLFloatMatrix matC_GPU = CLFloatMatrix.ones(matA_GPU.getRows()+1, matA_GPU.getColumns()+1);
+		matC_GPU.setSubMatrix(matA_GPU, 1, 1);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void getSubMatrixTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.getRange(1, matA_CPU.getRows(), 1, matA_CPU.getColumns());
+		
+		// Berechnung auf der GPU
+		CLFloatMatrix matC_GPU = CLFloatMatrix.zeros(matA_GPU.getRows()-1, matA_GPU.getColumns()-1);
+		matA_GPU.getSubMatrix(matC_GPU, 1, 1);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
 	@Test
 	public void addTest() {
 		

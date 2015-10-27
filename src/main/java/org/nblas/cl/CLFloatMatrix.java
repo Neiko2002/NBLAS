@@ -300,8 +300,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
                 matrix.rows, matrix.columns, rowOffset, columnOffset, clRows);
     }
 
-    public CLFloatMatrix getSubMatrix(int rowOffset, int columnOffset, int rows, int columns) {
-        CLFloatMatrix result = new CLFloatMatrix(rows, columns);
+    public CLFloatMatrix getSubMatrix(CLFloatMatrix result, int rowOffset, int columnOffset) {
         CORE.getSubMatrix(dataPointer, result.dataPointer,
                 result.clRows, result.clColumns,
                 result.rows, result.columns, rowOffset, columnOffset, clRows);

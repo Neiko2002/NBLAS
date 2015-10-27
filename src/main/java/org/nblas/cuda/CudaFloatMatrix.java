@@ -487,12 +487,11 @@ public class CudaFloatMatrix extends ANativeFloatMatrix {
 
 
     // MATRIX GETTER
-
-    public CudaFloatMatrix getSubMatrix(int aRow, int bRow, int aColumn, int bColumn) {
-        CudaFloatMatrix result = new CudaFloatMatrix(bRow - aRow, bColumn - aColumn);
-        CORE.getSubMatrix(dataPointer, result.dataPointer, result.rows, result.columns, rows, aRow, aColumn);
+    public CudaFloatMatrix getSubMatrix(CudaFloatMatrix result, int rowOffset, int columnOffset) {
+        CORE.getSubMatrix(dataPointer, result.dataPointer, result.rows, result.columns, rows, rowOffset, columnOffset);
         return result;
     }
+    
 
     @Override
     public void getColumnWiseOn(float[] values) {

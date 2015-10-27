@@ -8,7 +8,7 @@ package org.nblas.generic;
  */
 public abstract class ANativeMatrix extends AMatrix {
    
-    protected boolean released = true;
+    protected boolean released = false;
 
     
     public boolean isReleased() {
