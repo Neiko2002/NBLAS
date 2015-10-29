@@ -17,16 +17,16 @@ public class CLFloatMatrixTest {
 	protected static final int seed = 7;
 	protected static final int runs = 100_000;
 	
-	protected static final int matARows = 16;
-	protected static final int matAColumns = 16;
+	protected static final int matARows = 17;
+	protected static final int matAColumns = 17;
 	
-	protected static final int matBRows = 16;
-	protected static final int matBColumns = 16;
+	protected static final int matBRows = 17;
+	protected static final int matBColumns = 17;
 	
 	public static void main(String[] args) throws Exception {
 		CLFloatMatrixTest testSuit = new CLFloatMatrixTest();
 		testSuit.setUp();
-		testSuit.memoryLeakTest();
+		testSuit.gtScalarTest();
 	}
 	
 	protected org.jblas.FloatMatrix matA_CPU;
@@ -45,10 +45,10 @@ public class CLFloatMatrixTest {
 		
 		// Arrays mit Zufallszahlen füllen
 		for (int i = 0; i < matAFloatArray.length; i++) 
-			matAFloatArray[i] = rnd.nextFloat();
+			matAFloatArray[i] = rnd.nextFloat() * 2 - 1;
 
 		for (int i = 0; i < matBFloatArray.length; i++) 
-			matBFloatArray[i] = rnd.nextFloat();
+			matBFloatArray[i] = rnd.nextFloat() * 2 - 1;
 		
 		// die Daten auf die Grafikkarte kopieren
 		matA_CPU = new org.jblas.FloatMatrix(matARows, matAColumns, matAFloatArray);
@@ -452,11 +452,11 @@ public class CLFloatMatrixTest {
 	public void gtScalarTest() {
 		
 		// Berechnung auf der CPU
-		org.jblas.FloatMatrix matC_CPU = matA_CPU.gt(0.5f);
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.gt(0);
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.gt(matA_GPU, 0.5f, matC_GPU);
+		CLFloatMatrix.gt(matA_GPU, 0, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -1487,12 +1487,12 @@ public class CLFloatMatrixTest {
 	public void sumTest() {
 		
 		// Berechnung auf der CPU
-		float prod_CPU = matA_CPU.sum();
+		float sum_CPU = matA_CPU.sum();
 		
 		// Berechnung auf der GPU
-		float prod_GPU = CLFloatMatrix.sum(matA_GPU);
+		float sum_GPU = CLFloatMatrix.sum(matA_GPU);
 		
-		Assert.assertEquals(prod_CPU, prod_GPU, 0.1f);
+		Assert.assertEquals(sum_CPU, sum_GPU, 1.0f);
 	}
 	
 	@Test
@@ -1532,4 +1532,24 @@ public class CLFloatMatrixTest {
 		matC_GPU.free();
 	}
 	
+	@Test
+	public void toArray2Test() {
+		
+		// Ergebnisse vergleichen 
+		float[][] result_CPU = matA_CPU.toArray2();
+		float[][] result_GPU = matA_GPU.toArray2();
+		
+		for (int i = 0; i < result_GPU.length; i++)			
+			Assert.assertArrayEquals(result_CPU[i], result_GPU[i], 0.1f);
+	}
+	
+	@Test
+	public void toArrayTest() {
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matA_CPU.toArray();
+		float[] result_GPU = matA_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+	}
 }

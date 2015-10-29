@@ -113,6 +113,37 @@ class CLPredefined {
             "     }\n" +
             "}";
 
+    private static final String[] sumFloats = {
+    	"__kernel void ",
+	    "(__global float* buffer, __global float* result,  __local float* shared, __const int length)\n" +
+	    "{\n" +
+	    "	int global_index = get_global_id(0);\n" +
+	    "	int global_size = get_global_size(0);\n" +
+	    "	float accumulator = 0.0f;\n" +
+	    "\n" +
+	    "	// Loop sequentially over chunks of input vector\n" +
+	    "	while (global_index < length) {\n" +
+	    "		accumulator += buffer[global_index];\n" +
+	    "		global_index += global_size;\n" +
+	    "	}\n" +
+	    "\n" +
+	    "	// Perform parallel reduction\n" +
+	    "	int local_index = get_local_id(0);\n" +
+	    "	shared[local_index] = accumulator;\n" +
+	    "	barrier(CLK_LOCAL_MEM_FENCE);\n" +
+	    "	for(int offset = get_local_size(0) >> 1; offset > 0; offset >>= 1) {\n" +
+	    "		if (local_index < offset) {\n" +
+	    "			shared[local_index] += shared[local_index + offset];\n" +
+	    "		}\n" +
+	    "		barrier(CLK_LOCAL_MEM_FENCE);\n" +
+	    "	}\n" +
+	    "\n" +
+	    "	if (local_index == 0) {\n" +
+	    "		result[get_group_id(0)] = shared[0];\n" +
+	    "	}\n" +
+	    "}"
+    };
+    
     private static final String[] reductionFloats = {
             "__kernel void ",
             "(__global float* inputData, __global float* outputData, __local float* shared, const uint rows, const uint columns, const float initValue)\n" +
@@ -130,7 +161,7 @@ class CLPredefined {
                     "        gid0 = get_global_id(0);\n" +
                     "        while (gid0 < rows) {\n",
 
-            "            gid0 += gridSize0;\n" +
+                    "            gid0 += gridSize0;\n" +
                     "        }\n" +
                     "        gid1 += gridSize1;\n" +
                     "    }\n" +
@@ -143,7 +174,7 @@ class CLPredefined {
                     "    {\n" +
                     "        if (tid1 * get_local_size(0) + tid0 < s && gid1 < columns && gid0 < rows)\n",
 
-            "        barrier(CLK_LOCAL_MEM_FENCE);\n" +
+                    "        barrier(CLK_LOCAL_MEM_FENCE);\n" +
                     "    }\n" +
                     "\n" +
                     "    if (sIndex == 0)\n" +
@@ -168,7 +199,7 @@ class CLPredefined {
                     "    while(gid0 < rows)\n" +
                     "    {\n",
 
-            "        gid0 += gridSize0;\n" +
+                    "        gid0 += gridSize0;\n" +
                     "    }\n" +
                     " \tbarrier(CLK_LOCAL_MEM_FENCE);\n" +
                     "\n" +
@@ -177,7 +208,7 @@ class CLPredefined {
                     "        if(tid0 < s && gid0 < rows && gid1 < columns) {\n" +
                     "            int id = tid1 * get_local_size(0) + tid0;\n",
 
-            " \t\t\tbarrier(CLK_LOCAL_MEM_FENCE);\n" +
+                    " \t\t\tbarrier(CLK_LOCAL_MEM_FENCE);\n" +
                     "        }\n" +
                     "    }\n" +
                     "\n" +
@@ -202,7 +233,7 @@ class CLPredefined {
                     "    while(gid1 < columns)\n" +
                     "    {\n",
 
-            "        gid1 += gridSize1;\n" +
+                    "        gid1 += gridSize1;\n" +
                     "    }\n" +
                     " \tbarrier(CLK_LOCAL_MEM_FENCE);\n" +
                     "\n" +
@@ -210,7 +241,7 @@ class CLPredefined {
                     "    for(unsigned int s = get_local_size(1) >> 1; s > 0; s >>= 1) {\n" +
                     "        if(tid1 < s && gid0 < rows && gid1 < columns) {\n",
 
-            " \t\t\tbarrier(CLK_LOCAL_MEM_FENCE);\n" +
+                    " \t\t\tbarrier(CLK_LOCAL_MEM_FENCE);\n" +
                     "        }\n" +
                     "    }\n" +
                     "    if(tid1 == 0)\n" +
@@ -432,7 +463,9 @@ class CLPredefined {
                         "\t\t\tshared[sharedIndex] = min(shared[sharedIndex], shared[(tid1 + s) * get_local_size(0) + tid0]);\n"
         };
         addSubprogram(new Subprogram<cl_kernel>(rowMins[0], buildReductionKernel(rowMins, reductionRowFloats), false));
-
+        
+        String[] sumValues = {"sumFloats1D"};
+        addSubprogram(new Subprogram<cl_kernel>(sumValues[0], buildReductionKernel(sumValues, sumFloats), false));
     }
     
     private static void addSubprogram(Subprogram<cl_kernel> subprogram) {

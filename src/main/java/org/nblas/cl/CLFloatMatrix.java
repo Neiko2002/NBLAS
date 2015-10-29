@@ -273,7 +273,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
             for (int i = 0; i < initRandom.length; i++) {
                 initRandom[i] = Random.nextInt(Integer.MAX_VALUE - 1234) + 1234;
             }
-            randomDataPointer = Optional.of(CORE.mallocRandom(initRandom));
+            randomDataPointer = Optional.of(CORE.malloc(initRandom));
         }
     }
 
@@ -556,7 +556,8 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
     // REDUCE
 
     public static float sum(CLFloatMatrix matrix) {
-        return CORE.reduce2D("sumFloats", matrix.dataPointer, matrix.rows, matrix.columns, 0);
+//        return CORE.reduce2D("sumFloats", matrix.dataPointer, matrix.rows, matrix.columns, 0);
+        return CORE.reduce1D("sumFloats1D", matrix.dataPointer, matrix.clRows*matrix.clColumns);
     }
 
     public static CLFloatMatrix testsum(CLFloatMatrix matrix) {

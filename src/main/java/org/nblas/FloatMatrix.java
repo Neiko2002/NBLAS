@@ -426,34 +426,34 @@ public class FloatMatrix {
     }
 
     public FloatMatrix gt(FloatMatrix b, FloatMatrix result) {
-        FloatMatrix.mul(this, b, result);
+        FloatMatrix.gt(this, b, result);
         return result;
     }
 
     public FloatMatrix gti(FloatMatrix b) {
-        FloatMatrix.mul(this, b, this);
+        FloatMatrix.gt(this, b, this);
         return this;
     }
 
     public FloatMatrix gt(FloatMatrix b) {
         FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns());
-        FloatMatrix.mul(this, b, result);
+        FloatMatrix.gt(this, b, result);
         return result;
     }
     
     public FloatMatrix gt(float scalar, FloatMatrix result) {
-        FloatMatrix.mul(this, scalar, result);
+        FloatMatrix.gt(this, scalar, result);
         return result;
     }
 
     public FloatMatrix gti(float scalar) {
-        FloatMatrix.mul(this, scalar, this);
+        FloatMatrix.gt(this, scalar, this);
         return this;
     }
 
     public FloatMatrix gt(float scalar) {
         FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
-        FloatMatrix.mul(this, scalar, result);
+        FloatMatrix.gt(this, scalar, result);
         return result;
     }
     
@@ -563,7 +563,7 @@ public class FloatMatrix {
             	result = CLFloatMatrix.sum((CLFloatMatrix) a.matrix);
             }
         } else {
-        	result = a.sum();
+        	result = ((org.jblas.FloatMatrix) a.matrix).sum();
         }
         
 		return result;
@@ -571,5 +571,46 @@ public class FloatMatrix {
 	
 	public float sum() {
 		return sum(this);
+	}
+
+	public static float[][] toArray2(FloatMatrix a) {
+		
+		float[][] result = null;
+        if (CONTEXT.isGPU()) {
+            if (CONTEXT.isCUDA()) {
+            	result = ((CudaFloatMatrix) a.matrix).toArray2();
+            } else {
+            	result = ((CLFloatMatrix) a.matrix).toArray2();
+            }
+        } else {
+        	result = ((org.jblas.FloatMatrix) a.matrix).toArray2();
+        }
+        
+		return result;
+	}
+	
+	public float[][] toArray2() {
+		return FloatMatrix.toArray2(this);
+	}
+
+	public static float[] toArray(FloatMatrix a) {
+		
+		float[] result = null;
+        if (CONTEXT.isGPU()) {
+            if (CONTEXT.isCUDA()) {
+            	result = ((CudaFloatMatrix) a.matrix).toArray();
+            } else {
+            	result = ((CLFloatMatrix) a.matrix).toArray();
+            }
+        } else {
+        	result = ((org.jblas.FloatMatrix) a.matrix).toArray();
+        }
+        
+		return result;
+	}
+	
+
+	public float[] toArray() {
+		return FloatMatrix.toArray(this);
 	}
 }

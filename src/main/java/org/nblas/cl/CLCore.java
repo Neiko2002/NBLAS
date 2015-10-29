@@ -37,6 +37,10 @@ class CLCore {
     private int threadCount_X;
     private int threadCount_Y;
     private int threadCount;
+    private int computeUnits;
+    
+    private float[] sharedData;
+    private cl_mem sharedBuffer;
 
     private CLCore() {
 
@@ -51,14 +55,13 @@ class CLCore {
         String deviceName = getString(device, CL.CL_DEVICE_NAME);
         System.out.printf("Using OpenCL Device: \t%s\n", deviceName);
 
-
+        computeUnits = (int) getSize(device, CL.CL_DEVICE_MAX_COMPUTE_UNITS);
         threadCount = (int) getSize(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE);
         int logBlockSize = (int) Math.round(Math.log(threadCount) / Math.log(2));
         int logBlockSizeX = logBlockSize / 2;
         int logBlockSizeY = (logBlockSize % 2 == 0) ? logBlockSizeX : logBlockSizeX + 1;
         threadCount_X = (int) Math.pow(2.0, logBlockSizeX);
         threadCount_Y = (int) Math.pow(2.0, logBlockSizeY);
-
 
         contextProperties = new cl_context_properties();
         contextProperties.addProperty(CL.CL_CONTEXT_PLATFORM, platform);
@@ -82,6 +85,10 @@ class CLCore {
         for (Subprogram<cl_kernel> subprogram : CLPredefined.getAllSubPrograms()) {
         	loadFromGeneratedSubprogram(subprogram);
         }
+        
+
+        sharedData = new float[computeUnits];
+        sharedBuffer = malloc(computeUnits);
     }
 
 
@@ -382,12 +389,13 @@ class CLCore {
     }
 
 
-    public void getData(cl_mem buffer, float[] n) {
+    public float[] getData(cl_mem buffer, float[] n) {
         Pointer pointer = Pointer.to(n);
-//        cl_event event = new cl_event();
+        cl_event event = new cl_event();
         waitOnComplete();
-        CL.clEnqueueReadBuffer(commandQueue, buffer, CL.CL_TRUE, 0, n.length * Sizeof.cl_float, pointer, 0, null, null);
-//        CL.clWaitForEvents(1, new cl_event[]{event});
+        CL.clEnqueueReadBuffer(commandQueue, buffer, CL.CL_TRUE, 0, n.length * Sizeof.cl_float, pointer, 0, null, event);
+        CL.clWaitForEvents(1, new cl_event[]{event});
+        return n;
     }
 
     public void loadFromGeneratedSubprogram(Subprogram<cl_kernel> subprogram) {
@@ -496,6 +504,9 @@ class CLCore {
     @Deprecated
     public float reduce(String reductionName, cl_mem data, int n, float initValue) {
 
+    	// alle vorherigen Operationen müssen abgeschlossen sein
+    	waitOnComplete();
+    	
         int tempSize = (int) Math.ceil((double) n / threadCount);
         int size = tempSize * threadCount;
 
@@ -518,6 +529,10 @@ class CLCore {
 
     @Deprecated
     private void reduceCall(cl_kernel kernel, cl_mem data, cl_mem temp, int n, float initValue, int size) {
+    	
+    	// alle vorherigen Operationen müssen abgeschlossen sein
+    	waitOnComplete();
+    	
 //        cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(data));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(temp));
@@ -532,13 +547,14 @@ class CLCore {
     }
 
     public float reduce2D(String reductionName, cl_mem data, int rows, int columns, float initValue) {
-
+    	 
         int tempSizeX = (int) Math.ceil((double) rows / threadCount_X);
         int tempSizeY = (int) Math.ceil((double) columns / threadCount_Y);
         int sizeX = tempSizeX * threadCount_X;
         int sizeY = tempSizeY * threadCount_Y;
 
-        cl_mem temp = malloc(tempSizeY * tempSizeX);
+//        cl_mem temp = malloc(tempSizeY * tempSizeX);
+        cl_mem temp = malloc(new float[tempSizeY * tempSizeX]);
         cl_kernel kernel = CLPredefined.getSubprogram(reductionName).getKernel();
         reduceCall(kernel, data, temp, rows, columns, initValue, sizeX, sizeY);
 
@@ -550,12 +566,21 @@ class CLCore {
             reduceCall(kernel, temp, temp, sizeX, sizeY, initValue, tempSizeX * threadCount_X, tempSizeY * threadCount_Y);
         }
 
-
         float[] reduced = new float[1];
         getData(temp, reduced);
         free(temp);
-
+        
         return reduced[0];
+    }
+  
+    
+    public float sum(float[] arr) {
+    	float sum = 0;
+    	for (float f : arr) {
+			sum+=f;
+		}
+    	
+    	return sum;
     }
 
     public void reduce2D(String reductionName, cl_mem data, cl_mem result, int rows, int columns, int tempSizeX, int tempSizeY, float initValue) {
@@ -610,6 +635,7 @@ class CLCore {
     }
 
     private void reduceCall(cl_kernel kernel, cl_mem data, cl_mem result, int rows, int columns, float initValue, int sizeX, int sizeY) {
+    	
 //        cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(data));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
@@ -624,6 +650,22 @@ class CLCore {
 //        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
+    
+    public float reduce1D(String reductionName, cl_mem data, int dataLength) {
+
+    	cl_kernel kernel = CLPredefined.getSubprogram(reductionName).getKernel();
+        CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(data));
+        CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(sharedBuffer));
+        CL.clSetKernelArg(kernel, 2, Sizeof.cl_float * threadCount, null);
+        CL.clSetKernelArg(kernel, 3, Sizeof.cl_int, Pointer.to(new int[]{dataLength}));
+        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
+                new long[]{computeUnits * threadCount},
+                new long[]{threadCount}, 0, null, null);
+
+        getData(sharedBuffer, sharedData);
+        return sum(sharedData);
+    }
+    
     public cl_mem malloc(float[] values) {
 
         Pointer pointer = Pointer.to(values);
@@ -635,7 +677,7 @@ class CLCore {
     }
 
 
-    public cl_mem mallocRandom(int[] values) {
+    public cl_mem malloc(int[] values) {
 
         Pointer pointer = Pointer.to(values);
 
