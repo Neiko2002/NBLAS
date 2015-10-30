@@ -11,11 +11,14 @@ import org.nblas.function.ArgumentType;
 import org.nblas.function.common.Arg;
 import org.nblas.function.common.Value;
 import org.nblas.function.generic.AFunctionObject;
+import org.nblas.function.predefined.MatrixFunctions;
 import org.nblas.function.predefined.binary.Add;
 import org.nblas.function.predefined.binary.Comparator;
 import org.nblas.function.predefined.binary.Div;
 import org.nblas.function.predefined.binary.Mul;
 import org.nblas.function.predefined.binary.Sub;
+import org.nblas.function.predefined.unary.Exp;
+import org.nblas.function.predefined.unary.Negate;
 
 import java.util.Optional;
 
@@ -54,6 +57,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 
     private static final Subprogram<cl_kernel> SET_ONE;
     private static final Subprogram<cl_kernel> COPY_MATRIX;
+//    private static final Subprogram<cl_kernel> DUP;
     
     // greater than
     private static final Subprogram<cl_kernel> GT_MATRIX;
@@ -90,6 +94,12 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
     private static final Subprogram<cl_kernel> NE_SCALAR;
     private static final Subprogram<cl_kernel> NE_C_VECTOR;
     private static final Subprogram<cl_kernel> NE_R_VECTOR;
+    
+    // special functions  
+    private static final Subprogram<cl_kernel> EXP;
+    private static final Subprogram<cl_kernel> NEG;
+    private static final Subprogram<cl_kernel> SIGMOID;
+    
 
     static {
         CLFloatFunctionBuilder builder = new CLFloatFunctionBuilder();
@@ -183,22 +193,25 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
         NE_C_VECTOR = buildPredefinedFunction(builder, notEqual, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
         
         AFunctionObject one = new Value(1.0);
-
         SET_ONE = buildPredefinedFunction(builder, one);
         
-        AFunctionObject copy = new Arg(0);
+        AFunctionObject exp = new Exp(new Arg(0));
+        EXP = buildPredefinedFunction(builder, exp, ArgumentType.MATRIX);
         
+//        AFunctionObject duplicate = new Duplicate(new Arg(0));
+//        DUP = buildPredefinedFunction(builder, duplicate, ArgumentType.MATRIX);        
+        
+        AFunctionObject negate = new Negate(new Arg(0));
+        NEG = buildPredefinedFunction(builder, negate, ArgumentType.MATRIX);
+        
+        AFunctionObject sigmoid = MatrixFunctions.sigmoid(new Arg(0));
+        SIGMOID = buildPredefinedFunction(builder, sigmoid, ArgumentType.MATRIX);
+        
+        AFunctionObject copy = new Arg(0);
         COPY_MATRIX = buildPredefinedFunction(builder, copy, ArgumentType.MATRIX);
 
         
         CORE.compileMatrixFunctions();
-    }
-
-    private static Subprogram<cl_kernel> buildPredefinedFunction(AFunctionBuilder<cl_kernel> builder, AFunctionObject functionObject, ArgumentType... argumentTypes) {
-    	Subprogram<cl_kernel> subprogram = builder.buildFunction(functionObject, argumentTypes);
-    	subprogram.setCustom(false);
-        CORE.loadFromGeneratedSubprogram(subprogram);
-        return subprogram;
     }
 
     private cl_mem dataPointer;
@@ -228,6 +241,13 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
         randomDataPointer = Optional.empty();
     }
 
+    private static Subprogram<cl_kernel> buildPredefinedFunction(AFunctionBuilder<cl_kernel> builder, AFunctionObject functionObject, ArgumentType... argumentTypes) {
+    	Subprogram<cl_kernel> subprogram = builder.buildFunction(functionObject, argumentTypes);
+    	subprogram.setCustom(false);
+        CORE.loadFromGeneratedSubprogram(subprogram);
+        return subprogram;
+    }
+    
     private float[] getCLMatrix(int rows, int columns, float[] values) {
         float[] clValues = new float[clLength];
         for (int i = 0; i < columns; i++) {
@@ -543,7 +563,22 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
     public static void neRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
     	runMatrixRowVectorElementWiseOperation(NE_R_VECTOR, matrix, rowVector, result);
     } 
-    
+ 
+    public static void dup(CLFloatMatrix matrix, CLFloatMatrix result) {
+		runMatrixElementWiseOperation(COPY_MATRIX, matrix, result);
+	}
+	
+    public static void exp(CLFloatMatrix matrix, CLFloatMatrix result) {
+		runMatrixElementWiseOperation(EXP, matrix, result);
+	}
+
+    public static void neg(CLFloatMatrix matrix, CLFloatMatrix result) {
+		runMatrixElementWiseOperation(NEG, matrix, result);
+	}
+	
+	public static void sigmoid(CLFloatMatrix matrix, CLFloatMatrix result) {
+		runMatrixElementWiseOperation(SIGMOID, matrix, result);
+	}
     
     // TRANSPOSE
 
@@ -643,6 +678,23 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
 	protected static void runMatrixMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
 		checkSameSize(a, b, result);
         CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+	}
+	
+	
+	
+	
+	/**
+     * Führe ein OpenCL Programm auf einer Matrix durch,
+     * das Resultat wird in eine zweite Matrix gespeichert
+     * 
+	 * @param programId
+	 * @param matrix
+	 * @param scalar
+	 * @param result
+	 */
+	protected static void runMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLFloatMatrix a, CLFloatMatrix result) {
+		checkSameSize(a, result);
+        CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer);
 	}
 	
 	/**

@@ -74,6 +74,32 @@ public class FloatMatrix {
         }
     }
 
+    public static FloatMatrix rand(int rows, int columns) {
+        if (CONTEXT.isGPU()) {
+            if (CONTEXT.isCUDA()) {
+                return new FloatMatrix(CudaFloatMatrix.rand(rows, columns));
+            } else {
+                return new FloatMatrix(CLFloatMatrix.rand(rows, columns));
+            }
+        } else {
+            return new FloatMatrix(org.jblas.FloatMatrix.rand(rows, columns));
+        }
+    }
+    
+    public static FloatMatrix rand(FloatMatrix a) {
+        if (CONTEXT.isGPU()) {
+            if (CONTEXT.isCUDA()) {
+                ((CudaFloatMatrix)a.matrix).nextRand();;
+            } else {
+                ((CLFloatMatrix)a.matrix).nextRand();;
+            }
+        } else {
+        	throw new NotImplementedException();
+        }
+        
+        return a;
+    }
+    
     public static void add(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
         a.isReleased();
         b.isReleased();
@@ -318,6 +344,125 @@ public class FloatMatrix {
         return result;
     }
     
+    public static void dup(FloatMatrix a, FloatMatrix result) {
+        a.isReleased();
+        result.isReleased();
+        if (CONTEXT.isGPU()) {
+            if (CONTEXT.isCUDA()) {
+                throw new NotImplementedException();
+            } else {
+                CLFloatMatrix.dup((CLFloatMatrix) a.matrix, (CLFloatMatrix) result.matrix);
+            }
+        } else {
+        	for (int i = 0; i < ((org.jblas.FloatMatrix) a.matrix).data.length; i++)
+				((org.jblas.FloatMatrix) result.matrix).data[i] = ((org.jblas.FloatMatrix) a.matrix).data[i];
+        }
+    }
+    
+    public FloatMatrix dup() {
+        FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
+        FloatMatrix.dup(this, result);
+        return result;
+    }
+    
+    public FloatMatrix dup(FloatMatrix result) {
+        FloatMatrix.dup(this, result);
+        return result;
+    }
+    
+    public static void exp(FloatMatrix a, FloatMatrix result) {
+        a.isReleased();
+        result.isReleased();
+        if (CONTEXT.isGPU()) {
+            if (CONTEXT.isCUDA()) {
+                throw new NotImplementedException();
+            } else {
+                CLFloatMatrix.exp((CLFloatMatrix) a.matrix, (CLFloatMatrix) result.matrix);
+            }
+        } else {
+        	((org.jblas.FloatMatrix)result.matrix).copy(((org.jblas.FloatMatrix)a.matrix));
+        	org.jblas.MatrixFunctions.expi((org.jblas.FloatMatrix)result.matrix);
+        }
+    }
+
+	public FloatMatrix exp() {
+        FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
+        exp(this, result);
+		return result;
+	}
+	
+	public FloatMatrix expi() {
+        exp(this, this);
+		return this;
+	}
+	
+	public FloatMatrix exp(FloatMatrix result) {
+        exp(this, result);
+		return result;
+	}
+	
+	public static void neg(FloatMatrix a, FloatMatrix result) {
+		a.isReleased();
+		result.isReleased();
+		if (CONTEXT.isGPU()) {
+			if (CONTEXT.isCUDA()) {
+				throw new NotImplementedException();
+			} else {
+				CLFloatMatrix.neg((CLFloatMatrix) a.matrix, (CLFloatMatrix) result.matrix);
+			}
+		} else {
+			((org.jblas.FloatMatrix) result.matrix).copy(((org.jblas.FloatMatrix) a.matrix));
+			((org.jblas.FloatMatrix) result.matrix).negi();
+		}
+	}
+
+	public FloatMatrix neg() {
+		FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
+		neg(this, result);
+		return result;
+	}
+
+	public FloatMatrix negi() {
+		neg(this, this);
+		return this;
+	}
+
+	public FloatMatrix neg(FloatMatrix result) {
+		neg(this, result);
+		return result;
+	}
+
+	public static void sigmoid(FloatMatrix a, FloatMatrix result) {
+		a.isReleased();
+		result.isReleased();
+		if (CONTEXT.isGPU()) {
+			if (CONTEXT.isCUDA()) {
+				throw new NotImplementedException();
+			} else {
+				CLFloatMatrix.sigmoid((CLFloatMatrix) a.matrix, (CLFloatMatrix) result.matrix);
+			}
+		} else {
+			for (int i = 0; i < ((org.jblas.FloatMatrix) a.matrix).data.length; i++)
+				((org.jblas.FloatMatrix) result.matrix).data[i] = (float) (1. / ( 1. + Math.exp(-((org.jblas.FloatMatrix) a.matrix).data[i]) ));
+		}
+	}
+
+	public FloatMatrix sigmoid() {
+		FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
+		sigmoid(this, result);
+		return result;
+	}
+
+	public FloatMatrix sigmoidi() {
+		sigmoid(this, this);
+		return this;
+	}
+
+	public FloatMatrix sigmoid(FloatMatrix result) {
+		sigmoid(this, result);
+		return result;
+	}
+	
     public static void mmul(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
         a.isReleased();
         b.isReleased();
@@ -613,4 +758,5 @@ public class FloatMatrix {
 	public float[] toArray() {
 		return FloatMatrix.toArray(this);
 	}
+
 }

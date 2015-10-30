@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
 
+import org.jblas.MatrixFunctions;
 import org.jblas.ranges.IntervalRange;
 import org.jblas.ranges.RangeUtils;
 import org.junit.After;
@@ -26,7 +27,7 @@ public class CLFloatMatrixTest {
 	public static void main(String[] args) throws Exception {
 		CLFloatMatrixTest testSuit = new CLFloatMatrixTest();
 		testSuit.setUp();
-		testSuit.gtScalarTest();
+		testSuit.sigmoidTest();
 	}
 	
 	protected org.jblas.FloatMatrix matA_CPU;
@@ -1493,6 +1494,65 @@ public class CLFloatMatrixTest {
 		float sum_GPU = CLFloatMatrix.sum(matA_GPU);
 		
 		Assert.assertEquals(sum_CPU, sum_GPU, 1.0f);
+	}
+	
+	@Test
+	public void expTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = MatrixFunctions.exp(matA_CPU);
+
+		// Berechnung auf der GPU
+		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		CLFloatMatrix.exp(matA_GPU, matC_GPU);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void negateTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.neg();
+		
+		// Berechnung auf der GPU
+		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		CLFloatMatrix.neg(matA_GPU, matC_GPU);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void sigmoidTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.dup();
+		for (int i = 0; i < matA_CPU.data.length; i++)
+			matC_CPU.data[i] = (float) (1. / ( 1. + Math.exp(-matA_CPU.data[i]) ));
+		
+		// Berechnung auf der GPU
+		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		CLFloatMatrix.sigmoid(matA_GPU, matC_GPU);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
 	}
 	
 	@Test

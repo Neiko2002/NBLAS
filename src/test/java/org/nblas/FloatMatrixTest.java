@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
 
+import org.jblas.MatrixFunctions;
 import org.jblas.ranges.IntervalRange;
 import org.jblas.ranges.RangeUtils;
 import org.junit.After;
@@ -27,7 +28,7 @@ public class FloatMatrixTest {
 	public static void main(String[] args) throws Exception {
 		FloatMatrixTest testSuit = new FloatMatrixTest();
 		testSuit.setUp();
-		testSuit.gtScalarTest();
+		testSuit.duplicateTest();
 	}
 	
 	protected org.jblas.FloatMatrix matA_CPU;
@@ -147,6 +148,195 @@ public class FloatMatrixTest {
 		float sum_GPU = matC_GPU.sum();
 		
 		Assert.assertEquals(sum_CPU, sum_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void expTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = MatrixFunctions.exp(matA_CPU);
+
+		// Berechnung auf der GPU
+		FloatMatrix matC_GPU = matA_GPU.exp();
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void expiTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = MatrixFunctions.exp(matA_CPU);
+
+		// Berechnung auf der GPU
+		FloatMatrix matC_GPU = matA_GPU.dup().expi();
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void expMatrixTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = MatrixFunctions.exp(matA_CPU);
+
+		// Berechnung auf der GPU
+		FloatMatrix matC_GPU = new FloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		matA_GPU.exp(matC_GPU);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void negateTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.neg();
+		
+		// Berechnung auf der GPU
+		FloatMatrix matC_GPU = matA_GPU.neg();
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void negateInPlaceTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.neg();
+		
+		// Berechnung auf der GPU
+		FloatMatrix matC_GPU = matA_GPU.dup().negi();
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void negateMatrixTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.neg();
+		
+		// Berechnung auf der GPU
+		FloatMatrix matC_GPU = new FloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		matA_GPU.neg(matC_GPU);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void sigmoidTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.dup();
+		for (int i = 0; i < matA_CPU.data.length; i++)
+			matC_CPU.data[i] = (float) (1. / ( 1. + Math.exp(-matA_CPU.data[i]) ));
+		
+		// Berechnung auf der GPU
+		FloatMatrix matC_GPU = matA_GPU.sigmoid();
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void sigmoidInPlaceTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.dup();
+		for (int i = 0; i < matA_CPU.data.length; i++)
+			matC_CPU.data[i] = (float) (1. / ( 1. + Math.exp(-matA_CPU.data[i]) ));
+		
+		// Berechnung auf der GPU
+		FloatMatrix matC_GPU = matA_GPU.dup().sigmoidi();
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void sigmoidMatrixTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.dup();
+		for (int i = 0; i < matA_CPU.data.length; i++)
+			matC_CPU.data[i] = (float) (1. / ( 1. + Math.exp(-matA_CPU.data[i]) ));
+		
+		// Berechnung auf der GPU
+		FloatMatrix matC_GPU = new FloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		matA_GPU.sigmoid(matC_GPU);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		matC_GPU.free();
+	}
+	
+	@Test
+	public void duplicateTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.dup();
+		
+		// Berechnung auf der GPU
+		FloatMatrix matC_GPU = matA_GPU.dup();
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
 		
 		matC_GPU.free();
 	}
