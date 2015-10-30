@@ -7,8 +7,7 @@ import org.nblas.cuda.CudaFloatMatrix;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.common.Arg;
 import org.nblas.function.common.Value;
-import org.nblas.function.generic.AUnary;
-import org.nblas.function.predefined.binary.Add;
+import org.nblas.function.generic.AContextBasedUnaryPrefix;
 import org.nblas.function.predefined.unary.Sine;
 
 import javax.imageio.ImageIO;

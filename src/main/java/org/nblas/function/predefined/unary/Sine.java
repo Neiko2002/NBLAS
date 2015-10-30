@@ -1,9 +1,9 @@
 package org.nblas.function.predefined.unary;
 
 import org.nblas.function.generic.AFunctionObject;
-import org.nblas.function.generic.AUnary;
+import org.nblas.function.generic.AContextBasedUnaryPrefix;
 
-public class Sine extends AUnary {
+public class Sine extends AContextBasedUnaryPrefix {
     public Sine(AFunctionObject first) {
         super(first);
     }

@@ -7,7 +7,7 @@ import org.nblas.function.Context;
 import org.nblas.function.common.Arg;
 import org.nblas.function.common.Identity;
 import org.nblas.function.generic.AFunctionObject;
-import org.nblas.function.generic.ATypedFunctionObject;
+import org.nblas.function.generic.AContextBasedExpression;
 import org.nblas.generic.Subprogram;
 
 
@@ -26,7 +26,7 @@ public abstract class AFunctionBuilder<K> {
         checkFunctionArgs(function, argumentTypes.length);
         if (argumentsTest.size() != argumentTypes.length)
             throw new IllegalArgumentException("argument count or numeration is not equal to the argument types' list");
-        setFunctionType(function, getContext());
+        buildContextBasedFunctions(function, getContext());
 
         return buildFunction(function.toString(), argumentTypes);
     }
@@ -131,13 +131,13 @@ public abstract class AFunctionBuilder<K> {
 
     }
 
-    public void setFunctionType(AFunctionObject function, Context context) {
-        if (function instanceof ATypedFunctionObject) {
-            ((ATypedFunctionObject) function).setOperator(getContext());
+    public void buildContextBasedFunctions(AFunctionObject function, Context context) {
+        if (function instanceof AContextBasedExpression) {
+            ((AContextBasedExpression) function).setContext(getContext());
         }
 
         for (AFunctionObject functionObject : function.getChildren()) {
-            setFunctionType(functionObject, getContext());
+            buildContextBasedFunctions(functionObject, getContext());
         }
 
     }

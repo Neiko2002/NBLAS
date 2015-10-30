@@ -1,16 +1,14 @@
 package org.nblas.function.common;
 
 import org.nblas.function.generic.AFunctionObject;
-import org.nblas.function.generic.ATypedFunctionObject;
+import org.nblas.function.generic.AContextBasedExpression;
 
-public class Value extends ATypedFunctionObject {
-    protected String operator;
+public class Value extends AContextBasedExpression {
     public double value;
 
     public Value(double value) {
         super(new AFunctionObject[0]);
         this.value = value;
-        this.operator = getSingleOpenCL();
     }
 
     @Override
@@ -31,10 +29,5 @@ public class Value extends ATypedFunctionObject {
     @Override
     protected String getDoubleOpenCL() {
         return value + "";
-    }
-
-    @Override
-    protected String getFunction() {
-        return operator;
     }
 }

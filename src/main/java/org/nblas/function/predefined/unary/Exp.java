@@ -1,12 +1,12 @@
 package org.nblas.function.predefined.unary;
 
 import org.nblas.function.generic.AFunctionObject;
-import org.nblas.function.generic.AUnary;
+import org.nblas.function.generic.AContextBasedUnaryPrefix;
 
 /**
  * Created by Moritz on 4/27/2015.
  */
-public class Exp extends AUnary {
+public class Exp extends AContextBasedUnaryPrefix {
     public Exp(AFunctionObject first) {
         super(first);
     }

@@ -3,10 +3,10 @@ package org.nblas.function.generic;
 /**
  * Created by Moritz on 4/19/2015.
  */
-public abstract class AUnary extends ATypedFunctionObject {
+public abstract class AContextBasedUnaryPrefix extends AContextBasedExpression {
 
-    public AUnary(AFunctionObject first) {
-        super(new AFunctionObject[]{first});
+    public AContextBasedUnaryPrefix(AFunctionObject first) {
+        super(first);
     }
 
     @Override

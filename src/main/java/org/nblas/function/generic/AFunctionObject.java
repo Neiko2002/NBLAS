@@ -8,17 +8,22 @@ import java.util.ArrayList;
 public abstract class AFunctionObject {
     protected final ArrayList<AFunctionObject> children;
 
+    
+    private AFunctionObject() {
+        this.children = new ArrayList<>();
+    }
+    
     protected AFunctionObject(AFunctionObject... children) {
         this();
         for (int i = 0; i < children.length; i++) {
             this.children.add(children[i]);
         }
     }
-    
-    private AFunctionObject() {
-        this.children = new ArrayList<>();
-    }
 
+    protected String getArg(int index) {
+        return children.get(index).getFunction();
+    }
+    
     protected abstract String getFunction();
 
    
@@ -34,4 +39,5 @@ public abstract class AFunctionObject {
     public ArrayList<AFunctionObject> getChildren() {
         return children;
     }
+
 }

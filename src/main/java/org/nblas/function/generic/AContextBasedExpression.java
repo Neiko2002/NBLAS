@@ -5,15 +5,18 @@ import org.nblas.function.Context;
 /**
  * Created by Moritz on 4/27/2015.
  */
-public abstract class ATypedFunctionObject extends AFunctionObject {
+public abstract class AContextBasedExpression extends AFunctionObject {
     protected String operator;
 
-    public ATypedFunctionObject(AFunctionObject... children) {
+    public AContextBasedExpression(AFunctionObject... children) {
         super(children);
-        operator = getSingleOpenCL();
     }
-
-    public void setOperator(Context context) {
+    
+	protected String getFunction() {
+		return operator;
+	}
+    
+    public void setContext(Context context) {
 
         if (context.isCUDA()) {
             if (context.isDouble()) {
