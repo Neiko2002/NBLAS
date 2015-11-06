@@ -344,6 +344,25 @@ public class FloatMatrix {
         return result;
     }
     
+    
+    public static void setOne(FloatMatrix a) {
+        a.isReleased();
+        if (CONTEXT.isGPU()) {
+            if (CONTEXT.isCUDA()) {
+                throw new NotImplementedException();
+            } else {
+                ((CLFloatMatrix) a.matrix).setOne();
+            }
+        } else {
+        	((org.jblas.FloatMatrix) a.matrix).fill(1);
+        }
+    }
+    
+    public FloatMatrix setOne() {
+        FloatMatrix.setOne(this);
+        return this;
+    }
+    
     public static void dup(FloatMatrix a, FloatMatrix result) {
         a.isReleased();
         result.isReleased();
