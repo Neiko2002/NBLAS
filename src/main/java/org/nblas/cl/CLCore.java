@@ -1,30 +1,38 @@
 package org.nblas.cl;
 
-import org.jocl.*;
-import org.jocl.Pointer;
-import org.jocl.Sizeof;
-import org.nblas.generic.Subprogram;
-
 import java.io.IOException;
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
+import org.jocl.CL;
+import org.jocl.CLException;
+import org.jocl.NativePointerObject;
+import org.jocl.Pointer;
+import org.jocl.Sizeof;
+import org.jocl.cl_command_queue;
+import org.jocl.cl_context;
+import org.jocl.cl_context_properties;
+import org.jocl.cl_device_id;
+import org.jocl.cl_event;
+import org.jocl.cl_kernel;
+import org.jocl.cl_mem;
+import org.jocl.cl_platform_id;
+import org.jocl.cl_program;
+import org.nblas.generic.Subprogram;
 
 class CLCore {
 
     private static final CLCore CORE = new CLCore();
     private Field nativePointerField;
-    private long deviceType;
+    private CLPlatform platform;
+    private CLDevice device;
+    
     private cl_context_properties contextProperties;
-    private cl_platform_id platform;
-    private cl_device_id device;
     private cl_context context;
     private cl_command_queue commandQueue;
     
@@ -44,31 +52,20 @@ class CLCore {
 
     private CLCore() {
 
-        CL.setExceptionsEnabled(true);
-        deviceType = CL.CL_DEVICE_TYPE_GPU;
-        if (!getFastestDevice(deviceType)) {
-            throw new CLException("No OpenCL-Device found!\n " +
-                    "Please reconsider that all OpenCL-Drivers and OpenCL-Platforms are installed properly.");
-        }
-
-        // CL_DEVICE_NAME
-        String deviceName = getString(device, CL.CL_DEVICE_NAME);
-        System.out.printf("Using OpenCL Device: \t%s\n", deviceName);
-
-        computeUnits = (int) getSize(device, CL.CL_DEVICE_MAX_COMPUTE_UNITS);
-        threadCount = (int) getSize(device, CL.CL_DEVICE_MAX_WORK_GROUP_SIZE);
+        setup();
+        
+        computeUnits = device.getComputeUnits();
+        threadCount = device.getMaxWorkGroupSize();
         int logBlockSize = (int) Math.round(Math.log(threadCount) / Math.log(2));
         int logBlockSizeX = logBlockSize / 2;
         int logBlockSizeY = (logBlockSize % 2 == 0) ? logBlockSizeX : logBlockSizeX + 1;
         threadCount_X = (int) Math.pow(2.0, logBlockSizeX);
         threadCount_Y = (int) Math.pow(2.0, logBlockSizeY);
 
-        contextProperties = new cl_context_properties();
-        contextProperties.addProperty(CL.CL_CONTEXT_PLATFORM, platform);
-        context = CL.clCreateContext(
-                contextProperties, 1, new cl_device_id[]{device},
-                null, null, null);
-        commandQueue = CL.clCreateCommandQueue(context, device, 0, null);
+        cl_context_properties contextProperties = new cl_context_properties();
+        contextProperties.addProperty(CL.CL_CONTEXT_PLATFORM, platform.getId());
+        context = CL.clCreateContext(contextProperties, 1, new cl_device_id[]{device.getId()}, null, null, null);
+        commandQueue = CL.clCreateCommandQueue(context, device.getId(), 0, null);
 
         customSubprograms = new ArrayList<>();
         matrixSubprograms = new ArrayList<>();
@@ -93,7 +90,31 @@ class CLCore {
 
 
 
-    public long getNativePointer(NativePointerObject nativePointerObject) throws IllegalAccessException {
+    private void setup() {
+    	
+    	CL.setExceptionsEnabled(true);
+    	
+    	CLPlatform[] platforms = CLPlatform.getPlatforms();        
+        if (platforms.length == 0) {
+            throw new CLException("No OpenCL-Device found!\n " +
+                    "Please reconsider that all OpenCL-Drivers and OpenCL-Platforms are installed properly.");
+        }
+        
+        CLDevice fastestDevice = platforms[0].getFastestDevice();
+        for (CLPlatform clPlatform : platforms) {
+        	CLDevice device = clPlatform.getFastestDevice();
+        	if(fastestDevice.getTheoreticalComputingPower() < device.getTheoreticalComputingPower())
+        		fastestDevice = device;
+		}
+        
+        this.device = fastestDevice;
+        this.platform = fastestDevice.getPlatform();
+        System.out.println("Use device: \n"+this.device.toString());    	
+	}
+
+
+
+	public long getNativePointer(NativePointerObject nativePointerObject) throws IllegalAccessException {
         return nativePointerField.getLong(nativePointerObject);
     }
 
@@ -257,74 +278,6 @@ class CLCore {
         }
         return null;
     }
-    private String getString(cl_platform_id platform, int paramName)
-    {
-        // Obtain the length of the string that will be queried
-        long size[] = new long[1];
-        CL.clGetPlatformInfo(platform, paramName, 0, null, size);
-
-        // Create a buffer of the appropriate size and fill it with the info
-        byte buffer[] = new byte[(int)size[0]];
-        CL.clGetPlatformInfo(platform, paramName, buffer.length, Pointer.to(buffer), null);
-
-        // Create a string from the buffer (excluding the trailing \0 byte)
-        return new String(buffer, 0, buffer.length-1);
-    }
-
-    private String getString(cl_device_id device, int paramName) {
-        // Obtain the length of the string that will be queried
-        long size[] = new long[1];
-        CL.clGetDeviceInfo(device, paramName, 0, null, size);
-
-        // Create a buffer of the appropriate size and fill it with the info
-        byte buffer[] = new byte[(int) size[0]];
-        CL.clGetDeviceInfo(device, paramName, buffer.length, Pointer.to(buffer), null);
-
-        // Create a string from the buffer (excluding the trailing \0 byte)
-        return new String(buffer, 0, buffer.length - 1);
-    }
-
-
-    private boolean getFastestDevice(long deviceType) {
-
-        boolean found = false;
-        int numPlatformsPointer[] = new int[1];
-        CL.clGetPlatformIDs(0, null, numPlatformsPointer);
-        int numPlatforms = numPlatformsPointer[0];
-
-        cl_platform_id platforms[] = new cl_platform_id[numPlatforms];
-        CL.clGetPlatformIDs(platforms.length, platforms, null);
-        long maxTheoreticalComputingPower = 0;
-        for (cl_platform_id platform : platforms) {
-
-            int numDevicesPointer[] = new int[1];
-            try {
-            	CL.clGetDeviceIDs(platform, deviceType, 0, null, numDevicesPointer);
-            } catch (CLException ex) {
-                numDevicesPointer[0] = 0;
-            }
-            int numDevices = numDevicesPointer[0];
-            if (numDevices > 0) {
-                cl_device_id devices[] = new cl_device_id[numDevices];
-                CL.clGetDeviceIDs(platform, deviceType, numDevices, devices, null);
-
-                for (cl_device_id device : devices) {
-
-                    int maxComputeUnits = getInt(device, CL.CL_DEVICE_MAX_COMPUTE_UNITS);
-                    long maxClockFrequency = getLong(device, CL.CL_DEVICE_MAX_CLOCK_FREQUENCY);
-
-                    long currentComputingPower = maxComputeUnits * maxClockFrequency;
-                    if (maxTheoreticalComputingPower < currentComputingPower) {
-                        maxTheoreticalComputingPower = currentComputingPower;
-                        found = true;
-                        this.platform = platform;
-                        this.device = device;
-                    }
-                }
-            }
-        }
-        return found;
-    }
 
     private long[] getLocalWorkSize(int m, int n) {
         long[] local_work_size = {threadCount_X, threadCount_Y};
@@ -335,53 +288,6 @@ class CLCore {
             local_work_size[1] = 1;
         }
         return local_work_size;
-    }
-
-    private long[] getLongs(cl_device_id device, int paramName, int numValues) {
-        long values[] = new long[numValues];
-        CL.clGetDeviceInfo(device, paramName, Sizeof.cl_long * numValues, Pointer.to(values), null);
-        return values;
-    }
-
-    private long getLong(cl_device_id device, int paramName) {
-        return getLongs(device, paramName, 1)[0];
-    }
-
-
-    private int[] getInts(cl_device_id device, int paramName, int numValues) {
-        int values[] = new int[numValues];
-        CL.clGetDeviceInfo(device, paramName, Sizeof.cl_int * numValues, Pointer.to(values), null);
-        return values;
-    }
-
-
-    private int getInt(cl_device_id device, int paramName) {
-        return getInts(device, paramName, 1)[0];
-    }
-
-    private long getSize(cl_device_id device, int paramName) {
-        return getSizes(device, paramName, 1)[0];
-    }
-
-
-    private long[] getSizes(cl_device_id device, int paramName, int numValues) {
-        // The size of the returned data has to depend on
-        // the size of a size_t, which is handled here
-        ByteBuffer buffer = ByteBuffer.allocate(
-                numValues * Sizeof.size_t).order(ByteOrder.nativeOrder());
-        CL.clGetDeviceInfo(device, paramName, Sizeof.size_t * numValues,
-                Pointer.to(buffer), null);
-        long values[] = new long[numValues];
-        if (Sizeof.size_t == 4) {
-            for (int i = 0; i < numValues; i++) {
-                values[i] = buffer.getInt(i * Sizeof.size_t);
-            }
-        } else {
-            for (int i = 0; i < numValues; i++) {
-                values[i] = buffer.getLong(i * Sizeof.size_t);
-            }
-        }
-        return values;
     }
 
     public cl_context getContext() {
@@ -472,6 +378,7 @@ class CLCore {
 //        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
+    
     public void execute(Subprogram<cl_kernel> subprogram, int clRows, int clColumns, int rows, int columns, cl_mem result, cl_mem... dataPointer) {
         cl_kernel kernel = subprogram.getKernel();
 //        cl_event event = new cl_event();
