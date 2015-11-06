@@ -7,6 +7,8 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import org.jocl.CL;
@@ -100,12 +102,8 @@ class CLCore {
                     "Please reconsider that all OpenCL-Drivers and OpenCL-Platforms are installed properly.");
         }
         
-        CLDevice fastestDevice = platforms[0].getFastestDevice();
-        for (CLPlatform clPlatform : platforms) {
-        	CLDevice device = clPlatform.getFastestDevice();
-        	if(fastestDevice.getTheoreticalComputingPower() < device.getTheoreticalComputingPower())
-        		fastestDevice = device;
-		}
+    	final Comparator<CLDevice> performanceComperator = (p1, p2) -> Integer.compare( p1.getTheoreticalComputingPower(), p2.getTheoreticalComputingPower());
+    	CLDevice fastestDevice = Arrays.stream(platforms).map(CLPlatform::getFastestGPU).max(performanceComperator).get();
         
         this.device = fastestDevice;
         this.platform = fastestDevice.getPlatform();

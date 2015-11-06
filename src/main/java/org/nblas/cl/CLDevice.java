@@ -227,4 +227,10 @@ public class CLDevice {
 		return devices.toArray(new CLDevice[0]);
 	}
 
+
+
+	public boolean isGPU() {
+		return (deviceType == CLDeviceType.GPU);
+	}
+
 }

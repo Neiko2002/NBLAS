@@ -1,12 +1,17 @@
 package org.nblas.cl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import org.jocl.CL;
 import org.jocl.Pointer;
 import org.jocl.cl_device_id;
 import org.jocl.cl_platform_id;
+import org.nblas.cl.CLDevice.CLDeviceType;
+
+import javafx.scene.shape.CircleBuilder;
 
 public class CLPlatform {
 
@@ -46,13 +51,13 @@ public class CLPlatform {
 	}
 	
 	public CLDevice getFastestDevice() {
-
-		CLDevice best = devices[0];
-		for (CLDevice clDevice : devices)
-			if (best.getTheoreticalComputingPower() < clDevice.getTheoreticalComputingPower())
-				best = clDevice;
-		
-		return best;
+		final Comparator<CLDevice> performanceComperator = (p1, p2) -> Integer.compare( p1.getTheoreticalComputingPower(), p2.getTheoreticalComputingPower());
+		return Arrays.stream(devices).max(performanceComperator).get();
+    }
+	
+	public CLDevice getFastestGPU() {
+		final Comparator<CLDevice> performanceComperator = (p1, p2) -> Integer.compare( p1.getTheoreticalComputingPower(), p2.getTheoreticalComputingPower());
+		return Arrays.stream(devices).filter(CLDevice::isGPU).max(performanceComperator).get();
     }
 	
 	private static String getString(cl_platform_id platform, int paramName)

@@ -28,7 +28,7 @@ public class FloatMatrixTest {
 	public static void main(String[] args) throws Exception {
 		FloatMatrixTest testSuit = new FloatMatrixTest();
 		testSuit.setUp();
-		testSuit.duplicateTest();
+		testSuit.sumAfterwardsTest();
 	}
 	
 	protected org.jblas.FloatMatrix matA_CPU;
@@ -109,7 +109,7 @@ public class FloatMatrixTest {
 	@Test
 	public void sumWithDifferentSizesTest() {
 		
-		for (int size = 1; size < 1000; size++) {
+		for (int size = 1; size < 1000; size+=10) {
 			
 			Random rnd = new Random(seed);
 			float[] matCFloatArray = new float[size * size];

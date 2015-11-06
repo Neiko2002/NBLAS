@@ -3,6 +3,8 @@ package org.nblas.generic;
 /**
  * Eine Native Matrix alloziert Ressourcen die wieder frei gegeben werden müssen.
  * 
+ * TODO das zu einen Interface machen und dafür ANativeCLMatrix und ANativeCUDAMatrix inder die internen rows gespeichert sind
+ * 
  * @author Nico
  *
  */

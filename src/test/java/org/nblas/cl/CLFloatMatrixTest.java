@@ -27,7 +27,7 @@ public class CLFloatMatrixTest {
 	public static void main(String[] args) throws Exception {
 		CLFloatMatrixTest testSuit = new CLFloatMatrixTest();
 		testSuit.setUp();
-		testSuit.sigmoidTest();
+		testSuit.rowSumsTest();
 	}
 	
 	protected org.jblas.FloatMatrix matA_CPU;
