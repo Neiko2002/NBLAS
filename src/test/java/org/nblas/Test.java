@@ -29,7 +29,7 @@ public class Test {
  		 CLFloatMatrix uout = CLFloatMatrix.randn(2, 2);
  	     CLFloatMatrix.transpose(u, uout);
  	     System.out.println(u.toString());
- 	     System.out.println(uout.toString2());
+ 	     System.out.println(uout.toString2D());
  	     
  	     
  		 
@@ -76,7 +76,7 @@ public class Test {
         CudaFloatMatrix b = CudaFloatMatrix.ones(i, i);
         CudaFloatMatrix c = CudaFloatMatrix.zeros(i,i);
         CudaFloatMatrix.mmul(a,b, c);
-        System.out.println(c.toString2());
+        System.out.println(c.toString2D());
 
         for (int z = 0; z < 2000; z++) {
 //            BufferedImage noise = new BufferedImage(i, i, BufferedImage.TYPE_INT_RGB);

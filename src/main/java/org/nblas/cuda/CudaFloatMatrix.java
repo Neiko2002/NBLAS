@@ -1,7 +1,7 @@
 package org.nblas.cuda;
 
 
-import org.nblas.generic.ANativeFloatMatrix;
+import org.nblas.generic.FloatArray2D;
 import org.nblas.generic.Subprogram;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
@@ -16,7 +16,7 @@ import org.nblas.function.predefined.binary.Sub;
 import jcuda.Pointer;
 import jcuda.driver.CUfunction;
 
-public class CudaFloatMatrix extends ANativeFloatMatrix {
+public class CudaFloatMatrix extends ANativeCUDAMatrix implements FloatArray2D  {
 
     private static final CudaCore CORE = CudaCore.getCore();
     
@@ -136,9 +136,8 @@ public class CudaFloatMatrix extends ANativeFloatMatrix {
     }
 
     public CudaFloatMatrix(int rows, int columns, float... values) {
-        this.columns = columns;
-        this.rows = rows;
-        this.length = columns * rows;
+    	super(rows, columns);
+    	
         if (values.length == 0) {
             this.dataPointer = CORE.malloc(this.length);
             setZero();
@@ -157,9 +156,7 @@ public class CudaFloatMatrix extends ANativeFloatMatrix {
     }
 
     private CudaFloatMatrix(int rows, int columns) {
-        this.columns = columns;
-        this.rows = rows;
-        this.length = columns * rows;
+    	super(rows, columns);
         this.dataPointer = CORE.malloc(this.length);
     }
 
@@ -500,6 +497,10 @@ public class CudaFloatMatrix extends ANativeFloatMatrix {
         CORE.getData(dataPointer, values);
     }
 
+    @Override
+    public String toString() {
+    	return toString1D();
+    }
 
     // MATRIX SETTER
 

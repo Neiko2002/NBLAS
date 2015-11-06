@@ -87,7 +87,7 @@ class CLCore {
         
 
         sharedData = new float[computeUnits];
-        sharedBuffer = malloc(computeUnits);
+        sharedBuffer = mallocSinglePrecision(computeUnits);
     }
 
 
@@ -415,7 +415,7 @@ class CLCore {
         int tempSize = (int) Math.ceil((double) n / threadCount);
         int size = tempSize * threadCount;
 
-        cl_mem temp = malloc(tempSize);
+        cl_mem temp = mallocSinglePrecision(tempSize);
         cl_kernel kernel = CLPredefined.getSubprogram(reductionName).getKernel();
         reduceCall(kernel, data, temp, n, initValue, size);
 
@@ -504,7 +504,7 @@ class CLCore {
         int sizeX = tempSizeX * threadCount_X;
         int sizeY = tempSizeY * threadCount_Y;
 
-        cl_mem temp = malloc(columns * tempSizeX);
+        cl_mem temp = mallocSinglePrecision(columns * tempSizeX);
         cl_kernel kernel = CLPredefined.getSubprogram(reductionName).getKernel();
         reduceCall(kernel, data, temp, rows, columns, initValue, sizeX, sizeY);
 
@@ -526,7 +526,7 @@ class CLCore {
         int sizeX = tempSizeX * threadCount_X;
         int sizeY = tempSizeY * threadCount_Y;
 
-        cl_mem temp = malloc(rows * tempSizeY);
+        cl_mem temp = mallocSinglePrecision(rows * tempSizeY);
         cl_kernel kernel = CLPredefined.getSubprogram(reductionName).getKernel();
         reduceCall(kernel, data, temp, rows, columns, initValue, sizeX, sizeY);
 
@@ -592,7 +592,7 @@ class CLCore {
         return cl_mem;
     }
 
-    public cl_mem malloc(int length) {
+    public cl_mem mallocSinglePrecision(int length) {
         return CL.clCreateBuffer(getContext(),
                 CL.CL_MEM_READ_WRITE,
                 Sizeof.cl_float * length, null, null);

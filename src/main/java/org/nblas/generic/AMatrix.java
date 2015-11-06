@@ -11,6 +11,12 @@ public abstract class AMatrix {
     protected int columns;
     protected int length;
 
+    public AMatrix(int rows, int columns) {
+    	this.columns = columns;
+		this.rows = rows;
+		this.length = columns * rows;
+	}
+    
     public int getRows() {
         return rows;
     }

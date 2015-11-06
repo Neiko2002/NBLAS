@@ -5,9 +5,8 @@ import java.util.Optional;
 
 import org.jblas.util.Random;
 import org.jocl.cl_kernel;
-import org.jocl.cl_mem;
 import org.nblas.cl.blas.CLLevel1;
-import org.nblas.generic.ANativeFloatMatrix;
+import org.nblas.generic.FloatArray2D;
 import org.nblas.generic.Subprogram;
 
 /**
@@ -15,42 +14,29 @@ import org.nblas.generic.Subprogram;
  * @author Nico
  *
  */
-public class CLFloatMatrix extends ANativeFloatMatrix {
+public class CLFloatMatrix extends ANativeCLMatrix implements FloatArray2D {
 
-    private static final CLCore CORE = CLCore.getCore();
-
-    static {
-    	CLLevel1.setup();
-        CORE.compileMatrixFunctions();
-    }
-
-    private cl_mem dataPointer;
-    private Optional<cl_mem> randomDataPointer;
-    private int clRows, clColumns, clLength;
 
     public CLFloatMatrix(int rows, int columns, float... values) {
-        this.columns = columns;
-        this.rows = rows;
-        this.length = columns * rows;
+       super(rows, columns, values);
+       
+		if (values.length == 0) {
+			this.dataPointer = CORE.mallocSinglePrecision(this.clLength);
+			setZero();
+		} else {
+			if (rows * columns != values.length)
+				throw new IllegalArgumentException(
+						"rows times columns " + (rows * columns) + " != " + "data length = " + values.length);
 
-        this.clColumns = (int) Math.ceil(columns / (double) CORE.getThreadCount_Y()) * CORE.getThreadCount_Y();
-        this.clRows = (int) Math.ceil(rows / (double) CORE.getThreadCount_X()) * CORE.getThreadCount_X();
-        this.clLength = clColumns * clRows;
-
-        if (values.length == 0) {
-            this.dataPointer = CORE.malloc(this.clLength);
-            setZero();
-        } else {
-            if (rows * columns != values.length) throw new IllegalArgumentException(
-                    "rows times columns " + (rows * columns) + " != " +
-                            "data length = " + values.length);
-
-            float[] clValues = getCLMatrix(rows, columns, values);
-            this.dataPointer = CORE.malloc(clValues);
-        }
-        randomDataPointer = Optional.empty();
+			float[] clValues = getCLMatrix(rows, columns, values);
+			this.dataPointer = CORE.malloc(clValues);
+		}
     }
     
+    public CLFloatMatrix(float value) {
+        this(1, 1, value);
+    }
+
     private float[] getCLMatrix(int rows, int columns, float[] values) {
         float[] clValues = new float[clLength];
         for (int i = 0; i < columns; i++) {
@@ -61,10 +47,7 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
         return clValues;
     }
 
-    public CLFloatMatrix(float value) {
-        this(1, 1, value);
-    }
-
+ 
 
     public static CLFloatMatrix zeros(int rows, int columns) {
         CLFloatMatrix matrix = new CLFloatMatrix(rows, columns);
@@ -586,5 +569,10 @@ public class CLFloatMatrix extends ANativeFloatMatrix {
                 values[i * rows + j] = clValues[i * clRows + j];
             }
         }
+    }
+    
+    @Override
+    public String toString() {
+    	return toString1D();
     }
 }
