@@ -128,6 +128,12 @@ public class CudaFloatMatrix extends CUDAMatrix implements FloatMatrix  {
     }
 
 
+    /**
+     * dirty allocation
+     * 
+     * @param rows
+     * @param columns
+     */
     public CudaFloatMatrix(int rows, int columns) {
         super(rows, columns);
         this.dataPointer = CORE.malloc(this.length);

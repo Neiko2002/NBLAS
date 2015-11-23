@@ -6,6 +6,29 @@ import org.nblas.java.JavaFloatMatrix;
 
 public interface FloatMatrix {
     
+	/**
+	 * dirty allocation 
+	 * 
+	 * TODO: sollte nach außen hin nicht sichtbar sein
+	 * 
+	 * @param rows
+	 * @param columns
+	 * @param context
+	 * @return
+	 */
+    public static FloatMatrix create(int rows, int columns, Context context) {
+    	
+        if (context.isGPU()) {
+            if (context.isCUDA()) {
+            	return new CudaFloatMatrix(rows, columns);
+            } else {
+            	return new CLFloatMatrix(rows, columns);
+            }
+        } else {
+            return new JavaFloatMatrix(rows, columns);
+        }
+    }
+    
     public static FloatMatrix create(float[][] values, Context context) {
     	
     	// flat representation in column-major order
@@ -626,8 +649,8 @@ public interface FloatMatrix {
 	 */
 	public FloatMatrix setSubMatrix(FloatMatrix src, FloatMatrix dst, int rowOffset, int columnOffset);
 	
-	public default FloatMatrix setSubMatrix(FloatMatrix b, int rowOffset, int columnOffset) {
-		setSubMatrix(this, b, rowOffset, columnOffset);
+	public default FloatMatrix setSubMatrix(FloatMatrix src, int rowOffset, int columnOffset) {
+		setSubMatrix(src, this, rowOffset, columnOffset);
 		return this;
 	}
 	
@@ -651,8 +674,8 @@ public interface FloatMatrix {
 		return getSubMatrix(this, result, rowOffset, columnOffset);
 	}
 	
-	public default FloatMatrix getSubMatrix(FloatMatrix b, int rowOffset, int columnOffset) {
-		return getSubMatrix(this, b, rowOffset, columnOffset);
+	public default FloatMatrix getSubMatrix(FloatMatrix dst, int rowOffset, int columnOffset) {
+		return getSubMatrix(this, dst, rowOffset, columnOffset);
 	}
 
 }

@@ -17,6 +17,12 @@ import org.nblas.generic.Subprogram;
  */
 public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
 
+	/**
+	 * dirty allocation
+	 * 
+	 * @param rows
+	 * @param columns
+	 */
     public CLFloatMatrix(int rows, int columns) {
         super(rows, columns);
  		this.dataPointer = CORE.mallocSinglePrecision(this.clLength);
@@ -28,8 +34,20 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
 		if (rows * columns != values.length)
 			throw new IllegalArgumentException("rows times columns " + (rows * columns) + " != " + "data length = " + values.length);
 
-		this.dataPointer = CORE.malloc(values);
+        float[] clValues = getCLMatrix(rows, columns, values);
+		this.dataPointer = CORE.malloc(clValues);
     }
+    
+    private float[] getCLMatrix(int rows, int columns, float[] values) {
+        float[] clValues = new float[clLength];
+        for (int i = 0; i < columns; i++) {
+            for (int j = 0; j < rows; j++) {
+                clValues[i * clRows + j] = values[i * rows + j];
+            }
+        }
+        return clValues;
+    }
+
     
     // ---------------------------------- utility methods -------------------------------------
 
@@ -483,7 +501,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     public FloatMatrix getSubMatrix(FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
     	CLFloatMatrix src = (CLFloatMatrix) source;
     	CLFloatMatrix dst = (CLFloatMatrix) destination;
-        CORE.getSubMatrix(dst.dataPointer, src.dataPointer, src.clRows, src.clColumns, src.rows, src.columns, rowOffset, columnOffset, dst.clRows);
+        CORE.getSubMatrix(src.dataPointer, dst.dataPointer, dst.clRows, dst.clColumns, dst.rows, dst.columns, rowOffset, columnOffset, src.clRows);
         return destination;
     }
     

@@ -2,6 +2,7 @@ package org.nblas.cl;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Random;
 
 import org.jblas.MatrixFunctions;
@@ -15,7 +16,7 @@ public class CLFloatMatrixTest {
 
 	protected static final int seed = 7;
 	protected static final int runs = 100_000;
-	protected static final int matrixSize = 17; 
+	protected static final int matrixSize = 2; 
 	
 	protected static final int matARows = matrixSize;
 	protected static final int matAColumns = matrixSize;
@@ -26,7 +27,7 @@ public class CLFloatMatrixTest {
 	public static void main(String[] args) throws Exception {
 		CLFloatMatrixTest testSuit = new CLFloatMatrixTest();
 		testSuit.setUp();
-		testSuit.isZeroTest();
+		testSuit.zerosTest();
 	}
 	
 	protected org.jblas.FloatMatrix matA_CPU;
@@ -65,27 +66,12 @@ public class CLFloatMatrixTest {
 	}
 
 	@Test
-	public void isZeroTest() {
-		
-		release();
-		
-		org.jblas.FloatMatrix matC_CPU = new org.jblas.FloatMatrix(matARows, matAColumns);
-		CLFloatMatrix matC_GPU = new CLFloatMatrix(matARows, matAColumns);
-		
-		// Ergebnisse vergleichen 
-		float[] result_CPU = matC_CPU.toArray();
-		float[] result_GPU = matC_GPU.toArray();
-		
-		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
-		
-	}
-	
-	@Test
 	public void memoryLeakTest() {
 		
 		CLFloatMatrix ones_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
 		ones_GPU.setOne();
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		matC_GPU.setZero();
 		
 		Instant start = Instant.now();
 		for (int i = 0; i < runs; i++)
@@ -1604,6 +1590,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matB_GPU.getColumns());
+		matC_GPU.setZero();
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
