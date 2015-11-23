@@ -3,16 +3,15 @@ package org.nblas.cl;
 import java.util.Optional;
 
 import org.jocl.cl_mem;
-import org.nblas.cl.CLCore;
 import org.nblas.cl.blas.CLLevel1;
-import org.nblas.generic.ANativeMatrix;
+import org.nblas.generic.AMatrix;
 
 /**
  * 
  * @author Nico
  *
  */
-public abstract class ANativeCLMatrix extends ANativeMatrix {
+public class CLMatrix extends AMatrix {
 	
 	protected static final CLCore CORE = CLCore.getCore();
 
@@ -25,7 +24,7 @@ public abstract class ANativeCLMatrix extends ANativeMatrix {
     protected Optional<cl_mem> randomDataPointer;
     protected int clRows, clColumns, clLength;
     
-	public ANativeCLMatrix(int rows, int columns, float... values) {
+	public CLMatrix(int rows, int columns) {
 		super(rows, columns);
 
 		this.clColumns = (int) Math.ceil(columns / (double) CORE.getThreadCount_Y()) * CORE.getThreadCount_Y();
@@ -34,4 +33,14 @@ public abstract class ANativeCLMatrix extends ANativeMatrix {
 
 		randomDataPointer = Optional.empty();
 	}
+
+	
+    @Override
+    public void free() {
+        CORE.free(dataPointer);
+        if (randomDataPointer.isPresent()) {
+            CORE.free(randomDataPointer.get());
+        }
+        released = true;
+    }  
 }

@@ -2,7 +2,7 @@ package org.nblas.cuda;
 
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
-import org.nblas.function.Context;
+import org.nblas.Context;
 import org.nblas.generic.Subprogram;
 
 import jcuda.driver.CUfunction;

@@ -2,780 +2,657 @@ package org.nblas;
 
 import org.nblas.cl.CLFloatMatrix;
 import org.nblas.cuda.CudaFloatMatrix;
-import org.nblas.exception.AccessViolationException;
-import org.nblas.function.Context;
-import org.nblas.generic.AMatrix;
-import org.nblas.generic.ANativeMatrix;
+import org.nblas.java.JavaFloatMatrix;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
-public class FloatMatrix {
-//    private static Context CONTEXT = Context.createCudaSinglePrecisionContext();
-    private static Context CONTEXT = Context.createOpenCLSinglePrecisionContext();
-    private final Object matrix;
-
-
-    public FloatMatrix(int rows, int columns, float... values) {
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                this.matrix = new CudaFloatMatrix(rows, columns, values);
+public interface FloatMatrix {
+    
+    public static FloatMatrix create(float[][] values, Context context) {
+    	
+    	// flat representation in column-major order
+    	int rows = values.length;
+    	int columns = values[0].length;
+    	float[] flat = new float[rows * columns];
+    	for (int c = 0; c < columns; c++)
+    		for (int r = 0; r < rows; r++)
+    			flat[r + c * rows] = values[r][c];
+    	
+        return create(rows, columns, flat, context);
+    }
+    
+    public static FloatMatrix create(int rows, int columns, float[] values, Context context) {
+    	
+        if (context.isGPU()) {
+            if (context.isCUDA()) {
+            	return new CudaFloatMatrix(rows, columns, values);
             } else {
-                this.matrix = new CLFloatMatrix(rows, columns, values);
+            	return new CLFloatMatrix(rows, columns, values);
             }
         } else {
-            this.matrix = new org.jblas.FloatMatrix(rows, columns, values);
+            return new JavaFloatMatrix(rows, columns, values);
         }
     }
 
-    public FloatMatrix(float[][] values) {
-        if (CONTEXT.isGPU()) {
-        	int rows = values.length;
-        	int columns = values[0].length;
-        	float[] flat = new float[rows * columns];
-        	for (int c = 0; c < columns; c++)
-        		for (int r = 0; r < rows; r++)
-        			flat[r + c * rows] = values[r][c];
-			
-            if (CONTEXT.isCUDA()) {
-                this.matrix = new CudaFloatMatrix(rows, columns, flat);
+    public static FloatMatrix zeros(int rows, int columns, Context context) {
+        if (context.isGPU()) {
+            if (context.isCUDA()) {
+            	return new CudaFloatMatrix(rows, columns);
             } else {
-                this.matrix = new CLFloatMatrix(rows, columns, flat);
+            	return new CLFloatMatrix(rows, columns);
             }
         } else {
-            this.matrix = new org.jblas.FloatMatrix(values);
+            return new JavaFloatMatrix(rows, columns);
         }
     }
     
-    private FloatMatrix(Object matrix) {
-        this.matrix = matrix;
-    }
-
-    public static FloatMatrix zeros(int rows, int columns) {
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                return new FloatMatrix(CudaFloatMatrix.zeros(rows, columns));
-            } else {
-                return new FloatMatrix(CLFloatMatrix.zeros(rows, columns));
-            }
-        } else {
-            return new FloatMatrix(org.jblas.FloatMatrix.zeros(rows, columns));
-        }
-    }
-
-    public static FloatMatrix ones(int rows, int columns) {
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                return new FloatMatrix(CudaFloatMatrix.ones(rows, columns));
-            } else {
-                return new FloatMatrix(CLFloatMatrix.ones(rows, columns));
-            }
-        } else {
-            return new FloatMatrix(org.jblas.FloatMatrix.ones(rows, columns));
-        }
-    }
-
-    public static FloatMatrix rand(int rows, int columns) {
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                return new FloatMatrix(CudaFloatMatrix.rand(rows, columns));
-            } else {
-                return new FloatMatrix(CLFloatMatrix.rand(rows, columns));
-            }
-        } else {
-            return new FloatMatrix(org.jblas.FloatMatrix.rand(rows, columns));
-        }
+    public static FloatMatrix ones(int rows, int columns, Context context) {
+    	FloatMatrix matrix = zeros(rows, columns, context);
+    	matrix.setOne();
+    	return matrix;
     }
     
-    public static FloatMatrix rand(FloatMatrix a) {
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                ((CudaFloatMatrix)a.matrix).nextRand();;
-            } else {
-                ((CLFloatMatrix)a.matrix).nextRand();;
+    
+    public static FloatMatrix rand(int rows, int columns, Context context) {
+      	FloatMatrix matrix = zeros(rows, columns, context);
+    	matrix.randi();
+    	return matrix;
+    }
+    
+    public static FloatMatrix randn(int rows, int columns, Context context) {
+      	FloatMatrix matrix = zeros(rows, columns, context);
+    	matrix.randni();
+    	return matrix;
+    }
+    
+    
+    
+    // ------------------------------------- java getter methods --------------------------------------
+
+    public default float[] toArray() {
+        float[] values = new float[getRows() * getColumns()];
+        getColumnWiseOn(values);
+        return values;
+    }
+
+	public default float[][] toArray2() {
+        float[][] matrix = new float[getRows()][getColumns()];
+        float[] array = toArray();
+        for (int i = 0; i < getRows(); i++) {
+            for (int j = 0; j < getColumns(); j++) {
+                matrix[i][j] = array[i + j * getRows()];
             }
-        } else {
-        	throw new NotImplementedException();
         }
+        return matrix;
+    }
+
+	
+	
+	// ------------------------------------- print methods --------------------------------------
+	
+    public default String toString1D() {
+        StringBuilder builder = new StringBuilder();
+        float[][] matrix = toArray2();
+        builder.append("[");
+        for (int i = 0; i < getRows() - 1; i++) {
+            for (int j = 0; j < getColumns() - 1; j++) {
+                builder.append(String.format("%.6f", matrix[i][j]));
+                builder.append(", ");
+            }
+
+            builder.append(String.format("%.6f", matrix[i][getColumns() - 1]));
+            builder.append("; ");
+        }
+        for (int j = 0; j < getColumns() - 1; j++) {
+            builder.append(String.format("%.6f", matrix[getRows() - 1][j]));
+            builder.append(", ");
+        }
+        builder.append(String.format("%.6f", matrix[getRows() - 1][getColumns() - 1]));
+        builder.append("]");
+
+        return builder.toString();
+    }
+
+    public default String toString2D() {
+        StringBuilder builder = new StringBuilder();
+        float[][] matrix = toArray2();
+        for (int i = 0; i < getRows() - 1; i++) {
+            builder.append("[");
+            for (int j = 0; j < getColumns() - 1; j++) {
+                builder.append(String.format("%.6f", matrix[i][j]));
+                builder.append(", ");
+            }
+
+            builder.append(String.format("%.6f", matrix[i][getColumns() - 1]));
+            builder.append("]\n");
+        }
+
+        builder.append("[");
+        for (int j = 0; j < getColumns() - 1; j++) {
+            builder.append(String.format("%.6f", matrix[getRows() - 1][j]));
+            builder.append(", ");
+        }
+        builder.append(String.format("%.6f", matrix[getRows() - 1][getColumns() - 1]));
+        builder.append("]\n");
+
+        return builder.toString();
+    }
+    
+    // ------------------------------------- utility methods --------------------------------------
+    public Context getContext();
+    public void free();
+    public boolean isReleased();
+    
+    public int getRows();
+    public int getColumns();
+    public FloatMatrix getColumnWiseOn(float[] values);
+    
+    public FloatMatrix dup(FloatMatrix a, FloatMatrix result);
+    
+    public default FloatMatrix dup() {
+    	FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns(), this.getContext());
+    	result.dup(this, result);
+        return result;
+    }
+    
+    public default FloatMatrix dup(FloatMatrix result) {
+    	result.dup(this, result);
+        return result;
+    }
+    
+    public FloatMatrix transpose(FloatMatrix matrix, FloatMatrix transposed);
+    
+    // ---------------------------------- common inplace methods ----------------------------------
+    
+    public FloatMatrix setOne();
+    public FloatMatrix setZero();
+    public FloatMatrix randi();
+    public FloatMatrix randni();
+    
+    
+	// --------------------------------------- add methods ----------------------------------------
+    /**
+     * expert only
+     * 
+     * @param a
+     * @param b
+     * @param result
+     * @return
+     */
+    public FloatMatrix add(FloatMatrix a, FloatMatrix b, FloatMatrix result);    
+    
+    /**
+     * expert only 
+     * 
+     * @param a
+     * @param scalar
+     * @param result
+     * @return
+     */
+    public FloatMatrix add(FloatMatrix a, float scalar, FloatMatrix result);
+
+    public default FloatMatrix add(FloatMatrix b, FloatMatrix result) {
+        add(this, b, result);
+        return result;
+    }
+
+    public default FloatMatrix addi(FloatMatrix b) {
+        add(this, b, this);
+        return this;
+    }
+
+    public default FloatMatrix add(FloatMatrix b) {
+    	FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns(), b.getContext());
+        add(this, b, result);
+        return result;
+    }
+    
+    public default FloatMatrix add(float scalar, FloatMatrix result) {
+        add(this, scalar, result);
+        return result;
+    }
+
+    public default FloatMatrix addi(float scalar) {
+        add(this, scalar, this);
+        return this;
+    }
+
+    public default FloatMatrix add(float scalar) {
+    	FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns(), this.getContext());
+        add(this, scalar, result);
+        return result;
+    }
         
-        return a;
-    }
     
-    public static void add(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
-        a.isReleased();
-        b.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                CudaFloatMatrix.add((CudaFloatMatrix) a.matrix, (CudaFloatMatrix) b.matrix, (CudaFloatMatrix) result.matrix);
-            } else {
-                CLFloatMatrix.add((CLFloatMatrix) a.matrix, (CLFloatMatrix) b.matrix, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-            ((org.jblas.FloatMatrix) a.matrix).addi((org.jblas.FloatMatrix) b.matrix, (org.jblas.FloatMatrix) result.matrix);
-        }
-    }
     
-    public static void add(FloatMatrix a, float scalar, FloatMatrix result) {
-        a.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                CudaFloatMatrix.add((CudaFloatMatrix) a.matrix, scalar, (CudaFloatMatrix) result.matrix);
-            } else {
-                CLFloatMatrix.add((CLFloatMatrix) a.matrix, scalar, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-            ((org.jblas.FloatMatrix) a.matrix).addi(scalar, (org.jblas.FloatMatrix) result.matrix);
-        }
-    }
+    // --------------------------------------- sub methods ----------------------------------------
+    /**
+     * expert only
+     * 
+     * @param a
+     * @param b
+     * @param result
+     * @return
+     */
+    public FloatMatrix sub(FloatMatrix a, FloatMatrix b, FloatMatrix result);    
+    
+    /**
+     * expert only 
+     * 
+     * @param a
+     * @param scalar
+     * @param result
+     * @return
+     */
+    public FloatMatrix sub(FloatMatrix a, float scalar, FloatMatrix result);
 
-    public FloatMatrix add(FloatMatrix b, FloatMatrix result) {
-        FloatMatrix.add(this, b, result);
+    public default FloatMatrix sub(FloatMatrix b, FloatMatrix result) {
+        sub(this, b, result);
         return result;
     }
 
-    public FloatMatrix addi(FloatMatrix b) {
-        FloatMatrix.add(this, b, this);
+    public default FloatMatrix subi(FloatMatrix b) {
+        sub(this, b, this);
         return this;
     }
 
-    public FloatMatrix add(FloatMatrix b) {
-        FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns());
-        FloatMatrix.add(this, b, result);
+    public default FloatMatrix sub(FloatMatrix b) {
+    	FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns(), b.getContext());
+        sub(this, b, result);
         return result;
     }
     
-    public FloatMatrix add(float scalar, FloatMatrix result) {
-        FloatMatrix.add(this, scalar, result);
+    public default FloatMatrix sub(float scalar, FloatMatrix result) {
+        sub(this, scalar, result);
         return result;
     }
 
-    public FloatMatrix addi(float scalar) {
-        FloatMatrix.add(this, scalar, this);
+    public default FloatMatrix subi(float scalar) {
+        sub(this, scalar, this);
         return this;
     }
 
-    public FloatMatrix add(float scalar) {
-        FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
-        FloatMatrix.add(this, scalar, result);
+    public default FloatMatrix sub(float scalar) {
+    	FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns(), this.getContext());
+        sub(this, scalar, result);
         return result;
-    }
-
-    public static void sub(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
-        a.isReleased();
-        b.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                CudaFloatMatrix.sub((CudaFloatMatrix) a.matrix, (CudaFloatMatrix) b.matrix, (CudaFloatMatrix) result.matrix);
-            } else {
-                CLFloatMatrix.sub((CLFloatMatrix) a.matrix, (CLFloatMatrix) b.matrix, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-            ((org.jblas.FloatMatrix) a.matrix).subi((org.jblas.FloatMatrix) b.matrix, (org.jblas.FloatMatrix) result.matrix);
-        }
     }
     
-    public static void sub(FloatMatrix a, float scalar, FloatMatrix result) {
-        a.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                CudaFloatMatrix.sub((CudaFloatMatrix) a.matrix, scalar, (CudaFloatMatrix) result.matrix);
-            } else {
-                CLFloatMatrix.sub((CLFloatMatrix) a.matrix, scalar, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-            ((org.jblas.FloatMatrix) a.matrix).subi(scalar, (org.jblas.FloatMatrix) result.matrix);
-        }
-    }
+    
+    
+	// --------------------------------------- mul methods ----------------------------------------
+    /**
+     * expert only
+     * 
+     * @param a
+     * @param b
+     * @param result
+     * @return
+     */
+    public FloatMatrix mul(FloatMatrix a, FloatMatrix b, FloatMatrix result);    
+    
+    /**
+     * expert only 
+     * 
+     * @param a
+     * @param scalar
+     * @param result
+     * @return
+     */
+    public FloatMatrix mul(FloatMatrix a, float scalar, FloatMatrix result);
 
-    public FloatMatrix sub(FloatMatrix b, FloatMatrix result) {
-        FloatMatrix.sub(this, b, result);
+    public default FloatMatrix mul(FloatMatrix b, FloatMatrix result) {
+        mul(this, b, result);
         return result;
     }
 
-    public FloatMatrix subi(FloatMatrix b) {
-        FloatMatrix.sub(this, b, this);
+    public default FloatMatrix muli(FloatMatrix b) {
+        mul(this, b, this);
         return this;
     }
 
-    public FloatMatrix sub(FloatMatrix b) {
-        FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns());
-        FloatMatrix.sub(this, b, result);
+    public default FloatMatrix mul(FloatMatrix b) {
+    	FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns(), b.getContext());
+        mul(this, b, result);
         return result;
     }
     
-    public FloatMatrix sub(float scalar, FloatMatrix result) {
-        FloatMatrix.sub(this, scalar, result);
+    public default FloatMatrix mul(float scalar, FloatMatrix result) {
+        mul(this, scalar, result);
         return result;
     }
 
-    public FloatMatrix subi(float scalar) {
-        FloatMatrix.sub(this, scalar, this);
+    public default FloatMatrix muli(float scalar) {
+        mul(this, scalar, this);
         return this;
     }
 
-    public FloatMatrix sub(float scalar) {
-        FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
-        FloatMatrix.sub(this, scalar, result);
+    public default FloatMatrix mul(float scalar) {
+    	FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns(), this.getContext());
+        mul(this, scalar, result);
         return result;
     }
     
-    public static void mul(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
-        a.isReleased();
-        b.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                CudaFloatMatrix.mul((CudaFloatMatrix) a.matrix, (CudaFloatMatrix) b.matrix, (CudaFloatMatrix) result.matrix);
-            } else {
-                CLFloatMatrix.mul((CLFloatMatrix) a.matrix, (CLFloatMatrix) b.matrix, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-            ((org.jblas.FloatMatrix) a.matrix).muli((org.jblas.FloatMatrix) b.matrix, (org.jblas.FloatMatrix) result.matrix);
-        }
-    }
     
-    public static void mul(FloatMatrix a, float scalar, FloatMatrix result) {
-        a.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                CudaFloatMatrix.mul((CudaFloatMatrix) a.matrix, scalar, (CudaFloatMatrix) result.matrix);
-            } else {
-                CLFloatMatrix.mul((CLFloatMatrix) a.matrix, scalar, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-            ((org.jblas.FloatMatrix) a.matrix).muli(scalar, (org.jblas.FloatMatrix) result.matrix);
-        }
-    }
+    
+    // --------------------------------------- div methods ----------------------------------------
+    /**
+     * expert only
+     * 
+     * @param a
+     * @param b
+     * @param result
+     * @return
+     */
+    public FloatMatrix div(FloatMatrix a, FloatMatrix b, FloatMatrix result);    
+    
+    /**
+     * expert only 
+     * 
+     * @param a
+     * @param scalar
+     * @param result
+     * @return
+     */
+    public FloatMatrix div(FloatMatrix a, float scalar, FloatMatrix result);
 
-    public FloatMatrix mul(FloatMatrix b, FloatMatrix result) {
-        FloatMatrix.mul(this, b, result);
+    public default FloatMatrix div(FloatMatrix b, FloatMatrix result) {
+        div(this, b, result);
         return result;
     }
 
-    public FloatMatrix muli(FloatMatrix b) {
-        FloatMatrix.mul(this, b, this);
+    public default FloatMatrix divi(FloatMatrix b) {
+        div(this, b, this);
         return this;
     }
 
-    public FloatMatrix mul(FloatMatrix b) {
-        FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns());
-        FloatMatrix.mul(this, b, result);
+    public default FloatMatrix div(FloatMatrix b) {
+    	FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns(), b.getContext());
+        div(this, b, result);
         return result;
     }
     
-    public FloatMatrix mul(float scalar, FloatMatrix result) {
-        FloatMatrix.mul(this, scalar, result);
+    public default FloatMatrix div(float scalar, FloatMatrix result) {
+        div(this, scalar, result);
         return result;
     }
 
-    public FloatMatrix muli(float scalar) {
-        FloatMatrix.mul(this, scalar, this);
+    public default FloatMatrix divi(float scalar) {
+        div(this, scalar, this);
         return this;
     }
 
-    public FloatMatrix mul(float scalar) {
-        FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
-        FloatMatrix.mul(this, scalar, result);
+    public default FloatMatrix div(float scalar) {
+    	FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns(), this.getContext());
+        div(this, scalar, result);
         return result;
     }
     
-    public static void div(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
-        a.isReleased();
-        b.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                CudaFloatMatrix.div((CudaFloatMatrix) a.matrix, (CudaFloatMatrix) b.matrix, (CudaFloatMatrix) result.matrix);
-            } else {
-                CLFloatMatrix.div((CLFloatMatrix) a.matrix, (CLFloatMatrix) b.matrix, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-            ((org.jblas.FloatMatrix) a.matrix).divi((org.jblas.FloatMatrix) b.matrix, (org.jblas.FloatMatrix) result.matrix);
-        }
-    }
     
-    public static void div(FloatMatrix a, float scalar, FloatMatrix result) {
-        a.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                CudaFloatMatrix.div((CudaFloatMatrix) a.matrix, scalar, (CudaFloatMatrix) result.matrix);
-            } else {
-                CLFloatMatrix.div((CLFloatMatrix) a.matrix, scalar, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-            ((org.jblas.FloatMatrix) a.matrix).divi(scalar, (org.jblas.FloatMatrix) result.matrix);
-        }
-    }
+    // --------------------------------------- exp methods ----------------------------------------
+    
+    /**
+     * expert only  
+     * 
+     * @param a
+     * @param result
+     * @return
+     */
+    public FloatMatrix exp(FloatMatrix a, FloatMatrix result);
 
-    public FloatMatrix div(FloatMatrix b, FloatMatrix result) {
-        FloatMatrix.div(this, b, result);
-        return result;
-    }
-
-    public FloatMatrix divi(FloatMatrix b) {
-        FloatMatrix.div(this, b, this);
-        return this;
-    }
-
-    public FloatMatrix div(FloatMatrix b) {
-        FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns());
-        FloatMatrix.div(this, b, result);
-        return result;
-    }
-    
-    public FloatMatrix div(float scalar, FloatMatrix result) {
-        FloatMatrix.div(this, scalar, result);
-        return result;
-    }
-
-    public FloatMatrix divi(float scalar) {
-        FloatMatrix.div(this, scalar, this);
-        return this;
-    }
-
-    public FloatMatrix div(float scalar) {
-        FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
-        FloatMatrix.div(this, scalar, result);
-        return result;
-    }
-    
-    
-    public static void setOne(FloatMatrix a) {
-        a.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                throw new NotImplementedException();
-            } else {
-                ((CLFloatMatrix) a.matrix).setOne();
-            }
-        } else {
-        	((org.jblas.FloatMatrix) a.matrix).fill(1);
-        }
-    }
-    
-    public FloatMatrix setOne() {
-        FloatMatrix.setOne(this);
-        return this;
-    }
-    
-    public static void dup(FloatMatrix a, FloatMatrix result) {
-        a.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                throw new NotImplementedException();
-            } else {
-                CLFloatMatrix.dup((CLFloatMatrix) a.matrix, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-        	for (int i = 0; i < ((org.jblas.FloatMatrix) a.matrix).data.length; i++)
-				((org.jblas.FloatMatrix) result.matrix).data[i] = ((org.jblas.FloatMatrix) a.matrix).data[i];
-        }
-    }
-    
-    public FloatMatrix dup() {
-        FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
-        FloatMatrix.dup(this, result);
-        return result;
-    }
-    
-    public FloatMatrix dup(FloatMatrix result) {
-        FloatMatrix.dup(this, result);
-        return result;
-    }
-    
-    public static void exp(FloatMatrix a, FloatMatrix result) {
-        a.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                throw new NotImplementedException();
-            } else {
-                CLFloatMatrix.exp((CLFloatMatrix) a.matrix, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-        	((org.jblas.FloatMatrix)result.matrix).copy(((org.jblas.FloatMatrix)a.matrix));
-        	org.jblas.MatrixFunctions.expi((org.jblas.FloatMatrix)result.matrix);
-        }
-    }
-
-	public FloatMatrix exp() {
-        FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
+	public default FloatMatrix exp() {
+		FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns(), this.getContext());
         exp(this, result);
 		return result;
 	}
 	
-	public FloatMatrix expi() {
+	public default FloatMatrix expi() {
         exp(this, this);
 		return this;
 	}
 	
-	public FloatMatrix exp(FloatMatrix result) {
+	public default FloatMatrix exp(FloatMatrix result) {
         exp(this, result);
 		return result;
 	}
 	
-	public static void neg(FloatMatrix a, FloatMatrix result) {
-		a.isReleased();
-		result.isReleased();
-		if (CONTEXT.isGPU()) {
-			if (CONTEXT.isCUDA()) {
-				throw new NotImplementedException();
-			} else {
-				CLFloatMatrix.neg((CLFloatMatrix) a.matrix, (CLFloatMatrix) result.matrix);
-			}
-		} else {
-			((org.jblas.FloatMatrix) result.matrix).copy(((org.jblas.FloatMatrix) a.matrix));
-			((org.jblas.FloatMatrix) result.matrix).negi();
-		}
-	}
+	
+    // --------------------------------------- neg methods ----------------------------------------
+    
+    /**
+     * expert only   
+     * 
+     * @param a
+     * @param result
+     * @return
+     */
+    public FloatMatrix neg(FloatMatrix a, FloatMatrix result);
 
-	public FloatMatrix neg() {
-		FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
-		neg(this, result);
-		return result;
-	}
-
-	public FloatMatrix negi() {
-		neg(this, this);
-		return this;
-	}
-
-	public FloatMatrix neg(FloatMatrix result) {
-		neg(this, result);
-		return result;
-	}
-
-	public static void sigmoid(FloatMatrix a, FloatMatrix result) {
-		a.isReleased();
-		result.isReleased();
-		if (CONTEXT.isGPU()) {
-			if (CONTEXT.isCUDA()) {
-				throw new NotImplementedException();
-			} else {
-				CLFloatMatrix.sigmoid((CLFloatMatrix) a.matrix, (CLFloatMatrix) result.matrix);
-			}
-		} else {
-			for (int i = 0; i < ((org.jblas.FloatMatrix) a.matrix).data.length; i++)
-				((org.jblas.FloatMatrix) result.matrix).data[i] = (float) (1. / ( 1. + Math.exp(-((org.jblas.FloatMatrix) a.matrix).data[i]) ));
-		}
-	}
-
-	public FloatMatrix sigmoid() {
-		FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
-		sigmoid(this, result);
-		return result;
-	}
-
-	public FloatMatrix sigmoidi() {
-		sigmoid(this, this);
-		return this;
-	}
-
-	public FloatMatrix sigmoid(FloatMatrix result) {
-		sigmoid(this, result);
+	public default FloatMatrix neg() {
+		FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns(), this.getContext());
+        neg(this, result);
 		return result;
 	}
 	
-    public static void mmul(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
-        a.isReleased();
-        b.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                CudaFloatMatrix.mmul((CudaFloatMatrix) a.matrix, (CudaFloatMatrix) b.matrix, (CudaFloatMatrix) result.matrix);
-            } else {
-                CLFloatMatrix.mmul((CLFloatMatrix) a.matrix, (CLFloatMatrix) b.matrix, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-            ((org.jblas.FloatMatrix) a.matrix).mmuli((org.jblas.FloatMatrix) b.matrix, (org.jblas.FloatMatrix) result.matrix);
-        }
-    }
+	public default FloatMatrix negi() {
+        neg(this, this);
+		return this;
+	}
+	
+	public default FloatMatrix neg(FloatMatrix result) {
+        neg(this, result);
+		return result;
+	}
+	
+
+    // --------------------------------------- sigmoid methods ----------------------------------------
     
-    public FloatMatrix mmul(FloatMatrix b, FloatMatrix result) {
-        FloatMatrix.mmul(this, b, result);
+    /**
+     * expert only   
+     * 
+     * @param a
+     * @param result
+     * @return
+     */
+    public FloatMatrix sigmoid(FloatMatrix a, FloatMatrix result);
+
+	public default FloatMatrix sigmoid() {
+		FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns(), this.getContext());
+        sigmoid(this, result);
+		return result;
+	}
+	
+	public default FloatMatrix sigmoidi() {
+        sigmoid(this, this);
+		return this;
+	}
+	
+	public default FloatMatrix sigmoid(FloatMatrix result) {
+        sigmoid(this, result);
+		return result;
+	}
+	
+	
+	
+	
+	
+	// --------------------------------------- greater than ----------------------------------------
+    
+	/**
+	 * expert only  
+	 * 
+	 * @param a
+	 * @param b
+	 * @param result
+	 * @return
+	 */
+    public FloatMatrix gt(FloatMatrix a, FloatMatrix b, FloatMatrix result);
+    
+    /**
+     * expert only  
+     * 
+     * @param a
+     * @param scalar
+     * @param result
+     * @return
+     */
+    public FloatMatrix gt(FloatMatrix a, float scalar, FloatMatrix result);
+
+    public default FloatMatrix gt(FloatMatrix b, FloatMatrix result) {
+        gt(this, b, result);
         return result;
     }
 
-    public FloatMatrix mmul(FloatMatrix b) {
-        FloatMatrix result = FloatMatrix.zeros(this.getRows(), b.getColumns());
-        FloatMatrix.mmul(this, b, result);
-        return result;
-    }
-    
-    public static void mmulTN(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
-        a.isReleased();
-        b.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                CudaFloatMatrix.mmulTransposeA((CudaFloatMatrix) a.matrix, (CudaFloatMatrix) b.matrix, (CudaFloatMatrix) result.matrix);
-            } else {
-                CLFloatMatrix.mmulTransposeA((CLFloatMatrix) a.matrix, (CLFloatMatrix) b.matrix, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-            ((org.jblas.FloatMatrix) a.matrix).transpose().mmuli((org.jblas.FloatMatrix) b.matrix, (org.jblas.FloatMatrix) result.matrix);
-        }
-    }
-    
-    public FloatMatrix mmulTN(FloatMatrix b, FloatMatrix result) {
-        FloatMatrix.mmulTN(this, b, result);
-        return result;
-    }
-
-    public FloatMatrix mmulTN(FloatMatrix b) {
-        FloatMatrix result = FloatMatrix.zeros(this.getColumns(), b.getColumns());
-        FloatMatrix.mmulTN(this, b, result);
-        return result;
-    }
-    
-    public static void mmulNT(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
-        a.isReleased();
-        b.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                CudaFloatMatrix.mmulTransposeB((CudaFloatMatrix) a.matrix, (CudaFloatMatrix) b.matrix, (CudaFloatMatrix) result.matrix);
-            } else {
-                CLFloatMatrix.mmulTransposeB((CLFloatMatrix) a.matrix, (CLFloatMatrix) b.matrix, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-            ((org.jblas.FloatMatrix) a.matrix).mmuli(((org.jblas.FloatMatrix) b.matrix).transpose(), (org.jblas.FloatMatrix) result.matrix);
-        }
-    }
-    
-    public FloatMatrix mmulNT(FloatMatrix b, FloatMatrix result) {
-        FloatMatrix.mmulNT(this, b, result);
-        return result;
-    }
-
-    public FloatMatrix mmulNT(FloatMatrix b) {
-        FloatMatrix result = FloatMatrix.zeros(this.getRows(), b.getRows());
-        FloatMatrix.mmulNT(this, b, result);
-        return result;
-    }
-    
-    public static void gt(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
-        a.isReleased();
-        b.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-            	throw new NotImplementedException();
-            } else {
-                CLFloatMatrix.gt((CLFloatMatrix) a.matrix, (CLFloatMatrix) b.matrix, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-            ((org.jblas.FloatMatrix) a.matrix).gti((org.jblas.FloatMatrix) b.matrix, (org.jblas.FloatMatrix) result.matrix);
-        }
-    }
-    
-    public static void gt(FloatMatrix a, float scalar, FloatMatrix result) {
-        a.isReleased();
-        result.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-            	throw new NotImplementedException();
-            } else {
-                CLFloatMatrix.gt((CLFloatMatrix) a.matrix, scalar, (CLFloatMatrix) result.matrix);
-            }
-        } else {
-            ((org.jblas.FloatMatrix) a.matrix).gti(scalar, (org.jblas.FloatMatrix) result.matrix);
-        }
-    }
-
-    public FloatMatrix gt(FloatMatrix b, FloatMatrix result) {
-        FloatMatrix.gt(this, b, result);
-        return result;
-    }
-
-    public FloatMatrix gti(FloatMatrix b) {
-        FloatMatrix.gt(this, b, this);
+    public default FloatMatrix gti(FloatMatrix b) {
+        gt(this, b, this);
         return this;
     }
 
-    public FloatMatrix gt(FloatMatrix b) {
-        FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns());
-        FloatMatrix.gt(this, b, result);
+    public default FloatMatrix gt(FloatMatrix b) {
+    	FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns(), b.getContext());
+        gt(this, b, result);
         return result;
     }
     
-    public FloatMatrix gt(float scalar, FloatMatrix result) {
-        FloatMatrix.gt(this, scalar, result);
+    public default FloatMatrix gt(float scalar, FloatMatrix result) {
+        gt(this, scalar, result);
         return result;
     }
 
-    public FloatMatrix gti(float scalar) {
-        FloatMatrix.gt(this, scalar, this);
+    public default FloatMatrix gti(float scalar) {
+        gt(this, scalar, this);
         return this;
     }
 
-    public FloatMatrix gt(float scalar) {
-        FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns());
-        FloatMatrix.gt(this, scalar, result);
+    public default FloatMatrix gt(float scalar) {
+    	FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns(), this.getContext());
+        gt(this, scalar, result);
         return result;
     }
     
-    public void getColumnWiseOn(float[] values) {
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-                ((CudaFloatMatrix) matrix).getColumnWiseOn(values);
-            } else {
-                ((CLFloatMatrix) matrix).getColumnWiseOn(values);
-            }
-        } else {
-            float[] data = ((org.jblas.FloatMatrix) matrix).data;
-            System.arraycopy(data, 0, values, 0, data.length);
-        }
-    }
-
-    public void free() {
-        if (CONTEXT.isGPU()) {
-        	((ANativeMatrix) matrix).isReleased();
-            if (CONTEXT.isCUDA()) {
-                ((CudaFloatMatrix) matrix).free();
-            } else {
-                ((CLFloatMatrix) matrix).free();
-            }
-        }
-    }
-
-    private void isReleased() {
-    	 if (CONTEXT.isGPU() && ((ANativeMatrix) matrix).isReleased())
-	            throw new AccessViolationException(
-	                    "Access violation on: " + this.getClass().getName() + "@" + Integer.toHexString(hashCode()));
-    }
-
-    public int getRows() {
-        if (CONTEXT.isGPU()) {
-            return ((AMatrix) matrix).getRows();
-        } else return ((org.jblas.FloatMatrix) matrix).getRows();
-    }
-
-    public int getColumns() {
-        if (CONTEXT.isGPU()) {
-            return ((AMatrix) matrix).getColumns();
-        } else return ((org.jblas.FloatMatrix) matrix).getColumns();
-    }
-
-	public static FloatMatrix setSubMatrix(FloatMatrix a, FloatMatrix b, int rowOffset, int columnOffset) {
-		
-		a.isReleased();
-        b.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-            	((CudaFloatMatrix) a.matrix).setSubMatrix((CudaFloatMatrix) b.matrix, rowOffset, columnOffset);
-            } else {
-                ((CLFloatMatrix) a.matrix).setSubMatrix((CLFloatMatrix) b.matrix, rowOffset, columnOffset);
-            }
-        } else {
-            throw new NotImplementedException();
-        }
-        
-		return a;
-	}
-	
-	public FloatMatrix setSubMatrix(FloatMatrix b, int rowOffset, int columnOffset) {
-		FloatMatrix.setSubMatrix(this, b, rowOffset, columnOffset);
-		return this;
-	}
-	
-	public static FloatMatrix getSubMatrix(FloatMatrix a, FloatMatrix b, int rowOffset, int columnOffset) {
-		
-		a.isReleased();
-        b.isReleased();
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-            	((CudaFloatMatrix) a.matrix).getSubMatrix((CudaFloatMatrix) b.matrix, rowOffset, columnOffset);
-            } else {
-                ((CLFloatMatrix) a.matrix).getSubMatrix((CLFloatMatrix) b.matrix, rowOffset, columnOffset);
-            }
-        } else {
-            throw new NotImplementedException();
-        }
-        
-		return b;
-	}
     
-	public FloatMatrix getSubMatrix(int rowOffset, int columnOffset, int rows, int columns) {
-		FloatMatrix result = FloatMatrix.zeros(rows, columns);
-		return FloatMatrix.getSubMatrix(this, result, rowOffset, columnOffset);
-	}
-	
-	public FloatMatrix getSubMatrix(int rowOffset, int columnOffset) {
-		FloatMatrix result = FloatMatrix.zeros(this.getRows()-rowOffset, this.getColumns()-columnOffset);
-		return FloatMatrix.getSubMatrix(this, result, rowOffset, columnOffset);
-	}
-	
-	public FloatMatrix getSubMatrix(FloatMatrix b, int rowOffset, int columnOffset) {
-		return FloatMatrix.getSubMatrix(this, b, rowOffset, columnOffset);
-	}
 
-	public static float sum(FloatMatrix a) {
-		
-		a.isReleased();
-		float result = 0;
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-            	result = CudaFloatMatrix.sum((CudaFloatMatrix) a.matrix);
-            } else {
-            	result = CLFloatMatrix.sum((CLFloatMatrix) a.matrix);
-            }
-        } else {
-        	result = ((org.jblas.FloatMatrix) a.matrix).sum();
-        }
-        
-		return result;
-	}
+	// --------------------------------------- mmul ----------------------------------------
+    
+    /**
+     * expert only  
+     * 
+     * @param a
+     * @param b
+     * @param result
+     * @return
+     */
+    public FloatMatrix mmul(FloatMatrix a, FloatMatrix b, FloatMatrix result);
+    
+    public default FloatMatrix mmul(FloatMatrix b, FloatMatrix result) {
+        mmul(this, b, result);
+        return result;
+    }
+
+    public default FloatMatrix mmul(FloatMatrix b) {
+    	FloatMatrix result = FloatMatrix.zeros(this.getRows(), b.getColumns(), this.getContext());
+        mmul(this, b, result);
+        return result;
+    }
+    
+    /**
+     * expert only  
+     * 
+     * @param a
+     * @param b
+     * @param result
+     * @return
+     */
+    public FloatMatrix mmulTN(FloatMatrix a, FloatMatrix b, FloatMatrix result);
+    
+    public default FloatMatrix mmulTN(FloatMatrix b, FloatMatrix result) {
+        mmulTN(this, b, result);
+        return result;
+    }
+
+    public default FloatMatrix mmulTN(FloatMatrix b) {
+    	FloatMatrix result = FloatMatrix.zeros(this.getColumns(), b.getColumns(), this.getContext());
+        mmulTN(this, b, result);
+        return result;
+    }
+    
+    /**
+     * expert only  
+     * 
+     * @param a
+     * @param b
+     * @param result
+     * @return
+     */
+    public FloatMatrix mmulNT(FloatMatrix a, FloatMatrix b, FloatMatrix result);
+    
+    public default FloatMatrix mmulNT(FloatMatrix b, FloatMatrix result) {
+        mmulNT(this, b, result);
+        return result;
+    }
+
+    public default FloatMatrix mmulNT(FloatMatrix b) {
+    	FloatMatrix result = FloatMatrix.zeros(this.getRows(), b.getRows(), this.getContext());
+        mmulNT(this, b, result);
+        return result;
+    }
+    
+    
+    
+	// --------------------------------------- reduction methods ----------------------------------------
+    
+    /**
+     * expert only  
+     * 
+     * @param a
+     * @return
+     */
+	public float sum(FloatMatrix a);
 	
-	public float sum() {
+	public default float sum() {
 		return sum(this);
 	}
-
-	public static float[][] toArray2(FloatMatrix a) {
-		
-		float[][] result = null;
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-            	result = ((CudaFloatMatrix) a.matrix).toArray2();
-            } else {
-            	result = ((CLFloatMatrix) a.matrix).toArray2();
-            }
-        } else {
-        	result = ((org.jblas.FloatMatrix) a.matrix).toArray2();
-        }
-        
-		return result;
+	
+	
+	
+	
+	// --------------------------------------- getter and setter methods ----------------------------------------
+	/**
+	 * expert only  
+	 * 
+	 * @param a
+	 * @param b
+	 * @param rowOffset
+	 * @param columnOffset
+	 * @return
+	 */
+	public FloatMatrix setSubMatrix(FloatMatrix src, FloatMatrix dst, int rowOffset, int columnOffset);
+	
+	public default FloatMatrix setSubMatrix(FloatMatrix b, int rowOffset, int columnOffset) {
+		setSubMatrix(this, b, rowOffset, columnOffset);
+		return this;
 	}
 	
-	public float[][] toArray2() {
-		return FloatMatrix.toArray2(this);
-	}
-
-	public static float[] toArray(FloatMatrix a) {
-		
-		float[] result = null;
-        if (CONTEXT.isGPU()) {
-            if (CONTEXT.isCUDA()) {
-            	result = ((CudaFloatMatrix) a.matrix).toArray();
-            } else {
-            	result = ((CLFloatMatrix) a.matrix).toArray();
-            }
-        } else {
-        	result = ((org.jblas.FloatMatrix) a.matrix).toArray();
-        }
-        
-		return result;
+	/**
+	 * expert only  
+	 * @param a
+	 * @param b
+	 * @param rowOffset
+	 * @param columnOffset
+	 * @return
+	 */
+	public FloatMatrix getSubMatrix(FloatMatrix src, FloatMatrix dst, int rowOffset, int columnOffset);
+    
+	public default FloatMatrix getSubMatrix(int rowOffset, int columnOffset, int rows, int columns) {
+		FloatMatrix result = FloatMatrix.zeros(rows, columns, this.getContext());
+		return getSubMatrix(this, result, rowOffset, columnOffset);
 	}
 	
-
-	public float[] toArray() {
-		return FloatMatrix.toArray(this);
+	public default FloatMatrix getSubMatrix(int rowOffset, int columnOffset) {
+		FloatMatrix result = FloatMatrix.zeros(this.getRows()-rowOffset, this.getColumns()-columnOffset, this.getContext());
+		return getSubMatrix(this, result, rowOffset, columnOffset);
+	}
+	
+	public default FloatMatrix getSubMatrix(FloatMatrix b, int rowOffset, int columnOffset) {
+		return getSubMatrix(this, b, rowOffset, columnOffset);
 	}
 
 }

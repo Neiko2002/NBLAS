@@ -2,6 +2,7 @@ package org.nblas;
 
 import org.jblas.FloatMatrix;
 import org.jblas.MatrixFunctions;
+import org.nblas.cl.CLFloatMatrix;
 import org.nblas.cuda.CudaFloatMatrix;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.common.Arg;
@@ -19,44 +20,48 @@ import java.util.Random;
  * Created by Moritz on 4/27/2015.
  */
 public class Test {
+	
     public static void main(String[] args) throws IOException {
     		 
- 		 	// Thread Count: 	256 (16x16)
- 		 	// time: 210ms 
- 		 
- 		 CudaFloatMatrix u = CudaFloatMatrix.randn(2, 2);
- 		 CudaFloatMatrix uout = CudaFloatMatrix.randn(2, 2);
- 	     CudaFloatMatrix.transpose(u, uout);
- 	     System.out.println(u.toString());
- 	     System.out.println(uout.toString2D());
- 	     
- 	     
- 		 
- 		    int i = 4096;
- 	        int m = i;//1234;
- 	        int n = i;//1431;
- 	        int k = i;//1449;
- 	        
- 	        CudaFloatMatrix a = CudaFloatMatrix.randn(i, i);
- 	        CudaFloatMatrix b = CudaFloatMatrix.randn(i, i);
- 	        CudaFloatMatrix result = CudaFloatMatrix.randn(i, i);
- 	        
- 	        long start2 = System.currentTimeMillis();
- 	        CudaFloatMatrix.mmul(a, b, result);
- 	        long stop2 = System.currentTimeMillis();
- 	        System.out.println("time: "+(stop2-start2)+"ms \n");
- 	        
- 	        long start1 = System.currentTimeMillis();
- 	        CudaFloatMatrix.transpose(a, result);
- 	        CudaFloatMatrix.mmul(result, b, a);
- 	        long stop1 = System.currentTimeMillis();
- 	        System.out.println("time: "+(stop1-start1)+"ms \n");
- 	        
- 	        long start = System.currentTimeMillis();
- 	        CudaFloatMatrix.mmulTransposeA(a, b, result);
- 	        long stop = System.currentTimeMillis();
- 	        System.out.println("time: "+(stop-start)+"ms \n");
- 	 }
+		// Thread Count: 256 (16x16)
+		// time: 210ms
+
+		CLFloatMatrix u = new CLFloatMatrix(2, 2);
+		u.randni();
+		CLFloatMatrix uout = new CLFloatMatrix(2, 2);
+		uout.randni();
+		u.transpose(u, uout);
+		System.out.println(u.toString());
+		System.out.println(uout.toString2D());
+
+		int i = 4096;
+		int m = i;// 1234;
+		int n = i;// 1431;
+		int k = i;// 1449;
+
+		CLFloatMatrix a = new CLFloatMatrix(i, i);
+		a.randni();
+		CLFloatMatrix b = new CLFloatMatrix(i, i);
+		b.randni();
+		CLFloatMatrix result = new CLFloatMatrix(i, i);
+		result.randni();
+
+		long start2 = System.currentTimeMillis();
+		result.mmul(a, b, result);
+		long stop2 = System.currentTimeMillis();
+		System.out.println("time: " + (stop2 - start2) + "ms \n");
+
+		long start1 = System.currentTimeMillis();
+		a.transpose(a, result);
+		result.mmul(result, b, a);
+		long stop1 = System.currentTimeMillis();
+		System.out.println("time: " + (stop1 - start1) + "ms \n");
+
+		long start = System.currentTimeMillis();
+		result.mmulTN(a, b, result);
+		long stop = System.currentTimeMillis();
+		System.out.println("time: " + (stop - start) + "ms \n");
+	}
  	
  	
      public static void test(String[] args) throws IOException {
@@ -71,10 +76,12 @@ public class Test {
         int n = i;//1431;
         int k = i;//1449;
 
-        CudaFloatMatrix a = CudaFloatMatrix.ones(i, i);
-        CudaFloatMatrix b = CudaFloatMatrix.ones(i, i);
-        CudaFloatMatrix c = CudaFloatMatrix.zeros(i,i);
-        CudaFloatMatrix.mmul(a,b, c);
+        CudaFloatMatrix a = new CudaFloatMatrix(i, i);
+        a.setOne();
+        CudaFloatMatrix b = new CudaFloatMatrix(i, i);
+        a.setOne();
+        CudaFloatMatrix c = new CudaFloatMatrix(i,i);
+        c.mmul(a, b, c);
         System.out.println(c.toString2D());
 
         for (int z = 0; z < 2000; z++) {
@@ -104,11 +111,11 @@ public class Test {
 //        org.jblas.FloatMatrix a = org.jblas.FloatMatrix.randn(k, m);
 //        org.jblas.FloatMatrix b = org.jblas.FloatMatrix.randn(k, n);
 //        org.jblas.FloatMatrix c = org.jblas.FloatMatrix.zeros(m, n);
-//        CudaFloatMatrix aCL = new CudaFloatMatrix(k, m, a.data);
-//        CudaFloatMatrix bCL = new CudaFloatMatrix(k, n, b.data);
-//        CudaFloatMatrix cCL = new CudaFloatMatrix(m, n);
+//        CLFloatMatrix aCL = new CLFloatMatrix(k, m, a.data);
+//        CLFloatMatrix bCL = new CLFloatMatrix(k, n, b.data);
+//        CLFloatMatrix cCL = new CLFloatMatrix(m, n);
 //        long start = System.currentTimeMillis();
-//        CudaFloatMatrix.mmulTransposeA(aCL, bCL, cCL);
+//        CLFloatMatrix.mmulTransposeA(aCL, bCL, cCL);
 //        System.out.println((System.currentTimeMillis() - start) + "ms");
 //        float[] data = new float[m * n];
 //        cCL.getColumnWiseOn(data);
@@ -128,12 +135,12 @@ public class Test {
 //            values[i] = i;
 //        }
 //
-//        CudaFloatMatrix a = new CudaFloatMatrix(rows, columns, values);
-//        CudaFloatMatrix b = new CudaFloatMatrix(rows, columns, values);
-//        CudaFloatMatrix c = new CudaFloatMatrix(rows, columns, new float[rows * columns]);
-//        CudaFloatMatrix.add(a, b, c);
+//        CLFloatMatrix a = new CLFloatMatrix(rows, columns, values);
+//        CLFloatMatrix b = new CLFloatMatrix(rows, columns, values);
+//        CLFloatMatrix c = new CLFloatMatrix(rows, columns, new float[rows * columns]);
+//        CLFloatMatrix.add(a, b, c);
 //        System.out.println(a.toString2());
-//        CudaFloatMatrix.add(a, b, c);
+//        CLFloatMatrix.add(a, b, c);
 //        System.out.println(c.toString2());
 
 //        int columns = 16;
@@ -145,18 +152,18 @@ public class Test {
         int rows = 1;
         int columns = 254;
         org.jblas.FloatMatrix test = org.jblas.FloatMatrix.rand(rows, columns);
-        CudaFloatMatrix gpuTest = new CudaFloatMatrix(rows, columns, test.data);
-//        CudaFloatMatrix gpuTestResult = CudaFloatMatrix.testsum(gpuTest);
+        CLFloatMatrix gpuTest = new CLFloatMatrix(rows, columns, test.data);
+//        CLFloatMatrix gpuTestResult = CLFloatMatrix.testsum(gpuTest);
 //        System.out.println(gpuTestResult.toString2());
         System.out.println(columns * rows);
 
 //        System.out.println(gpuVector);
         System.out.println(test.sum());
-        System.out.println(CudaFloatMatrix.sum(gpuTest));
+        System.out.println(gpuTest.sum(gpuTest));
         System.out.println(test.max());
-        System.out.println(CudaFloatMatrix.max(gpuTest));
+        System.out.println(CLFloatMatrix.max(gpuTest));
         System.out.println(test.min());
-        System.out.println(CudaFloatMatrix.min(gpuTest));
+        System.out.println(CLFloatMatrix.min(gpuTest));
 
     }
 }

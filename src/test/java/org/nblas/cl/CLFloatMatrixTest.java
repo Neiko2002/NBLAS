@@ -5,29 +5,28 @@ import java.time.Instant;
 import java.util.Random;
 
 import org.jblas.MatrixFunctions;
-import org.jblas.ranges.IntervalRange;
-import org.jblas.ranges.RangeUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.nblas.cl.CLFloatMatrix;
+import org.nblas.cl.blas.CLLevel1;
 
 public class CLFloatMatrixTest {
 
 	protected static final int seed = 7;
 	protected static final int runs = 100_000;
+	protected static final int matrixSize = 17; 
 	
-	protected static final int matARows = 17;
-	protected static final int matAColumns = 17;
+	protected static final int matARows = matrixSize;
+	protected static final int matAColumns = matrixSize;
 	
-	protected static final int matBRows = 17;
-	protected static final int matBColumns = 17;
+	protected static final int matBRows = matrixSize;
+	protected static final int matBColumns = matrixSize;
 	
 	public static void main(String[] args) throws Exception {
 		CLFloatMatrixTest testSuit = new CLFloatMatrixTest();
 		testSuit.setUp();
-		testSuit.rowSumsTest();
+		testSuit.isZeroTest();
 	}
 	
 	protected org.jblas.FloatMatrix matA_CPU;
@@ -60,20 +59,37 @@ public class CLFloatMatrixTest {
 	}
 
 	@After
-	public void release() throws Exception {
+	public void release(){
 		matA_GPU.free();
 		matB_GPU.free();
 	}
 
 	@Test
+	public void isZeroTest() {
+		
+		release();
+		
+		org.jblas.FloatMatrix matC_CPU = new org.jblas.FloatMatrix(matARows, matAColumns);
+		CLFloatMatrix matC_GPU = new CLFloatMatrix(matARows, matAColumns);
+		
+		// Ergebnisse vergleichen 
+		float[] result_CPU = matC_CPU.toArray();
+		float[] result_GPU = matC_GPU.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+	}
+	
+	@Test
 	public void memoryLeakTest() {
 		
-		CLFloatMatrix ones_GPU = CLFloatMatrix.ones(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix matC_GPU = CLFloatMatrix.zeros(matA_GPU.getRows(), matA_GPU.getColumns());
+		CLFloatMatrix ones_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		ones_GPU.setOne();
+		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
 		
 		Instant start = Instant.now();
 		for (int i = 0; i < runs; i++)
-			CLFloatMatrix.add(matC_GPU, ones_GPU, matC_GPU);
+			CLLevel1.add(matC_GPU, ones_GPU, matC_GPU);
 		System.out.println("took "+Duration.between(start, Instant.now()));
 		
 		// überprüfe die Richtigkeit
@@ -114,7 +130,8 @@ public class CLFloatMatrixTest {
 		matC_CPU = org.jblas.FloatMatrix.concatVertically(org.jblas.FloatMatrix.ones(1, matC_CPU.getColumns()), matC_CPU);
 		
 		// Berechnung auf der GPU
-		CLFloatMatrix matC_GPU = CLFloatMatrix.ones(matA_GPU.getRows()+1, matA_GPU.getColumns()+1);
+		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows()+1, matA_GPU.getColumns()+1);
+		matC_GPU.setOne();
 		matC_GPU.setSubMatrix(matA_GPU, 1, 1);
 		
 		// Ergebnisse vergleichen 
@@ -133,7 +150,7 @@ public class CLFloatMatrixTest {
 		org.jblas.FloatMatrix matC_CPU = matA_CPU.getRange(1, matA_CPU.getRows(), 1, matA_CPU.getColumns());
 		
 		// Berechnung auf der GPU
-		CLFloatMatrix matC_GPU = CLFloatMatrix.zeros(matA_GPU.getRows()-1, matA_GPU.getColumns()-1);
+		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows()-1, matA_GPU.getColumns()-1);
 		matA_GPU.getSubMatrix(matC_GPU, 1, 1);
 		
 		// Ergebnisse vergleichen 
@@ -153,7 +170,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.add(matA_GPU, matB_GPU, matC_GPU);
+		CLLevel1.add(matA_GPU, matB_GPU, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -172,7 +189,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.add(matA_GPU, 2, matC_GPU);
+		CLLevel1.add(matA_GPU, 2, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -191,7 +208,8 @@ public class CLFloatMatrixTest {
 		org.jblas.FloatMatrix matC_CPU = matA_CPU.addColumnVector(columnVector_CPU);
 		
 		// Berechnung auf der GPU
-		CLFloatMatrix columnVector_GPU = CLFloatMatrix.ones(matA_GPU.getRows(), 1);
+		CLFloatMatrix columnVector_GPU = new CLFloatMatrix(matA_GPU.getRows(), 1);
+		columnVector_GPU.setOne();
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
 		CLFloatMatrix.addColumnVector(matA_GPU, columnVector_GPU, matC_GPU);
 		
@@ -213,7 +231,8 @@ public class CLFloatMatrixTest {
 		org.jblas.FloatMatrix matC_CPU = matA_CPU.addRowVector(rowVector_CPU);
 		
 		// Berechnung auf der GPU
-		CLFloatMatrix rowVector_GPU = CLFloatMatrix.ones(1, matA_GPU.getColumns());
+		CLFloatMatrix rowVector_GPU = new CLFloatMatrix(1, matA_GPU.getColumns());
+		rowVector_GPU.setOne();
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
 		CLFloatMatrix.addRowVector(matA_GPU, rowVector_GPU, matC_GPU);
 		
@@ -353,7 +372,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.div(matA_GPU, matA_GPU, matC_GPU);
+		CLLevel1.div(matA_GPU, matA_GPU, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -372,7 +391,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.div(matA_GPU, 2, matC_GPU);
+		CLLevel1.div(matA_GPU, 2, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -438,7 +457,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.gt(matA_GPU, matB_GPU, matC_GPU);
+		CLLevel1.gt(matA_GPU, matB_GPU, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -457,7 +476,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.gt(matA_GPU, 0, matC_GPU);
+		CLLevel1.gt(matA_GPU, 0, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -991,7 +1010,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matB_GPU.getColumns());
-		CLFloatMatrix.mmul(matA_GPU, matB_GPU, matC_GPU);
+		matC_GPU.mmul(matA_GPU, matB_GPU, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -1011,7 +1030,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matB_GPU.getColumns());
-		CLFloatMatrix.mmulTransposeA(matA_GPU, matB_GPU, matC_GPU);
+		matC_GPU.mmulTN(matA_GPU, matB_GPU, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -1030,7 +1049,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matB_GPU.getColumns());
-		CLFloatMatrix.mmulTransposeB(matA_GPU, matB_GPU, matC_GPU);
+		matC_GPU.mmulNT(matA_GPU, matB_GPU, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -1050,7 +1069,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.mul(matA_GPU, matA_GPU, matC_GPU);
+		CLLevel1.mul(matA_GPU, matA_GPU, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -1069,7 +1088,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.mul(matA_GPU, 2, matC_GPU);
+		CLLevel1.mul(matA_GPU, 2, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -1131,7 +1150,8 @@ public class CLFloatMatrixTest {
 		org.jblas.FloatMatrix matC_CPU = org.jblas.FloatMatrix.ones(matA_CPU.getRows(), matB_CPU.getColumns());
 		
 		// Berechnung auf der GPU
-		CLFloatMatrix matC_GPU = CLFloatMatrix.ones(matA_GPU.getRows(), matB_GPU.getColumns());
+		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matB_GPU.getColumns());
+		matC_GPU.setOne();
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -1410,7 +1430,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.sub(matA_GPU, matB_GPU, matC_GPU);
+		CLLevel1.sub(matA_GPU, matB_GPU, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -1429,7 +1449,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.sub(matA_GPU, 2, matC_GPU);
+		CLLevel1.sub(matA_GPU, 2, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -1448,7 +1468,8 @@ public class CLFloatMatrixTest {
 		org.jblas.FloatMatrix matC_CPU = matA_CPU.subColumnVector(columnVector_CPU);
 		
 		// Berechnung auf der GPU
-		CLFloatMatrix columnVector_GPU = CLFloatMatrix.ones(matA_GPU.getRows(), 1);
+		CLFloatMatrix columnVector_GPU = new CLFloatMatrix(matA_GPU.getRows(), 1);
+		columnVector_GPU.setOne();
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
 		CLFloatMatrix.subColumnVector(matA_GPU, columnVector_GPU, matC_GPU);
 		
@@ -1470,7 +1491,8 @@ public class CLFloatMatrixTest {
 		org.jblas.FloatMatrix matC_CPU = matA_CPU.subRowVector(rowVector_CPU);
 		
 		// Berechnung auf der GPU
-		CLFloatMatrix rowVector_GPU = CLFloatMatrix.ones(1, matA_GPU.getColumns());
+		CLFloatMatrix rowVector_GPU = new CLFloatMatrix(1, matA_GPU.getColumns());
+		rowVector_GPU.setOne();
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
 		CLFloatMatrix.subRowVector(matA_GPU, rowVector_GPU, matC_GPU);
 		
@@ -1491,7 +1513,7 @@ public class CLFloatMatrixTest {
 		float sum_CPU = matA_CPU.sum();
 		
 		// Berechnung auf der GPU
-		float sum_GPU = CLFloatMatrix.sum(matA_GPU);
+		float sum_GPU = matA_GPU.sum(matA_GPU);
 		
 		Assert.assertEquals(sum_CPU, sum_GPU, 1.0f);
 	}
@@ -1504,7 +1526,7 @@ public class CLFloatMatrixTest {
 
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.exp(matA_GPU, matC_GPU);
+		CLLevel1.exp(matA_GPU, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -1523,7 +1545,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.neg(matA_GPU, matC_GPU);
+		CLLevel1.neg(matA_GPU, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -1544,7 +1566,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.sigmoid(matA_GPU, matC_GPU);
+		CLLevel1.sigmoid(matA_GPU, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -1563,7 +1585,7 @@ public class CLFloatMatrixTest {
 		
 		// Berechnung auf der GPU
 		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		CLFloatMatrix.transpose(matA_GPU, matC_GPU);
+		matA_GPU.transpose(matA_GPU, matC_GPU);
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
@@ -1581,7 +1603,7 @@ public class CLFloatMatrixTest {
 		org.jblas.FloatMatrix matC_CPU = org.jblas.FloatMatrix.zeros(matA_CPU.getRows(), matB_CPU.getColumns());
 		
 		// Berechnung auf der GPU
-		CLFloatMatrix matC_GPU = CLFloatMatrix.zeros(matA_GPU.getRows(), matB_GPU.getColumns());
+		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matB_GPU.getColumns());
 		
 		// Ergebnisse vergleichen 
 		float[] result_CPU = matC_CPU.toArray();
