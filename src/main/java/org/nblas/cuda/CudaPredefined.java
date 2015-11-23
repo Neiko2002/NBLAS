@@ -13,6 +13,38 @@ class CudaPredefined {
 
     public static final HashMap<String, Subprogram<CUfunction>> kernels;
 
+    private final static String getSub = "" +
+            "extern \"C\"\n" +
+            "__global__ void getsub(float* inputData, float* outputData,\n" +
+            "int rows, int columns,\n" +
+            "int inputRows,\n" +
+            "int offsetRow, int offsetColumn)\n" +
+            "{\n" +
+            "    unsigned int id0 = blockDim.x * blockIdx.x + threadIdx.x;\n" +
+            "    unsigned int id1 = blockDim.y * blockIdx.y + threadIdx.y;\n" +
+            "    if(id0 >= rows || id1 >= columns) return;\n" +
+            "    unsigned int oid = id1 * rows + id0;\n" +
+            "    unsigned int iid = (id1 + offsetColumn) * inputRows + id0 + offsetRow;\n" +
+            "\n" +
+            "    outputData[oid] = inputData[iid];\n" +
+            "}";
+
+    private final static String setSub = "" +
+            "extern \"C\"\n" +
+            "__global__ void setsub(float* inputData, float* outputData,\n" +
+            "int rows, int columns,\n" +
+            "int outputRows,\n" +
+            "int offsetRow, int offsetColumn)\n" +
+            "{\n" +
+            "    unsigned int id0 = blockDim.x * blockIdx.x + threadIdx.x;\n" +
+            "    unsigned int id1 = blockDim.y * blockIdx.y + threadIdx.y;\n" +
+            "\n" +
+            "    if(id0 >= rows || id1 >= columns) return;\n" +
+            "    unsigned int iid = id1 * rows + id0;\n" +
+            "    unsigned int oid = (id1 + offsetColumn) * outputRows + id0 + offsetRow;\n" +
+            "\n" +
+            "    outputData[oid] = inputData[iid];\n" +
+            "}";
 
     private final static String copy1D = "extern \"C\"\n" +
             "__global__ void copy1D(float* inputData, float* outputData, const int n)\n" +
@@ -150,7 +182,9 @@ class CudaPredefined {
     static {
         kernels = new HashMap<>();
         kernels.put("copy1D", new Subprogram<CUfunction>("copy1D", copy1D, false));
-        kernels.put("transpose", new Subprogram<CUfunction>("copy1D", transpose, false));
+        kernels.put("transpose", new Subprogram<CUfunction>("transpose", transpose, false));
+        kernels.put("setsub", new Subprogram<CUfunction>("setsub", setSub, false));
+        kernels.put("getsub", new Subprogram<CUfunction>("getsub", getSub, false));
         String[] sum = {"sumFloats",
                 "\t\tshared[tid] += inputData[gid];\n",
                 "\t\tshared[tid] += shared[tid + s];\n"};

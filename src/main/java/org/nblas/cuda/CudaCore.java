@@ -105,8 +105,8 @@ class CudaCore {
 
         loadFromGeneratedFunction(CudaPredefined.kernels.get("copy1D"));
         loadFromGeneratedFunction(CudaPredefined.kernels.get("transpose"));
-        loadFunction("getsub", Paths.get("cuda/getsub.cu"));
-        loadFunction("setsub", Paths.get("cuda/setsub.cu"));
+        loadFromGeneratedFunction(CudaPredefined.kernels.get("getsub"));
+        loadFromGeneratedFunction(CudaPredefined.kernels.get("setsub"));
     }
 
     public void execute(String functionName, int rows, int columns, Pointer result, Pointer... args) {
@@ -472,6 +472,7 @@ class CudaCore {
     public void getData(Pointer pointer, float[] values) {
         JCublas2.cublasGetVector(values.length, Sizeof.FLOAT, pointer, 1, Pointer.to(values), 1);
     }
+
 
 
 }
