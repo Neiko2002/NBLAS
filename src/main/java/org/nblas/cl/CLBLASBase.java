@@ -13,7 +13,7 @@ import org.nblas.generic.Subprogram;
  * Level 2 operations quadratic time and 
  * Level 3 operations cubic time.
  * 
- * TODO hier sollten nur ANativeCLMatrix verwendet werden
+ * TODO hier sollten nur ACLMatrix verwendet werden und alle Methoden sollten aus dem core arbeiten anstatt der CLFloatMatrix
  * 
  * @author Nico
  *
