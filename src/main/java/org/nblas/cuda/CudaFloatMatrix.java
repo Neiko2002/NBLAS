@@ -1,8 +1,8 @@
 package org.nblas.cuda;
 
 
-import org.nblas.generic.FloatArray2D;
-import org.nblas.generic.Subprogram;
+import org.nblas.Context;
+import org.nblas.FloatMatrix;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.common.Arg;
@@ -12,14 +12,13 @@ import org.nblas.function.predefined.binary.Add;
 import org.nblas.function.predefined.binary.Div;
 import org.nblas.function.predefined.binary.Mul;
 import org.nblas.function.predefined.binary.Sub;
+import org.nblas.generic.Subprogram;
 
-import jcuda.Pointer;
 import jcuda.driver.CUfunction;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-public class CudaFloatMatrix extends ANativeCUDAMatrix implements FloatArray2D  {
+public class CudaFloatMatrix extends CUDAMatrix implements FloatMatrix  {
 
-    private static final CudaCore CORE = CudaCore.getCore();
-    
     private static final Subprogram<CUfunction> ADD_MATRIX;
     private static final Subprogram<CUfunction> ADD_SCALAR;
     private static final Subprogram<CUfunction> ADD_C_VECTOR;
@@ -128,180 +127,156 @@ public class CudaFloatMatrix extends ANativeCUDAMatrix implements FloatArray2D  
         return subprogram;
     }
 
-    private final Pointer dataPointer;
+
+    public CudaFloatMatrix(int rows, int columns) {
+        super(rows, columns);
+        this.dataPointer = CORE.malloc(this.length);
+     }
+
+    public CudaFloatMatrix(int rows, int columns, float[] values) {
+       super(rows, columns);
+
+       if (rows * columns != values.length) throw new IllegalArgumentException(
+               "rows times columns " + (rows * columns) + " != " + "data length = " + values.length);
+
+       this.dataPointer = CORE.malloc(values);
+    }
+ 
+    
+    
+    // ---------------------------------- utility methods -------------------------------------
+
+	@Override
+	public Context getContext() {
+		return Context.createOpenCLSinglePrecisionContext();
+	}
+	
+    @Override
+    public FloatMatrix getColumnWiseOn(float[] values) {
+        if (getRows() * getColumns() != values.length)
+            throw new IllegalArgumentException("Array's length is not the size of rows times columns.");
+        CORE.getData(dataPointer, values);
+        return this;
+    }
+    
+	@Override
+	public String toString() {
+		return toString1D();
+	}
+    
+	@Override
+	public FloatMatrix dup(FloatMatrix source, FloatMatrix destination) {
+	   	CudaFloatMatrix src = (CudaFloatMatrix)source;
+    	CudaFloatMatrix dst = (CudaFloatMatrix)destination;
+		checkSameSize(src, dst);
+	    CORE.execute(COPY_MATRIX.getProgramName(), src.rows, src.columns, dst.dataPointer, src.dataPointer);
+	    return destination;
+	}
+
+	@Override
+    public FloatMatrix transpose(FloatMatrix matrix, FloatMatrix transposed) {
+	   	CudaFloatMatrix mat = (CudaFloatMatrix)matrix;
+    	CudaFloatMatrix result = (CudaFloatMatrix)transposed;
+        CORE.transpose(mat.dataPointer, result.dataPointer, mat.rows, mat.columns);
+        return transposed;
+    }
+
+	
+	// ---------------------------------- inplace methods -------------------------------------
+	
+	@Override
+    public FloatMatrix setOne() {
+        CORE.execute(SET_ONE.getProgramName(), this.rows, this.columns, dataPointer);
+        return this;
+    }
+
+	@Override
+    public FloatMatrix setZero() {
+        CORE.execute(SET_ZERO.getProgramName(), this.rows, this.columns, dataPointer);
+        return this;
+    }
+
+	@Override
+    public FloatMatrix randi() {
+        CORE.rand(dataPointer, length);
+        return this;
+    }
+
+	@Override
+    public FloatMatrix randni() {
+        CORE.randn(dataPointer, length);
+        return this;
+    }
+	
+	
+    // --------------------------------------- add methods ----------------------------------------
+    
+    @Override
+    public FloatMatrix add(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
+    	CudaFloatMatrix a = (CudaFloatMatrix)matrixA;
+    	CudaFloatMatrix b = (CudaFloatMatrix)matrixB;
+    	CudaFloatMatrix r = (CudaFloatMatrix)result;
+        checkSameSize(a, b, r);
+        CORE.execute(ADD_MATRIX.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
+      	return result;
+    }
 
     @Override
-    public void free() {
-        CORE.free(dataPointer);
-    }
-
-    public CudaFloatMatrix(int rows, int columns, float... values) {
-    	super(rows, columns);
-    	
-        if (values.length == 0) {
-            this.dataPointer = CORE.malloc(this.length);
-            setZero();
-        } else {
-            if (rows * columns != values.length) throw new IllegalArgumentException(
-                    "rows times columns " + (rows * columns) + " != " +
-                            "data length = " + values.length);
-
-
-            this.dataPointer = CORE.malloc(values);
-        }
-    }
-
-    public CudaFloatMatrix(float value) {
-        this(1, 1, value);
-    }
-
-    private CudaFloatMatrix(int rows, int columns) {
-    	super(rows, columns);
-        this.dataPointer = CORE.malloc(this.length);
-    }
-
-    public static CudaFloatMatrix fromDataColumnWise(int rows, int columns, float... values) {
-        return new CudaFloatMatrix(rows, columns, values);
-    }
-
-    public static CudaFloatMatrix zeros(int rows, int columns) {
-        CudaFloatMatrix matrix = new CudaFloatMatrix(rows, columns);
-        matrix.setZero();
-        return matrix;
-    }
-
-    public static CudaFloatMatrix ones(int rows, int columns) {
-        CudaFloatMatrix matrix = new CudaFloatMatrix(rows, columns);
-        matrix.setOne();
-        return matrix;
-    }
-
-    public static CudaFloatMatrix rand(int rows, int columns) {
-        CudaFloatMatrix matrix = new CudaFloatMatrix(rows, columns);
-        matrix.nextRand();
-        return matrix;
-    }
-
-    public static CudaFloatMatrix randn(int rows, int columns) {
-        CudaFloatMatrix matrix = new CudaFloatMatrix(rows, columns);
-        matrix.nextRandn();
-        return matrix;
-    }
-
-    public static CudaFloatMatrix eye(int length) {
-        float[] values = new float[length * length];
-        for (int i = 0; i < length; i++) {
-            values[i * length + i] = 1.0f;
-        }
-        return new CudaFloatMatrix(length, length, values);
-    }
-
-    public void setOne() {
-        CORE.execute(SET_ONE.getProgramName(), this.rows, this.columns, dataPointer);
-    }
-
-    public void setZero() {
-        CORE.execute(SET_ZERO.getProgramName(), this.rows, this.columns, dataPointer);
-    }
-
-    public static void copy(CudaFloatMatrix source, CudaFloatMatrix copy) {
-        checkSameSize(source, copy);
-        CORE.execute(COPY_MATRIX.getProgramName(), source.rows, source.columns, copy.dataPointer, source.dataPointer);
-    }
-
-
-    ///// ARITHMETICS
-
-
-    // ADD
-
-    public static void add(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkSameSize(a, b, result);
-        CORE.execute(ADD_MATRIX.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
-    }
-
-    public static void add(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
-        CudaFloatMatrix b = new CudaFloatMatrix(1, 1, x);
-
-        CORE.execute(ADD_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    public FloatMatrix add(FloatMatrix matrix, float scalar, FloatMatrix result) {
+		CudaFloatMatrix a = (CudaFloatMatrix)matrix;
+		CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
+    	CudaFloatMatrix r = (CudaFloatMatrix)result;
+    	CORE.execute(ADD_SCALAR.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
         b.free();
+    	return result;
     }
 
     public static void addColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkColumnVectorSize(a, b, result);
-        CORE.execute(ADD_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+        CORE.execute(ADD_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
     }
 
     public static void addRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkRowVectorSize(a, b, result);
-        CORE.execute(ADD_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+        CORE.execute(ADD_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    }
+    	
+    
+    
+    // --------------------------------------- sub methods ----------------------------------------
+    
+    @Override
+    public FloatMatrix sub(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
+    	CudaFloatMatrix a = (CudaFloatMatrix)matrixA;
+    	CudaFloatMatrix b = (CudaFloatMatrix)matrixB;
+    	CudaFloatMatrix r = (CudaFloatMatrix)result;
+        checkSameSize(a, b, r);
+        CORE.execute(SUB_MATRIX.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
+      	return result;
     }
 
-
-    // MUL
-
-    public static void mul(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkSameSize(a, b, result);
-        CORE.execute(MUL_MATRIX.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
-    }
-
-    public static void mul(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
-        CudaFloatMatrix b = new CudaFloatMatrix(1, 1, x);
-
-        CORE.execute(MUL_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    @Override
+    public FloatMatrix sub(FloatMatrix matrix, float scalar, FloatMatrix result) {
+		CudaFloatMatrix a = (CudaFloatMatrix)matrix;
+		CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
+    	CudaFloatMatrix r = (CudaFloatMatrix)result;
+    	CORE.execute(SUB_SCALAR.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
         b.free();
-    }
-
-    public static void mulColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(MUL_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
-    }
-
-    public static void mulRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(MUL_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
-    }
-
-
-    // SUB
-
-    public static void sub(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkSameSize(a, b, result);
-        CORE.execute(SUB_MATRIX.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
-    }
-
-    public static void sub(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
-        CudaFloatMatrix b = new CudaFloatMatrix(1, 1, x);
-
-        CORE.execute(SUB_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
-        b.free();
+    	return result;
     }
 
     public static void subColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkColumnVectorSize(a, b, result);
-        CORE.execute(SUB_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+        CORE.execute(SUB_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
     }
 
     public static void subRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkRowVectorSize(a, b, result);
-        CORE.execute(SUB_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+        CORE.execute(SUB_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
     }
-
-
+    
     public static void rsub(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
-        CudaFloatMatrix b = new CudaFloatMatrix(1, 1, x);
+        CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { x });
 
         CORE.execute(RSUB_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
@@ -319,109 +294,185 @@ public class CudaFloatMatrix extends ANativeCUDAMatrix implements FloatArray2D  
         CORE.execute(RSUB_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
                 a.dataPointer, b.dataPointer);
     }
-
-
-    // DIV
-
-    public static void div(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkSameSize(a, b, result);
-        CORE.execute(DIV_MATRIX.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    
+    
+    
+    // --------------------------------------- mul methods ----------------------------------------
+    
+    @Override
+    public FloatMatrix mul(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
+    	CudaFloatMatrix a = (CudaFloatMatrix)matrixA;
+    	CudaFloatMatrix b = (CudaFloatMatrix)matrixB;
+    	CudaFloatMatrix r = (CudaFloatMatrix)result;
+        checkSameSize(a, b, r);
+        CORE.execute(MUL_MATRIX.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
+      	return result;
     }
 
-    public static void div(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
-        CudaFloatMatrix b = new CudaFloatMatrix(1, 1, x);
-
-        CORE.execute(DIV_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    @Override
+    public FloatMatrix mul(FloatMatrix matrix, float scalar, FloatMatrix result) {
+		CudaFloatMatrix a = (CudaFloatMatrix)matrix;
+		CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
+    	CudaFloatMatrix r = (CudaFloatMatrix)result;
+    	CORE.execute(MUL_SCALAR.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
         b.free();
+    	return result;
+    }
+
+    public static void mulColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
+        checkColumnVectorSize(a, b, result);
+        CORE.execute(MUL_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    }
+
+    public static void mulRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
+        checkRowVectorSize(a, b, result);
+        CORE.execute(MUL_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    }
+    
+    
+    
+    // --------------------------------------- div methods ----------------------------------------
+    
+    @Override
+    public FloatMatrix div(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
+    	CudaFloatMatrix a = (CudaFloatMatrix)matrixA;
+    	CudaFloatMatrix b = (CudaFloatMatrix)matrixB;
+    	CudaFloatMatrix r = (CudaFloatMatrix)result;
+        checkSameSize(a, b, r);
+        CORE.execute(DIV_MATRIX.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
+      	return result;
+    }
+
+    @Override
+    public FloatMatrix div(FloatMatrix matrix, float scalar, FloatMatrix result) {
+		CudaFloatMatrix a = (CudaFloatMatrix)matrix;
+		CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
+    	CudaFloatMatrix r = (CudaFloatMatrix)result;
+    	CORE.execute(DIV_SCALAR.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
+        b.free();
+    	return result;
     }
 
     public static void divColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkColumnVectorSize(a, b, result);
-        CORE.execute(DIV_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+        CORE.execute(DIV_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
     }
 
     public static void divRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkRowVectorSize(a, b, result);
-        CORE.execute(DIV_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+        CORE.execute(DIV_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
     }
-
-
+	
     public static void rdiv(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
-        CudaFloatMatrix b = new CudaFloatMatrix(1, 1, x);
+        CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { x });
 
-        CORE.execute(RDIV_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+        CORE.execute(RDIV_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
         b.free();
     }
 
     public static void rdivColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkColumnVectorSize(a, b, result);
-        CORE.execute(RDIV_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+        CORE.execute(RDIV_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
     }
 
     public static void rdivRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
         checkRowVectorSize(a, b, result);
-        CORE.execute(RDIV_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+        CORE.execute(RDIV_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    }
+    
+    
+    // --------------------------------------- mathematical functions ----------------------------------------
+	
+    @Override
+    public FloatMatrix exp(FloatMatrix matrix, FloatMatrix result) {
+    	throw new NotImplementedException();
+	}
+
+    @Override
+    public FloatMatrix neg(FloatMatrix matrix, FloatMatrix result) {
+    	throw new NotImplementedException();
+	}
+	
+    @Override
+	public FloatMatrix sigmoid(FloatMatrix matrix, FloatMatrix result) {
+    	throw new NotImplementedException();
+	}
+    
+    // --------------------------------------- greater than ----------------------------------------
+    
+    @Override
+    public FloatMatrix gt(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
+    	throw new NotImplementedException();
+    }
+    
+    @Override
+    public FloatMatrix gt(FloatMatrix matrix, float scalar, FloatMatrix result) {
+    	throw new NotImplementedException();
+    }
+    
+    
+    
+    
+    // --------------------------------------- matrix multiplication ----------------------------------------    
+
+    @Override
+    public FloatMatrix mmul(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
+    	CudaFloatMatrix matrixA = (CudaFloatMatrix) a;
+    	CudaFloatMatrix matrixB = (CudaFloatMatrix) b;
+    	CudaFloatMatrix matrixR = (CudaFloatMatrix) result;
+    	CORE.mmul(matrixA.dataPointer, matrixA.rows, matrixA.columns, matrixB.dataPointer, matrixB.columns, matrixR.dataPointer);
+        return result;
+    }
+
+    @Override
+    public FloatMatrix mmulTN(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
+    	CudaFloatMatrix matrixA = (CudaFloatMatrix) a;
+    	CudaFloatMatrix matrixB = (CudaFloatMatrix) b;
+    	CudaFloatMatrix matrixR = (CudaFloatMatrix) result;
+    	CORE.mmulTransposeA(matrixA.dataPointer, matrixA.rows, matrixA.columns, matrixB.dataPointer, matrixB.columns, matrixR.dataPointer);
+        return result;
+    }
+
+    @Override
+    public FloatMatrix mmulNT(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
+    	CudaFloatMatrix matrixA = (CudaFloatMatrix) a;
+    	CudaFloatMatrix matrixB = (CudaFloatMatrix) b;
+    	CudaFloatMatrix matrixR = (CudaFloatMatrix) result;
+    	CORE.mmulTransposeB(matrixA.dataPointer, matrixA.rows, matrixA.columns, matrixB.dataPointer, matrixB.rows, matrixR.dataPointer);
+        return result;
+    }
+    
+    // --------------------------------------- reduction methods ----------------------------------------
+
+    @Override
+    public float sum(FloatMatrix matrix) {
+    	CudaFloatMatrix mat = (CudaFloatMatrix) matrix;
+        return CORE.reduce("sumFloats", mat.dataPointer, mat.length, 0);
+    }
+
+    public float mean(FloatMatrix matrix) {
+    	CudaFloatMatrix mat = (CudaFloatMatrix) matrix;
+        return sum(matrix) / mat.length;
+    }
+
+    public float prod(FloatMatrix matrix) {
+    	CudaFloatMatrix mat = (CudaFloatMatrix) matrix;
+        return CORE.reduce("productFloats", mat.dataPointer, mat.length, 1);
+    }
+
+    public float max(FloatMatrix matrix) {
+    	CudaFloatMatrix mat = (CudaFloatMatrix) matrix;
+        return CORE.reduce("maxFloats", mat.dataPointer, mat.length, Float.NEGATIVE_INFINITY);
+    }
+
+    public float min(CudaFloatMatrix matrix) {
+    	CudaFloatMatrix mat = (CudaFloatMatrix) matrix;
+        return CORE.reduce("FloatMatrixInterface", mat.dataPointer, mat.length, Float.POSITIVE_INFINITY);
     }
 
 
-    //// MATRIX_MULTIPLICATION
-
-    public static void mmul(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        CORE.mmul(a.dataPointer, a.rows, a.columns,
-                b.dataPointer, b.columns, result.dataPointer);
-    }
-
-    public static void mmulTransposeA(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        CORE.mmulTransposeA(a.dataPointer, a.rows, a.columns,
-                b.dataPointer, b.columns, result.dataPointer);
-    }
-
-    public static void mmulTransposeB(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        CORE.mmulTransposeB(a.dataPointer, a.rows, a.columns,
-                b.dataPointer, b.rows, result.dataPointer);
-    }
-
-    // TRANSPOSE
-
-    public static void transpose(CudaFloatMatrix matrix, CudaFloatMatrix transposed) {
-        CORE.transpose(matrix.dataPointer, transposed.dataPointer, matrix.rows, matrix.columns);
-    }
-
-
-    ///// REDUCTION
-
-
-    // FULL REDUCTION
-
-    public static float sum(CudaFloatMatrix matrix) {
-        return CORE.reduce("sumFloats", matrix.dataPointer, matrix.length, 0);
-    }
-
-    public static float mean(CudaFloatMatrix matrix) {
-        return sum(matrix) / matrix.length;
-    }
-
-    public static float prod(CudaFloatMatrix matrix) {
-        return CORE.reduce("productFloats", matrix.dataPointer, matrix.length, 1);
-    }
-
-    public static float max(CudaFloatMatrix matrix) {
-        return CORE.reduce("maxFloats", matrix.dataPointer, matrix.length, Float.NEGATIVE_INFINITY);
-    }
-
-    public static float min(CudaFloatMatrix matrix) {
-        return CORE.reduce("minFloats", matrix.dataPointer, matrix.length, Float.POSITIVE_INFINITY);
-    }
-
-
-    // ROW REDUCTION
+    
+    // --------------------------------------- row reduction methods ----------------------------------------
 
     public static void rowSums(CudaFloatMatrix matrix, CudaFloatMatrix result) {
         CORE.reduceRows("rowSumsFloats", matrix.dataPointer, result.dataPointer, matrix.rows, matrix.columns, 0);
@@ -429,7 +480,7 @@ public class CudaFloatMatrix extends ANativeCUDAMatrix implements FloatArray2D  
 
     public static void rowMeans(CudaFloatMatrix matrix, CudaFloatMatrix result) {
         rowSums(matrix, result);
-        div(result, matrix.columns, result);
+        result.div(result, matrix.columns, result);
     }
 
     public static void rowProds(CudaFloatMatrix matrix, CudaFloatMatrix result) {
@@ -445,8 +496,9 @@ public class CudaFloatMatrix extends ANativeCUDAMatrix implements FloatArray2D  
 
     }
 
+    
 
-    // COLUMN REDUCTION
+    // --------------------------------------- column reduction methods ----------------------------------------
 
     public static void columnSums(CudaFloatMatrix matrix, CudaFloatMatrix result) {
         CORE.reduceColumns("columnSumsFloats", matrix.dataPointer, result.dataPointer, matrix.rows, matrix.columns, 0);
@@ -454,7 +506,7 @@ public class CudaFloatMatrix extends ANativeCUDAMatrix implements FloatArray2D  
 
     public static void columnMeans(CudaFloatMatrix matrix, CudaFloatMatrix result) {
         columnSums(matrix, result);
-        div(result, matrix.rows, result);
+        result.div(result, matrix.rows, result);
     }
 
     public static void columnProds(CudaFloatMatrix matrix, CudaFloatMatrix result) {
@@ -468,44 +520,21 @@ public class CudaFloatMatrix extends ANativeCUDAMatrix implements FloatArray2D  
     public static void columnMins(CudaFloatMatrix matrix, CudaFloatMatrix result) {
         CORE.reduceColumns("columnMinsFloats", matrix.dataPointer, result.dataPointer, matrix.rows, matrix.columns, Float.POSITIVE_INFINITY);
     }
+    
+    
+    // --------------------------------------- getter and setter methods ----------------------------------------
 
-
-    //// RANDOM
-
-    public void nextRand() {
-        CORE.rand(dataPointer, length);
-    }
-
-    public void nextRandn() {
-        CORE.randn(dataPointer, length);
-    }
-
-    //// GETTER & SETTER
-
-
-    // MATRIX GETTER
-    public CudaFloatMatrix getSubMatrix(CudaFloatMatrix result, int rowOffset, int columnOffset) {
-        CORE.getSubMatrix(dataPointer, result.dataPointer, result.rows, result.columns, rows, rowOffset, columnOffset);
-        return result;
+    public FloatMatrix getSubMatrix(FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
+    	CudaFloatMatrix src = (CudaFloatMatrix) source;
+    	CudaFloatMatrix dst = (CudaFloatMatrix) destination;    	
+        CORE.getSubMatrix(src.dataPointer, dst.dataPointer, dst.rows, dst.columns, src.rows, rowOffset, columnOffset);
+        return destination;
     }
     
-
-    @Override
-    public void getColumnWiseOn(float[] values) {
-        if (getRows() * getColumns() != values.length)
-            throw new IllegalArgumentException("Array's length is not the size of rows times columns.");
-        CORE.getData(dataPointer, values);
+    public FloatMatrix setSubMatrix(FloatMatrix source, FloatMatrix destination, int offsetRow, int offsetColumn) {
+    	CudaFloatMatrix src = (CudaFloatMatrix) source;
+    	CudaFloatMatrix dst = (CudaFloatMatrix) destination;   
+        CORE.setSubMatrix(dst.dataPointer, src.dataPointer, src.rows, src.rows, dst.rows, offsetRow, offsetColumn);
+        return destination;
     }
-
-    @Override
-    public String toString() {
-    	return toString1D();
-    }
-
-    // MATRIX SETTER
-
-    public void setSubMatrix(CudaFloatMatrix matrix, int offsetRow, int offsetColumn) {
-        CORE.setSubMatrix(dataPointer, matrix.dataPointer, matrix.rows, matrix.rows, rows, offsetRow, offsetColumn);
-    }
-
 }

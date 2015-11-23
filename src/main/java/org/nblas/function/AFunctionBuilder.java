@@ -3,7 +3,7 @@ package org.nblas.function;
 import java.util.HashSet;
 
 import org.nblas.function.ArgumentType;
-import org.nblas.function.Context;
+import org.nblas.Context;
 import org.nblas.function.common.Arg;
 import org.nblas.function.common.Identity;
 import org.nblas.function.generic.AFunctionObject;

@@ -10,6 +10,7 @@ public abstract class AMatrix {
     protected int rows;
     protected int columns;
     protected int length;
+	protected boolean released = false;
 
     public AMatrix(int rows, int columns) {
     	this.columns = columns;
@@ -44,6 +45,15 @@ public abstract class AMatrix {
     public boolean isMatrix() {
         return !(isColumnVector() || isRowVector());
     }
+    
+    public boolean isReleased() {
+        return released;
+    }
+    
+    public abstract void free();  
+    
+    
+    
 
     private static boolean isNotSameColumnSize(AMatrix a, AMatrix b) {
         return a.columns != b.columns;

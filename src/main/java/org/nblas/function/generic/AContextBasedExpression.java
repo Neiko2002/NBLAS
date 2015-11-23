@@ -1,6 +1,6 @@
 package org.nblas.function.generic;
 
-import org.nblas.function.Context;
+import org.nblas.Context;
 
 /**
  * Created by Moritz on 4/27/2015.

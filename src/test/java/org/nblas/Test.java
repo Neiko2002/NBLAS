@@ -20,44 +20,48 @@ import java.util.Random;
  * Created by Moritz on 4/27/2015.
  */
 public class Test {
+	
     public static void main(String[] args) throws IOException {
     		 
- 		 	// Thread Count: 	256 (16x16)
- 		 	// time: 210ms 
- 		 
- 		 CLFloatMatrix u = CLFloatMatrix.randn(2, 2);
- 		 CLFloatMatrix uout = CLFloatMatrix.randn(2, 2);
- 	     CLFloatMatrix.transpose(u, uout);
- 	     System.out.println(u.toString());
- 	     System.out.println(uout.toString2D());
- 	     
- 	     
- 		 
- 		    int i = 4096;
- 	        int m = i;//1234;
- 	        int n = i;//1431;
- 	        int k = i;//1449;
- 	        
- 	        CLFloatMatrix a = CLFloatMatrix.randn(i, i);
- 	        CLFloatMatrix b = CLFloatMatrix.randn(i, i);
- 	        CLFloatMatrix result = CLFloatMatrix.randn(i, i);
- 	        
- 	        long start2 = System.currentTimeMillis();
- 	        CLFloatMatrix.mmul(a, b, result);
- 	        long stop2 = System.currentTimeMillis();
- 	        System.out.println("time: "+(stop2-start2)+"ms \n");
- 	        
- 	        long start1 = System.currentTimeMillis();
- 	        CLFloatMatrix.transpose(a, result);
- 	        CLFloatMatrix.mmul(result, b, a);
- 	        long stop1 = System.currentTimeMillis();
- 	        System.out.println("time: "+(stop1-start1)+"ms \n");
- 	        
- 	        long start = System.currentTimeMillis();
- 	        CLFloatMatrix.mmulTransposeA(a, b, result);
- 	        long stop = System.currentTimeMillis();
- 	        System.out.println("time: "+(stop-start)+"ms \n");
- 	 }
+		// Thread Count: 256 (16x16)
+		// time: 210ms
+
+		CLFloatMatrix u = new CLFloatMatrix(2, 2);
+		u.randni();
+		CLFloatMatrix uout = new CLFloatMatrix(2, 2);
+		uout.randni();
+		u.transpose(u, uout);
+		System.out.println(u.toString());
+		System.out.println(uout.toString2D());
+
+		int i = 4096;
+		int m = i;// 1234;
+		int n = i;// 1431;
+		int k = i;// 1449;
+
+		CLFloatMatrix a = new CLFloatMatrix(i, i);
+		a.randni();
+		CLFloatMatrix b = new CLFloatMatrix(i, i);
+		b.randni();
+		CLFloatMatrix result = new CLFloatMatrix(i, i);
+		result.randni();
+
+		long start2 = System.currentTimeMillis();
+		result.mmul(a, b, result);
+		long stop2 = System.currentTimeMillis();
+		System.out.println("time: " + (stop2 - start2) + "ms \n");
+
+		long start1 = System.currentTimeMillis();
+		a.transpose(a, result);
+		result.mmul(result, b, a);
+		long stop1 = System.currentTimeMillis();
+		System.out.println("time: " + (stop1 - start1) + "ms \n");
+
+		long start = System.currentTimeMillis();
+		result.mmulTN(a, b, result);
+		long stop = System.currentTimeMillis();
+		System.out.println("time: " + (stop - start) + "ms \n");
+	}
  	
  	
      public static void test(String[] args) throws IOException {
@@ -72,10 +76,12 @@ public class Test {
         int n = i;//1431;
         int k = i;//1449;
 
-        CudaFloatMatrix a = CudaFloatMatrix.ones(i, i);
-        CudaFloatMatrix b = CudaFloatMatrix.ones(i, i);
-        CudaFloatMatrix c = CudaFloatMatrix.zeros(i,i);
-        CudaFloatMatrix.mmul(a,b, c);
+        CudaFloatMatrix a = new CudaFloatMatrix(i, i);
+        a.setOne();
+        CudaFloatMatrix b = new CudaFloatMatrix(i, i);
+        a.setOne();
+        CudaFloatMatrix c = new CudaFloatMatrix(i,i);
+        c.mmul(a, b, c);
         System.out.println(c.toString2D());
 
         for (int z = 0; z < 2000; z++) {
@@ -153,7 +159,7 @@ public class Test {
 
 //        System.out.println(gpuVector);
         System.out.println(test.sum());
-        System.out.println(CLFloatMatrix.sum(gpuTest));
+        System.out.println(gpuTest.sum(gpuTest));
         System.out.println(test.max());
         System.out.println(CLFloatMatrix.max(gpuTest));
         System.out.println(test.min());

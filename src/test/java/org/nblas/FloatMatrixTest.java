@@ -5,14 +5,10 @@ import java.time.Instant;
 import java.util.Random;
 
 import org.jblas.MatrixFunctions;
-import org.jblas.ranges.IntervalRange;
-import org.jblas.ranges.RangeUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.Stopwatch;
-import org.nblas.cl.CLFloatMatrix;
 
 public class FloatMatrixTest {
 
@@ -30,6 +26,8 @@ public class FloatMatrixTest {
 		testSuit.setUp();
 		testSuit.sumAfterwardsTest();
 	}
+	
+	protected Context context = Context.createOpenCLSinglePrecisionContext();
 	
 	protected org.jblas.FloatMatrix matA_CPU;
 	protected org.jblas.FloatMatrix matB_CPU;
@@ -54,10 +52,10 @@ public class FloatMatrixTest {
 		
 		// die Daten auf die Grafikkarte kopieren
 		matA_CPU = new org.jblas.FloatMatrix(matARows, matAColumns, matAFloatArray);
-		matA_GPU = new FloatMatrix(matARows, matAColumns, matAFloatArray);
+		matA_GPU = FloatMatrix.create(matARows, matAColumns, matAFloatArray, context);
 		
 		matB_CPU = new org.jblas.FloatMatrix(matBRows, matBColumns, matBFloatArray);
-		matB_GPU = new FloatMatrix(matBRows, matBColumns, matBFloatArray);
+		matB_GPU = FloatMatrix.create(matBRows, matBColumns, matBFloatArray, context);
 	}
 
 	@After
@@ -117,7 +115,7 @@ public class FloatMatrixTest {
 				matCFloatArray[i] = rnd.nextFloat();
 
 			org.jblas.FloatMatrix matC_CPU = new org.jblas.FloatMatrix(size, size, matCFloatArray);
-			FloatMatrix matC_GPU = new FloatMatrix(size, size, matCFloatArray);
+			FloatMatrix matC_GPU = FloatMatrix.create(size, size, matCFloatArray, context);
 
 			// Berechnung auf der CPU
 			float sum_CPU = matC_CPU.sum();
@@ -142,7 +140,7 @@ public class FloatMatrixTest {
 		float sum_CPU = matC_CPU.sum();
 		
 		// Berechnung auf der GPU
-		FloatMatrix matC_GPU = FloatMatrix.ones(matA_GPU.getRows(), matA_GPU.getColumns()).muli(2);
+		FloatMatrix matC_GPU = FloatMatrix.ones(matA_GPU.getRows(), matA_GPU.getColumns(), context).muli(2);
 		for (int i = 0; i < 10; i++)
 			matC_GPU.muli(2);
 		float sum_GPU = matC_GPU.sum();
@@ -195,7 +193,7 @@ public class FloatMatrixTest {
 		org.jblas.FloatMatrix matC_CPU = MatrixFunctions.exp(matA_CPU);
 
 		// Berechnung auf der GPU
-		FloatMatrix matC_GPU = new FloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		FloatMatrix matC_GPU = FloatMatrix.zeros(matA_GPU.getRows(), matA_GPU.getColumns(), context);
 		matA_GPU.exp(matC_GPU);
 		
 		// Ergebnisse vergleichen 
@@ -250,7 +248,7 @@ public class FloatMatrixTest {
 		org.jblas.FloatMatrix matC_CPU = matA_CPU.neg();
 		
 		// Berechnung auf der GPU
-		FloatMatrix matC_GPU = new FloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		FloatMatrix matC_GPU = FloatMatrix.zeros(matA_GPU.getRows(), matA_GPU.getColumns(), context);
 		matA_GPU.neg(matC_GPU);
 		
 		// Ergebnisse vergleichen 
@@ -311,7 +309,7 @@ public class FloatMatrixTest {
 			matC_CPU.data[i] = (float) (1. / ( 1. + Math.exp(-matA_CPU.data[i]) ));
 		
 		// Berechnung auf der GPU
-		FloatMatrix matC_GPU = new FloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+		FloatMatrix matC_GPU = FloatMatrix.zeros(matA_GPU.getRows(), matA_GPU.getColumns(), context);
 		matA_GPU.sigmoid(matC_GPU);
 		
 		// Ergebnisse vergleichen 

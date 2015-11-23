@@ -1,9 +1,9 @@
-package org.nblas.function;
+package org.nblas;
 
 /**
  * Created by Moritz on 4/27/2015.
  */
-public final class  Context {
+public final class Context {
 
 	public enum DeviceInterface { CUDA, OpenCL };
 	public enum Precision { SINGLE, DOUBLE };
@@ -31,17 +31,17 @@ public final class  Context {
         return new Context(Precision.SINGLE, Host.CPU, DeviceInterface.OpenCL);
     }
 
-    public static Context createCudaDoublePrecisionContext() {
-        return new Context(Precision.DOUBLE, Host.GPU, DeviceInterface.CUDA);
-    }
-
-    public static Context createOpenCLDoublePrecisionContext() {
-        return new Context(Precision.DOUBLE, Host.GPU, DeviceInterface.OpenCL);
-    }
-
-    public static Context createJBLASDoublelePrecisionContext() {
-        return new Context(Precision.DOUBLE, Host.CPU, DeviceInterface.OpenCL);
-    }
+//    public static Context createCudaDoublePrecisionContext() {
+//        return new Context(Precision.DOUBLE, Host.GPU, DeviceInterface.CUDA);
+//    }
+//
+//    public static Context createOpenCLDoublePrecisionContext() {
+//        return new Context(Precision.DOUBLE, Host.GPU, DeviceInterface.OpenCL);
+//    }
+//
+//    public static Context createJBLASDoublelePrecisionContext() {
+//        return new Context(Precision.DOUBLE, Host.CPU, DeviceInterface.OpenCL);
+//    }
 
     public boolean isDouble() {
         return precision == Context.Precision.DOUBLE;
