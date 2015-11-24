@@ -23,6 +23,7 @@ public class CUDAMatrix extends AMatrix {
     @Override
     public void free() {
         CORE.free(dataPointer);
+		released = true;
     }
 
 }

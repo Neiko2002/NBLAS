@@ -8,4 +8,8 @@ public class Add extends ABinaryInfix {
         super(functionObjects);
         operation = " + ";
     }
+
+    public static Add Add(AFunctionObject... functionObjects) {
+        return new Add(functionObjects);
+    }
 }
