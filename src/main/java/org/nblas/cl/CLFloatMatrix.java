@@ -60,10 +60,10 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
 	}  	
     
 	/**
-	  * @see FloatMatrix#getColumnWiseOn(float[])
+	  * @see FloatMatrix#readRowMajor(float[])
 	  */
 	@Override
-	public FloatMatrix getColumnWiseOn(float[] values) {
+	public FloatMatrix readRowMajor(float[] values) {
 		
 		float[] clValues = new float[clLength];
 		CORE.getData(dataPointer, clValues);
@@ -434,7 +434,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     // --------------------------------------- column reduction methods ----------------------------------------
 
     public static void columnSums(CLFloatMatrix matrix, CLFloatMatrix result) {
-        CORE.reduceColumns("columnSumsFloats", matrix.dataPointer, result.dataPointer, matrix.rows, matrix.columns, 0);
+        CORE.reduceColumns("columnSumsFloats", matrix.dataPointer, result.dataPointer, matrix.rows, matrix.columns, result.clRows, 0);
     }
 
     public static void columnMeans(CLFloatMatrix matrix, CLFloatMatrix result) {
@@ -443,15 +443,15 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     }
 
     public static void columnProds(CLFloatMatrix matrix, CLFloatMatrix result) {
-        CORE.reduceColumns("columnProductsFloats", matrix.dataPointer, result.dataPointer, matrix.rows, matrix.columns, 1);
+        CORE.reduceColumns("columnProductsFloats", matrix.dataPointer, result.dataPointer, matrix.rows, matrix.columns, result.clRows, 1);
     }
 
     public static void columnMaxs(CLFloatMatrix matrix, CLFloatMatrix result) {
-        CORE.reduceColumns("columnMaxsFloats", matrix.dataPointer, result.dataPointer, matrix.rows, matrix.columns, Float.NEGATIVE_INFINITY);
+        CORE.reduceColumns("columnMaxsFloats", matrix.dataPointer, result.dataPointer, matrix.rows, matrix.columns, result.clRows, Float.NEGATIVE_INFINITY);
     }
 
     public static void columnMins(CLFloatMatrix matrix, CLFloatMatrix result) {
-        CORE.reduceColumns("columnMinsFloats", matrix.dataPointer, result.dataPointer, matrix.rows, matrix.columns, Float.POSITIVE_INFINITY);
+        CORE.reduceColumns("columnMinsFloats", matrix.dataPointer, result.dataPointer, matrix.rows, matrix.columns, result.clRows, Float.POSITIVE_INFINITY);
     }
 
 

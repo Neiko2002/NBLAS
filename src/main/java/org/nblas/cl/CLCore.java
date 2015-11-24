@@ -361,11 +361,11 @@ class CLCore {
     
     
 
-    private void copy1d(cl_mem data, cl_mem result, int n) {
+    private void copyColumnMajor(cl_mem data, cl_mem result, int n) {
 
         int size = (int) Math.ceil((double) n / threadCount) * threadCount;
 //        cl_event event = new cl_event();
-        cl_kernel kernel = CLPredefined.getSubprogram("copy1D").getKernel();
+        cl_kernel kernel = CLPredefined.getSubprogram("copyColumnMajor").getKernel();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(data));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_int, Pointer.to(new int[]{n}));
@@ -376,6 +376,21 @@ class CLCore {
 //        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
+    private void copyRowMajor(cl_mem data, cl_mem result, int n, int clRows) {
+
+        int size = (int) Math.ceil((double) n / threadCount) * threadCount;
+//        cl_event event = new cl_event();
+        cl_kernel kernel = CLPredefined.getSubprogram("copyRowMajor").getKernel();
+        CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(data));
+        CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
+        CL.clSetKernelArg(kernel, 2, Sizeof.cl_int, Pointer.to(new int[]{n}));
+        CL.clSetKernelArg(kernel, 3, Sizeof.cl_int, Pointer.to(new int[]{clRows}));
+        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, null,
+                new long[]{size},
+                new long[]{threadCount}, 0, null, null);
+
+//        CL.clWaitForEvents(1, new cl_event[]{event});
+    }
     
     public void execute(Subprogram<cl_kernel> subprogram, int clRows, int clColumns, int rows, int columns, cl_mem result, cl_mem... dataPointer) {
         cl_kernel kernel = subprogram.getKernel();
@@ -497,7 +512,7 @@ class CLCore {
         reduceCall(kernel, data, result, rows, columns, initValue, sizeX, sizeY);
     }
 
-    public void reduceColumns(String reductionName, cl_mem data, cl_mem result, int rows, int columns, float initValue) {
+    public void reduceColumns(String reductionName, cl_mem data, cl_mem result, int rows, int columns, int clResultRows, float initValue) {
 
         int tempSizeX = (int) Math.ceil((double) rows / threadCount_X);
         int tempSizeY = (int) Math.ceil((double) columns / threadCount_Y);
@@ -513,7 +528,8 @@ class CLCore {
             tempSizeX = (int) Math.ceil((double) tempSizeX / threadCount_X);
             reduceCall(kernel, temp, temp, sizeX, columns, initValue, tempSizeX * threadCount_X, sizeY);
         }
-        copy1d(temp, result, columns);
+        
+        copyRowMajor(temp, result, columns, clResultRows);
         free(temp);
 
     }
@@ -535,7 +551,8 @@ class CLCore {
             tempSizeY = (int) Math.ceil((double) tempSizeY / threadCount_Y);
             reduceCall(kernel, temp, temp, rows, sizeY, initValue, sizeX, tempSizeY * threadCount_Y);
         }
-        copy1d(temp, result, rows);
+   
+        copyColumnMajor(temp, result, rows);
         free(temp);
     }
 

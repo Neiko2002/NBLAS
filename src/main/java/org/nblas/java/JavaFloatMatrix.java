@@ -55,7 +55,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrix {
 	}
 	
 	@Override
-	public FloatMatrix getColumnWiseOn(float[] values) {
+	public FloatMatrix readRowMajor(float[] values) {
 		 float[] data = ((org.jblas.FloatMatrix) matrix).data;
          System.arraycopy(data, 0, values, 0, data.length);
          return this;

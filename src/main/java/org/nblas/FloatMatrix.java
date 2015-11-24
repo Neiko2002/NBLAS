@@ -92,7 +92,7 @@ public interface FloatMatrix {
 
     public default float[] toArray() {
         float[] values = new float[getRows() * getColumns()];
-        getColumnWiseOn(values);
+        readRowMajor(values);
         return values;
     }
 
@@ -166,7 +166,7 @@ public interface FloatMatrix {
     
     public int getRows();
     public int getColumns();
-    public FloatMatrix getColumnWiseOn(float[] values);
+    public FloatMatrix readRowMajor(float[] values);
     
     public FloatMatrix dup(FloatMatrix a, FloatMatrix result);
     

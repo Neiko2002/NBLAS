@@ -248,11 +248,18 @@ class CLPredefined {
                     "        outputData[get_group_id(1) * get_global_size(0) + gid0] = shared[tid0];\n" +
                     "}"};
 
-    private static final String copy1D = "__kernel void copy1D(__global float* input, __global float* output, uint n)\n" +
+    private static final String copyColumnMajor = "__kernel void copyColumnMajor(__global float* input, __global float* output, uint n)\n" +
             "{\n" +
             "   int gid = get_global_id(0);\n" +
             "   if(gid >= n) return;\n" +
             "   output[gid] = input[gid];\n" +
+            "}\n";
+    
+    private static final String copyRowMajor = "__kernel void copyRowMajor(__global float* input, __global float* output, uint n, uint clRows)\n" +
+            "{\n" +
+            "   int gid = get_global_id(0);\n" +
+            "   if(gid >= n) return;\n" +
+            "   output[gid*clRows] = input[gid];\n" +
             "}\n";
 
     private static final String transpose = "__kernel void transpose(const __global float* input,\n" +
@@ -392,7 +399,8 @@ class CLPredefined {
         addSubprogram(new Subprogram<cl_kernel>("setSubMatrix", setSubMatrix, false));
         addSubprogram(new Subprogram<cl_kernel>("auniform", uniform, false));
         addSubprogram(new Subprogram<cl_kernel>("boxmuller", boxmuller, false));
-        addSubprogram(new Subprogram<cl_kernel>("copy1D", copy1D, false));
+        addSubprogram(new Subprogram<cl_kernel>("copyColumnMajor", copyColumnMajor, false));
+        addSubprogram(new Subprogram<cl_kernel>("copyRowMajor", copyRowMajor, false));
         addSubprogram(new Subprogram<cl_kernel>("transpose", transpose, false));
         addSubprogram(new Subprogram<cl_kernel>("setZero", setZero, false));
         addSubprogram(new Subprogram<cl_kernel>("sgemm_nn", sgemm_nn, false));

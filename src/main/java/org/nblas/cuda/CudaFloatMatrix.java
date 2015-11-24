@@ -158,7 +158,7 @@ public class CudaFloatMatrix extends CUDAMatrix implements FloatMatrix  {
 	}
 	
     @Override
-    public FloatMatrix getColumnWiseOn(float[] values) {
+    public FloatMatrix readRowMajor(float[] values) {
         if (getRows() * getColumns() != values.length)
             throw new IllegalArgumentException("Array's length is not the size of rows times columns.");
         CORE.getData(dataPointer, values);
