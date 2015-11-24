@@ -27,7 +27,7 @@ public class CudaFloatMatrixTest {
 
     protected static final int seed = 7;
     protected static final int runs = 100_000;
-    protected static final int matrixSize = 2;
+    protected static final int matrixSize = 251;
 
     protected static final int matARows = matrixSize;
     protected static final int matAColumns = matrixSize;
