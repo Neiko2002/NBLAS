@@ -473,7 +473,7 @@ public class CudaFloatMatrix extends CUDAMatrix implements FloatMatrix  {
 
     public float min(CudaFloatMatrix matrix) {
     	CudaFloatMatrix mat = (CudaFloatMatrix) matrix;
-        return CORE.reduce("FloatMatrixInterface", mat.dataPointer, mat.length, Float.POSITIVE_INFINITY);
+        return CORE.reduce("minFloats", mat.dataPointer, mat.length, Float.POSITIVE_INFINITY);
     }
 
 
