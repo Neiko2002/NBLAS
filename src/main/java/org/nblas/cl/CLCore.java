@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import org.jocl.CL;
 import org.jocl.CLException;
@@ -102,8 +103,8 @@ class CLCore {
                     "Please reconsider that all OpenCL-Drivers and OpenCL-Platforms are installed properly.");
         }
         
-    	final Comparator<CLDevice> performanceComperator = (p1, p2) -> Integer.compare( p1.getTheoreticalComputingPower(), p2.getTheoreticalComputingPower());
-    	CLDevice fastestDevice = Arrays.stream(platforms).map(CLPlatform::getFastestGPU).max(performanceComperator).get();
+    	final Comparator<CLDevice> performanceComperator = (c1, c2) -> Integer.compare( c1.getTheoreticalComputingPower(), c2.getTheoreticalComputingPower());
+    	CLDevice fastestDevice = Arrays.stream(platforms).map(CLPlatform::getFastestGPU).filter(Objects::nonNull).max(performanceComperator).get();
         
         this.device = fastestDevice;
         this.platform = fastestDevice.getPlatform();

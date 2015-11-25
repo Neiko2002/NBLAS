@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jocl.CL;
 import org.jocl.Pointer;
@@ -50,14 +51,18 @@ public class CLPlatform {
 		return platform_id;
 	}
 	
+	public  CLDevice[] getDevices() {
+		return devices;
+	}
+	
 	public CLDevice getFastestDevice() {
-		final Comparator<CLDevice> performanceComperator = (p1, p2) -> Integer.compare( p1.getTheoreticalComputingPower(), p2.getTheoreticalComputingPower());
+		final Comparator<CLDevice> performanceComperator = (c1, c2) -> Integer.compare( c1.getTheoreticalComputingPower(), c2.getTheoreticalComputingPower());
 		return Arrays.stream(devices).max(performanceComperator).get();
     }
 	
 	public CLDevice getFastestGPU() {
-		final Comparator<CLDevice> performanceComperator = (p1, p2) -> Integer.compare( p1.getTheoreticalComputingPower(), p2.getTheoreticalComputingPower());
-		return Arrays.stream(devices).filter(CLDevice::isGPU).max(performanceComperator).get();
+		final Comparator<CLDevice> performanceComperator = (c1, c2) -> Integer.compare( c1.getTheoreticalComputingPower(), c2.getTheoreticalComputingPower());
+		return Arrays.stream(devices).filter(CLDevice::isGPU).max(performanceComperator).orElse(null);
     }
 	
 	private static String getString(cl_platform_id platform, int paramName)
@@ -108,7 +113,7 @@ public class CLPlatform {
         List<CLPlatform> platforms = new ArrayList<>();
         for (int i = 0; i < numPlatforms; i++) {
         	CLPlatform platform = CLPlatform.getPlatform(platform_ids[i]);
-        	if(platform != null && platform.getFastestDevice() != null)
+        	if(platform != null && platform.getDevices().length > 0)
         		platforms.add(platform);
         }
     	
