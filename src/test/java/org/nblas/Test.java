@@ -61,6 +61,8 @@ public class Test {
 		result.mmulTN(a, b, result);
 		long stop = System.currentTimeMillis();
 		System.out.println("time: " + (stop - start) + "ms \n");
+
+
 	}
  	
  	

@@ -208,7 +208,7 @@ class CudaPredefined {
         String[] columnSums = {"columnSumsFloats",
                 "\t\tshared[sIndex] += inputData[gid1 * rows + gid0];\n",
                 "\t\t\tshared[id] += shared[id + s];\n"};
-        kernels.put(columnSums[0], new Subprogram<CUfunction>(sum[0], getFunction(columnSums, reductionColumnFloats), false));
+        kernels.put(columnSums[0], new Subprogram<CUfunction>(columnSums[0], getFunction(columnSums, reductionColumnFloats), false));
 
         String[] columnProducts = {"columnProductsFloats",
                 "\t\tshared[sIndex] *= inputData[gid1 * rows + gid0];\n",
@@ -244,7 +244,7 @@ class CudaPredefined {
         };
         kernels.put(rowMaxs[0], new Subprogram<CUfunction>(rowMaxs[0], getFunction(rowMaxs, reductionRowFloats), false));
 
-        String[] rowMins = {"columnMinsFloats",
+        String[] rowMins = {"rowMinsFloats",
                 "\t\tshared[sIndex] = min(shared[sIndex], inputData[gid1 * rows + gid0]);\n",
                 "\t\t\tunsigned int sharedIndex = tid1 * blockDim.x + tid0;\n" +
                         "\t\t\tshared[sharedIndex] = min(shared[sharedIndex], shared[(tid1 + s) * blockDim.x + tid0]);\n"

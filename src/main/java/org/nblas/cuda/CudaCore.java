@@ -354,42 +354,63 @@ class CudaCore {
     }
 
 
-    public void loadFromGeneratedFunction(Subprogram<CUfunction> subprogram) {    	
-    	try {
+    public void loadFromGeneratedFunction(Subprogram<CUfunction> subprogram) {
+        try {
+            String tempDir = System.getProperty("java.io.tmpdir");
+            String name = subprogram.getProgramName();
+            String fileNameAtPath = tempDir + name;
+            File possiblePtxFile = new File(fileNameAtPath + ".ptx");
+            File possibleCuFile = new File(fileNameAtPath + ".cu");
 
-    		Path cuFilePath = Files.createTempFile(subprogram.getProgramName(), ".cu");
-    		
-    		try(PrintWriter out = new PrintWriter(cuFilePath.toFile())) {
-    			out.write(subprogram.getSourceCode());
-    		} 
-    		
-    		loadFunction(subprogram.getProgramName(), cuFilePath);
-    		
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+            Path cuFilePath;
+            if(!possibleCuFile.exists()) {
+                cuFilePath = Files.createFile(possibleCuFile.toPath());
+
+                try (PrintWriter out = new PrintWriter(cuFilePath.toFile())) {
+                    out.write(subprogram.getSourceCode());
+                }
+            } else {
+                cuFilePath = possibleCuFile.toPath();
+            }
+            try {
+                String ptxFileName = !possiblePtxFile.exists() ?
+                        compilePtxFile(cuFilePath) :
+                        possiblePtxFile.getAbsolutePath();
+
+                loadModule(name, ptxFileName);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void loadModule(String name, String ptxFileName) {
+        CUmodule module = new CUmodule();
+        cuModuleLoad(module, ptxFileName);
+
+        CUfunction function = new CUfunction();
+        cuModuleGetFunction(function, module, name);
+
+        functions.put(name, function);
     }
 
     public void loadFunction(String name, Path cuFilePath) {
-
         try {
             String ptxFileName = compilePtxFile(cuFilePath);
 
-            CUmodule module = new CUmodule();
-            cuModuleLoad(module, ptxFileName);
-
-            CUfunction function = new CUfunction();
-            cuModuleGetFunction(function, module, name);
-
-            functions.put(name, function);
+            loadModule(name, ptxFileName);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private String compilePtxFile(Path cuFile) throws IOException {
-    	
-    	String cuFileName = cuFile.getFileName().toString();
+
+        String cuFileName = cuFile.toAbsolutePath().toString();
         int endIndex = cuFileName.lastIndexOf('.');
         if (endIndex == -1) {
             endIndex = cuFileName.length() - 1;
@@ -403,7 +424,7 @@ class CudaCore {
         if (Files.exists(cuFile) == false) {
             throw new IOException("Input file not found: " + cuFileName);
         }
-        
+
         String modelString = "-m" + System.getProperty("sun.arch.data.model");
         String command = "nvcc " + modelString + " -ptx " + cuFile.toString() + " -o " + ptxFileName;
 
@@ -412,7 +433,7 @@ class CudaCore {
 
         String errorMessage = new String(toByteArray(process.getErrorStream()));
         String outputMessage = new String(toByteArray(process.getInputStream()));
-        
+
         int exitValue = 0;
         try {
             exitValue = process.waitFor();
@@ -472,7 +493,6 @@ class CudaCore {
     public void getData(Pointer pointer, float[] values) {
         JCublas2.cublasGetVector(values.length, Sizeof.FLOAT, pointer, 1, Pointer.to(values), 1);
     }
-
 
 
 }
