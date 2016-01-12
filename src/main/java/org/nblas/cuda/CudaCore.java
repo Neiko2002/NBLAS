@@ -1,15 +1,7 @@
 package org.nblas.cuda;
 
 
-import static jcuda.driver.CUdevice_attribute.CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK;
-import static jcuda.driver.JCudaDriver.cuCtxCreate;
-import static jcuda.driver.JCudaDriver.cuCtxSynchronize;
-import static jcuda.driver.JCudaDriver.cuDeviceGet;
-import static jcuda.driver.JCudaDriver.cuDeviceGetAttribute;
-import static jcuda.driver.JCudaDriver.cuInit;
-import static jcuda.driver.JCudaDriver.cuLaunchKernel;
-import static jcuda.driver.JCudaDriver.cuModuleGetFunction;
-import static jcuda.driver.JCudaDriver.cuModuleLoad;
+
 import static jcuda.jcublas.JCublas2.cublasSetVector;
 import static jcuda.jcublas.cublasOperation.CUBLAS_OP_N;
 import static jcuda.jcublas.cublasOperation.CUBLAS_OP_T;
@@ -25,9 +17,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -35,10 +29,9 @@ import org.nblas.generic.Subprogram;
 
 import jcuda.Pointer;
 import jcuda.Sizeof;
-import jcuda.driver.CUcontext;
-import jcuda.driver.CUdevice;
 import jcuda.driver.CUfunction;
 import jcuda.driver.CUmodule;
+import jcuda.driver.JCudaDriver;
 import jcuda.jcublas.JCublas2;
 import jcuda.jcublas.cublasHandle;
 import jcuda.jcurand.JCurand;
@@ -47,11 +40,21 @@ import jcuda.jcurand.curandRngType;
 import jcuda.jcusolver.JCusolver;
 import jcuda.runtime.JCuda;
 
+
+/**
+ * Tuning
+ * http://docs.nvidia.com/cuda/maxwell-tuning-guide/
+ * 
+ * https://www.cs.cmu.edu/afs/cs/academic/class/15668-s11/www/cuda-doc/html/group__CUDA__TYPES_gd39dec7b9a5c64b8f96d0d09e249ce5d.html#gd39dec7b9a5c64b8f96d0d09e249ce5d
+ * https://www.cs.cmu.edu/afs/cs/academic/class/15668-s11/www/cuda-doc/html/group__CUDA__DEVICE_g52b5ce05cb8c5fb6831b2c0ff2887c74.html#g52b5ce05cb8c5fb6831b2c0ff2887c74
+ * 
+ * @author Nico
+ *
+ */
 class CudaCore {
     private static CudaCore core = new CudaCore();
 
-    private CUdevice device;
-    private CUcontext context;
+    private CudaDevice device;
 
     private curandGenerator generator;
     private cublasHandle cublasHandle;
@@ -67,47 +70,55 @@ class CudaCore {
     }
 
     private CudaCore() {
+        
+    	device = setupDevice();
+   
+        threadCount = device.getMaxThreadPerBlock();
+        int logTHREAD_COUNT = (int) Math.round(Math.log(threadCount) / Math.log(2));
+        int logTHREAD_COUNTX = logTHREAD_COUNT / 2;
+        int logTHREAD_COUNTY = (logTHREAD_COUNT % 2 == 0) ? logTHREAD_COUNTX : logTHREAD_COUNTX + 1;
+        threadCount_2DX = (int) Math.pow(2.0, logTHREAD_COUNTX);
+        threadCount_2DY = (int) Math.pow(2.0, logTHREAD_COUNTY);     
+        
+        // TODO: geht auch und ist x mal schneller (z.b. sub())
+//        threadCount_2DX = threadCount;   
+//        threadCount_2DY = threadCount;   
+        
+     
+        // curand initialization
+        generator = new curandGenerator();
+        curandCreateGenerator(generator, curandRngType.CURAND_RNG_PSEUDO_DEFAULT);
+
+        // cublas2 initialization
+        cublasHandle = new cublasHandle();
+        JCublas2.cublasCreate(cublasHandle);
+
+        // JCusolver initialization
+        JCusolver.initialize();
+
+        // load and compile some predefined cuda functions
         functions = new HashMap<>();
-        cuInit(0);
+        loadFromGeneratedFunction(CudaPredefined.kernels.get("copy1D"));
+        loadFromGeneratedFunction(CudaPredefined.kernels.get("transpose"));
+        loadFromGeneratedFunction(CudaPredefined.kernels.get("getsub"));
+        loadFromGeneratedFunction(CudaPredefined.kernels.get("setsub"));
+    }
+    
+    private CudaDevice setupDevice() {
+    	
+        JCudaDriver.cuInit(0);
 
         JCuda.setExceptionsEnabled(true);
         JCublas2.setExceptionsEnabled(true);
         JCurand.setExceptionsEnabled(true);
         JCusolver.setExceptionsEnabled(true);
 
-        context = new CUcontext();
-        device = new CUdevice();
-        int[] version = new int[1];
-        JCuda.cudaRuntimeGetVersion(version);
-        System.out.println("CUDA Runtime Version: " + version[0]);
-        int[] value = new int[1];
-        cuDeviceGetAttribute(value, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, device);
-        threadCount = value[0];
-        int logTHREAD_COUNT = (int) Math.round(Math.log(threadCount) / Math.log(2));
-        int logTHREAD_COUNTX = logTHREAD_COUNT / 2;
-        int logTHREAD_COUNTY = (logTHREAD_COUNT % 2 == 0) ? logTHREAD_COUNTX : logTHREAD_COUNTX + 1;
-        threadCount_2DX = (int) Math.pow(2.0, logTHREAD_COUNTX);
-        threadCount_2DY = (int) Math.pow(2.0, logTHREAD_COUNTY);
+        CudaDevice device = CudaDevice.getDevices()[0];
+        device.use();
+        System.out.println("Use CUDA device "+device.toString());
 
-        cuDeviceGet(device, 0);
-        cuCtxCreate(context, 0, device);
-
-        // curand initialization
-        generator = new curandGenerator();
-        curandCreateGenerator(generator, curandRngType.CURAND_RNG_PSEUDO_DEFAULT);
-
-
-        // cublas2 initialization
-        cublasHandle = new cublasHandle();
-        JCublas2.cublasCreate(cublasHandle);
-
-        JCusolver.initialize();
-
-        loadFromGeneratedFunction(CudaPredefined.kernels.get("copy1D"));
-        loadFromGeneratedFunction(CudaPredefined.kernels.get("transpose"));
-        loadFromGeneratedFunction(CudaPredefined.kernels.get("getsub"));
-        loadFromGeneratedFunction(CudaPredefined.kernels.get("setsub"));
-    }
+        return device;
+    }    
 
     public void execute(String functionName, int rows, int columns, Pointer result, Pointer... args) {
         int blocksY = (int) Math.ceil(columns / (double) threadCount_2DX);
@@ -121,13 +132,13 @@ class CudaCore {
         }
         Pointer kernelParameters = Pointer.to(pointers.toArray(new Pointer[0]));
 
-        cuLaunchKernel(functions.get(functionName),
+        JCudaDriver.cuLaunchKernel(functions.get(functionName),
                 blocksX, blocksY, 1,
                 threadCount_2DX, threadCount_2DY, 1,
                 0,
                 null,
                 kernelParameters, null);
-        cuCtxSynchronize();
+        JCudaDriver.cuCtxSynchronize();
     }
 
     public float reduce(String reductionName, Pointer data, int n, float initValue) {
@@ -141,13 +152,13 @@ class CudaCore {
                 Pointer.to(new float[]{initValue})
 
         });
-        cuLaunchKernel(f,
+        JCudaDriver.cuLaunchKernel(f,
                 blocks, 1, 1,
                 threadCount, 1, 1,
                 threadCount * Sizeof.FLOAT,
                 null,
                 kernelParameters, null);
-        cuCtxSynchronize();
+        JCudaDriver.cuCtxSynchronize();
         while (blocks > 1) {
             int b = blocks;
             blocks = (int) Math.ceil(blocks / (double) threadCount);
@@ -158,13 +169,13 @@ class CudaCore {
                     Pointer.to(new float[]{initValue})
 
             });
-            cuLaunchKernel(f,
+            JCudaDriver.cuLaunchKernel(f,
                     blocks, 1, 1,
                     threadCount, 1, 1,
                     threadCount * Sizeof.FLOAT,
                     null,
                     kernelParameters, null);
-            cuCtxSynchronize();
+            JCudaDriver.cuCtxSynchronize();
         }
         float[] result = new float[1];
         getData(temp, result);
@@ -213,13 +224,13 @@ class CudaCore {
                 Pointer.to(new float[]{initValue})
 
         });
-        cuLaunchKernel(f,
+        JCudaDriver.cuLaunchKernel(f,
                 blocksX, blocksY, 1,
                 threadCount_2DX, threadCount_2DY, 1,
                 threadCount * Sizeof.FLOAT,
                 null,
                 kernelParameters, null);
-        cuCtxSynchronize();
+        JCudaDriver.cuCtxSynchronize();
 
     }
 
@@ -238,13 +249,13 @@ class CudaCore {
 
         });
 
-        cuLaunchKernel(functions.get("getsub"),
+        JCudaDriver.cuLaunchKernel(functions.get("getsub"),
                 blocksX, blocksY, 1,
                 threadCount_2DX, threadCount_2DY, 1,
                 0,
                 null,
                 kernelParameters, null);
-        cuCtxSynchronize();
+        JCudaDriver.cuCtxSynchronize();
     }
 
     public void setSubMatrix(Pointer result, Pointer data, int rows, int columns, int dataRows, int offsetRow, int offsetColumn) {
@@ -262,13 +273,13 @@ class CudaCore {
 
         });
 
-        cuLaunchKernel(functions.get("setsub"),
+        JCudaDriver.cuLaunchKernel(functions.get("setsub"),
                 blocksX, blocksY, 1,
                 threadCount_2DX, threadCount_2DY, 1,
                 0,
                 null,
                 kernelParameters, null);
-        cuCtxSynchronize();
+        JCudaDriver.cuCtxSynchronize();
     }
 
 
@@ -280,7 +291,7 @@ class CudaCore {
                 Pointer.to(new float[]{1.0f}), a, aRows,
                 b, aColumnsbRows,
                 Pointer.to(new float[]{0.0f}), c, aRows);
-        cuCtxSynchronize();
+        JCudaDriver.cuCtxSynchronize();
         cudaDeviceSynchronize();
     }
 
@@ -292,7 +303,7 @@ class CudaCore {
                 Pointer.to(new float[]{1.0f}), a, aRowsbRows,
                 b, aRowsbRows,
                 Pointer.to(new float[]{0.0f}), c, aColumns);
-        cuCtxSynchronize();
+        JCudaDriver.cuCtxSynchronize();
         cudaDeviceSynchronize();
     }
 
@@ -304,7 +315,7 @@ class CudaCore {
                 Pointer.to(new float[]{1.0f}), a, aRows,
                 b, bRows,
                 Pointer.to(new float[]{0.0f}), c, aRows);
-        cuCtxSynchronize();
+        JCudaDriver.cuCtxSynchronize();
         cudaDeviceSynchronize();
     }
 
@@ -313,13 +324,13 @@ class CudaCore {
         CUfunction f = functions.get("copy1D");
 
         Pointer kernelParameters = Pointer.to(Pointer.to(data), Pointer.to(copy), Pointer.to(new int[]{n}));
-        cuLaunchKernel(f,
+        JCudaDriver.cuLaunchKernel(f,
                 blocks, 1, 1,
                 threadCount, 1, 1,
                 0,
                 null,
                 kernelParameters, null);
-        cuCtxSynchronize();
+        JCudaDriver.cuCtxSynchronize();
     }
 
     public void transpose(Pointer data, Pointer result, int rows, int columns) {
@@ -333,54 +344,69 @@ class CudaCore {
                 Pointer.to(new int[]{columns})});
 
         CUfunction f = functions.get("transpose");
-        cuLaunchKernel(f,
+        JCudaDriver.cuLaunchKernel(f,
                 blocksX, blocksY, 1,
                 threadCount_2DX, threadCount_2DY, 1,
                 sharedSize * Sizeof.FLOAT,
                 null,
                 kernelParameters, null);
-        cuCtxSynchronize();
+        JCudaDriver.cuCtxSynchronize();
 
     }
 
     public void randn(Pointer a, int n) {
         curandGenerateNormal(generator, a, n, 0.0f, 1.0f);
-        cuCtxSynchronize();
+        JCudaDriver.cuCtxSynchronize();
     }
 
     public void rand(Pointer a, int n) {
         curandGenerateUniform(generator, a, n);
-        cuCtxSynchronize();
+        JCudaDriver.cuCtxSynchronize();
     }
 
 
     public void loadFromGeneratedFunction(Subprogram<CUfunction> subprogram) {
         try {
-            String tempDir = System.getProperty("java.io.tmpdir");
-            String name = subprogram.getProgramName();
-            String fileNameAtPath = tempDir + name;
-            File possiblePtxFile = new File(fileNameAtPath + ".ptx");
-            File possibleCuFile = new File(fileNameAtPath + ".cu");
+        	String name = subprogram.getProgramName();
+        	String sourceCode = subprogram.getSourceCode();
+        	
+            Path tempDir = Paths.get(System.getProperty("java.io.tmpdir")).resolve("nblas");
+            Path ptxFile = tempDir.resolve(name + ".ptx");
+            Path cuFile = tempDir.resolve(name + ".cu");
+            boolean store = (Files.exists(cuFile) == false);	// muss cu gespeichert werden
+            boolean compile = (Files.exists(ptxFile) == false);	// muss ptx compiliert werden
+            
+        	try {
+        		
+	            // existiert das Fileverzeichnis
+	            if(Files.exists(tempDir) == false)
+	            	Files.createDirectories(tempDir);
+	
+	            // gibt es die cu Datei schon und ist der Inhalt identisch zum aktuellen subprogram
+	            if(Files.exists(cuFile)) {
+	            	String oldSourceCode = new String(Files.readAllBytes(cuFile), Charset.defaultCharset());
+	            	if(oldSourceCode.equalsIgnoreCase(sourceCode) == false) {
+	            		Files.delete(cuFile);
+	            		store = true;
+	            	}
+	            }
+	            
+	            // falls nicht schreibe eine neue Datei
+	            if(store) {
+	             	Files.write(cuFile, subprogram.getSourceCode().getBytes());
+	            	compile = true;
+	            }
+            		
+				// compile die cuda Datei zu einer ptx Datei
+				if(compile)
+					compilePtxFile(cuFile, ptxFile);
 
-            Path cuFilePath;
-            if(!possibleCuFile.exists()) {
-                cuFilePath = Files.createFile(possibleCuFile.toPath());
-
-                try (PrintWriter out = new PrintWriter(cuFilePath.toFile())) {
-                    out.write(subprogram.getSourceCode());
-                }
-            } else {
-                cuFilePath = possibleCuFile.toPath();
-            }
-            try {
-                String ptxFileName = !possiblePtxFile.exists() ?
-                        compilePtxFile(cuFilePath) :
-                        possiblePtxFile.getAbsolutePath();
-
-                loadModule(name, ptxFileName);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+				// lade die ptx Datei
+				loadModule(name, ptxFile.toAbsolutePath().toString());
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -389,44 +415,46 @@ class CudaCore {
     }
 
     private void loadModule(String name, String ptxFileName) {
+    	    	
         CUmodule module = new CUmodule();
-        cuModuleLoad(module, ptxFileName);
+        JCudaDriver.cuModuleLoad(module, ptxFileName);
 
         CUfunction function = new CUfunction();
-        cuModuleGetFunction(function, module, name);
+        JCudaDriver.cuModuleGetFunction(function, module, name);
 
         functions.put(name, function);
     }
 
-    public void loadFunction(String name, Path cuFilePath) {
-        try {
-            String ptxFileName = compilePtxFile(cuFilePath);
-
-            loadModule(name, ptxFileName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private String compilePtxFile(Path cuFile) throws IOException {
+    /**
+     * TODO verwende ProcessBuild Runtime.getRuntime().exec()
+     * 
+     * http://stackoverflow.com/questions/7696230/nvidia-nvcc-and-cuda-cubin-vs-ptx
+     * cubin(native code) Files sind architecture-specific 
+     * ptx(intermediate format) Files sind forward-compatible
+     * 
+     * https://github.com/JuhyunKim-Corelab/cudnn-test/blob/master/nvcc-help.txt
+     * nvcc -m64 -code="sm_35" -arch="compute_35" -cubin fargppgidfsargpqgidf.cu -o fargppgidfsargpqgidf.cubin
+     *  
+     * @param cuFile
+     * @return
+     * @throws IOException
+     */
+    private void compilePtxFile(Path cuFile, Path ptxFile) throws IOException {
 
         String cuFileName = cuFile.toAbsolutePath().toString();
-        int endIndex = cuFileName.lastIndexOf('.');
-        if (endIndex == -1) {
-            endIndex = cuFileName.length() - 1;
-        }
-        String ptxFileName = cuFileName.substring(0, endIndex + 1) + "ptx";
-        File ptxFile = new File(ptxFileName);
-        if (ptxFile.exists()) {
-            return ptxFileName;
-        }
+        String ptxFileName = ptxFile.toAbsolutePath().toString();
+        
+    	if(Files.exists(ptxFile))  {
+			Files.delete(ptxFile);
+    	}
+    	
+    	if(Files.exists(cuFile) == false) {
+    		throw new IOException("Input file not found: " + cuFileName);
+    	}
 
-        if (Files.exists(cuFile) == false) {
-            throw new IOException("Input file not found: " + cuFileName);
-        }
-
-        String modelString = "-m" + System.getProperty("sun.arch.data.model");
-        String command = "nvcc " + modelString + " -ptx " + cuFile.toString() + " -o " + ptxFileName;
+        String outputFormat = "-ptx"; // ptx oder cubin
+        String modelString = "-m"+System.getProperty("sun.arch.data.model"); // 32bit oder 64bit (TODO: performance gewinn bei 32bit?)
+        String command = "nvcc " + modelString + " " + outputFormat + " " + cuFile.toString() + " -o " + ptxFileName;
 
         System.out.println("Executing\n" + command);
         Process process = Runtime.getRuntime().exec(command);
@@ -439,20 +467,17 @@ class CudaCore {
             exitValue = process.waitFor();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException(
-                    "Interrupted while waiting for nvcc output", e);
+            throw new IOException("Interrupted while waiting for nvcc output", e);
         }
 
         if (exitValue != 0) {
             System.out.println("nvcc process exitValue " + exitValue);
             System.out.println("errorMessage:\n" + errorMessage);
             System.out.println("outputMessage:\n" + outputMessage);
-            throw new IOException(
-                    "Could not create .ptx file: " + errorMessage);
+            throw new IOException("Could not create .ptx file: " + errorMessage);
         }
 
         System.out.println("Finished creating PTX file");
-        return ptxFileName;
     }
 
     private byte[] toByteArray(InputStream inputStream)
