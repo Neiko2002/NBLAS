@@ -31,11 +31,8 @@ import org.nblas.generic.Subprogram;
 class CLCore {
 
     private static final CLCore CORE = new CLCore();
-    private Field nativePointerField;
-    private CLPlatform platform;
     private CLDevice device;
     
-    private cl_context_properties contextProperties;
     private cl_context context;
     private cl_command_queue commandQueue;
     
@@ -55,7 +52,7 @@ class CLCore {
 
     private CLCore() {
 
-        setup();
+        device = setupDevice();
         
         computeUnits = device.getComputeUnits();
         threadCount = device.getMaxWorkGroupSize();
@@ -66,38 +63,29 @@ class CLCore {
         threadCount_Y = (int) Math.pow(2.0, logBlockSizeY);
 
         cl_context_properties contextProperties = new cl_context_properties();
-        contextProperties.addProperty(CL.CL_CONTEXT_PLATFORM, platform.getId());
+        contextProperties.addProperty(CL.CL_CONTEXT_PLATFORM, device.getPlatform().getId());
         context = CL.clCreateContext(contextProperties, 1, new cl_device_id[]{device.getId()}, null, null, null);
         commandQueue = CL.clCreateCommandQueue(context, device.getId(), 0, null);
 
         customSubprograms = new ArrayList<>();
         matrixSubprograms = new ArrayList<>();
         
-        try {
-            this.nativePointerField = NativePointerObject.class.getDeclaredField("nativePointer");
-            this.nativePointerField.setAccessible(true);
-//            clblas = new CLBLAS(getNativePointer(this.platform), getNativePointer(this.device), getNativePointer(this.context), getNativePointer(this.commandQueue));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
         // lade alle Predefined Kernels
         for (Subprogram<cl_kernel> subprogram : CLPredefined.getAllSubPrograms()) {
         	loadFromGeneratedSubprogram(subprogram);
         }
         
-
         sharedData = new float[computeUnits];
         sharedBuffer = mallocSinglePrecision(computeUnits);
     }
 
 
 
-    private void setup() {
+    private CLDevice setupDevice() {
     	
     	CL.setExceptionsEnabled(true);
     	
-    	CLPlatform[] platforms = CLPlatform.getPlatforms();        
+    	CLPlatform[] platforms = CLPlatform.getPlatforms();
         if (platforms.length == 0) {
             throw new CLException("No OpenCL-Device found!\n " +
                     "Please reconsider that all OpenCL-Drivers and OpenCL-Platforms are installed properly.");
@@ -105,17 +93,10 @@ class CLCore {
         
     	final Comparator<CLDevice> performanceComperator = (c1, c2) -> Integer.compare( c1.getTheoreticalComputingPower(), c2.getTheoreticalComputingPower());
     	CLDevice fastestDevice = Arrays.stream(platforms).map(CLPlatform::getFastestGPU).filter(Objects::nonNull).max(performanceComperator).get();
+        System.out.println("Use OpenCL device: \n"+fastestDevice.toString());
         
-        this.device = fastestDevice;
-        this.platform = fastestDevice.getPlatform();
-        System.out.println("Use device: \n"+this.device.toString());    	
+        return fastestDevice;
 	}
-
-
-
-	public long getNativePointer(NativePointerObject nativePointerObject) throws IllegalAccessException {
-        return nativePointerField.getLong(nativePointerObject);
-    }
 
     public static CLCore getCore() {
         return CORE;
@@ -327,8 +308,7 @@ class CLCore {
             // create program source from all custom kernels
             String programSource = builder.toString();
 
-            customProgram = CL.clCreateProgramWithSource(context,
-                    1, new String[]{programSource}, null, null);
+            customProgram = CL.clCreateProgramWithSource(context, 1, new String[]{programSource}, null, null);
             CL.clBuildProgram(customProgram, 0, null, null, null, null);
             
             for (Subprogram<cl_kernel> customSubprogram : customSubprograms) {
