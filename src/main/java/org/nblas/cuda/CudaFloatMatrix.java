@@ -17,7 +17,7 @@ import org.nblas.generic.Subprogram;
 import jcuda.driver.CUfunction;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-public class CudaFloatMatrix extends CUDAMatrix implements FloatMatrix  {
+public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
 
     private static final Subprogram<CUfunction> ADD_MATRIX;
     private static final Subprogram<CUfunction> ADD_SCALAR;
@@ -119,7 +119,7 @@ public class CudaFloatMatrix extends CUDAMatrix implements FloatMatrix  {
             CORE.loadFromGeneratedFunction(subprogram);
         }
     }
-
+    
     private static Subprogram<CUfunction> buildPredefinedFunction(AFunctionBuilder<CUfunction> builder, AFunctionObject functionObject, ArgumentType... argumentTypes) {
         Subprogram<CUfunction> subprogram = builder.buildFunction(functionObject, argumentTypes);
         subprogram.setCustom(false);

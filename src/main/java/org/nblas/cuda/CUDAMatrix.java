@@ -9,14 +9,13 @@ import jcuda.Pointer;
  * @author Nico
  *
  */
-public class CUDAMatrix extends AMatrix {
+public class CudaMatrix extends AMatrix {
 
 	protected static final CudaCore CORE = CudaCore.getCore();
 	  
-	
 	protected Pointer dataPointer;
 	  
-	public CUDAMatrix(int rows, int columns) {
+	public CudaMatrix(int rows, int columns) {
 		super(rows, columns);
 	}
    
