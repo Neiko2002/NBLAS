@@ -175,7 +175,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
 	   	CudaFloatMatrix src = (CudaFloatMatrix)source;
     	CudaFloatMatrix dst = (CudaFloatMatrix)destination;
 		checkSameSize(src, dst);
-	    CORE.execute(COPY_MATRIX.getProgramName(), src.rows, src.columns, dst.dataPointer, src.dataPointer);
+	    CORE.execute(COPY_MATRIX, src.rows, src.columns, dst.dataPointer, src.dataPointer);
 	    return destination;
 	}
 
@@ -192,13 +192,13 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
 	
 	@Override
     public FloatMatrix setOne() {
-        CORE.execute(SET_ONE.getProgramName(), this.rows, this.columns, dataPointer);
+        CORE.execute(SET_ONE, this.rows, this.columns, dataPointer);
         return this;
     }
 
 	@Override
     public FloatMatrix setZero() {
-        CORE.execute(SET_ZERO.getProgramName(), this.rows, this.columns, dataPointer);
+        CORE.execute(SET_ZERO, this.rows, this.columns, dataPointer);
         return this;
     }
 
@@ -222,29 +222,24 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
     	CudaFloatMatrix a = (CudaFloatMatrix)matrixA;
     	CudaFloatMatrix b = (CudaFloatMatrix)matrixB;
     	CudaFloatMatrix r = (CudaFloatMatrix)result;
-        checkSameSize(a, b, r);
-        CORE.execute(ADD_MATRIX.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixMatrixElementWiseOperation(ADD_MATRIX, a, b, r);
       	return result;
     }
 
     @Override
     public FloatMatrix add(FloatMatrix matrix, float scalar, FloatMatrix result) {
 		CudaFloatMatrix a = (CudaFloatMatrix)matrix;
-		CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	CudaFloatMatrix r = (CudaFloatMatrix)result;
-    	CORE.execute(ADD_SCALAR.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
-        b.free();
+    	runMatrixScalarElementWiseOperation(ADD_SCALAR, a, scalar, r);
     	return result;
     }
 
     public static void addColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(ADD_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixColumnVectorElementWiseOperation(ADD_C_VECTOR, a, b, result);
     }
 
     public static void addRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(ADD_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixRowVectorElementWiseOperation(ADD_R_VECTOR, a, b, result);
     }
     	
     
@@ -256,49 +251,36 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
     	CudaFloatMatrix a = (CudaFloatMatrix)matrixA;
     	CudaFloatMatrix b = (CudaFloatMatrix)matrixB;
     	CudaFloatMatrix r = (CudaFloatMatrix)result;
-        checkSameSize(a, b, r);
-        CORE.execute(SUB_MATRIX.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixMatrixElementWiseOperation(SUB_MATRIX, a, b, r);
       	return result;
     }
 
     @Override
     public FloatMatrix sub(FloatMatrix matrix, float scalar, FloatMatrix result) {
 		CudaFloatMatrix a = (CudaFloatMatrix)matrix;
-		CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	CudaFloatMatrix r = (CudaFloatMatrix)result;
-    	CORE.execute(SUB_SCALAR.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
-        b.free();
+    	runMatrixScalarElementWiseOperation(SUB_SCALAR, a, scalar, r);
     	return result;
     }
 
     public static void subColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(SUB_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixColumnVectorElementWiseOperation(SUB_C_VECTOR, a, b, result);
     }
 
     public static void subRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(SUB_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixRowVectorElementWiseOperation(SUB_R_VECTOR, a, b, result);
     }
     
-    public static void rsub(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
-        CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { x });
-
-        CORE.execute(RSUB_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
-        b.free();
+    public static void rsub(CudaFloatMatrix a, float scalar, CudaFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(RSUB_SCALAR, a, scalar, result);
     }
 
     public static void rsubColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(RSUB_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    	runMatrixColumnVectorElementWiseOperation(RSUB_C_VECTOR, a, b, result);
     }
 
     public static void rsubRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(RSUB_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer,
-                a.dataPointer, b.dataPointer);
+    	runMatrixRowVectorElementWiseOperation(RSUB_R_VECTOR, a, b, result);
     }
     
     
@@ -310,29 +292,24 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
     	CudaFloatMatrix a = (CudaFloatMatrix)matrixA;
     	CudaFloatMatrix b = (CudaFloatMatrix)matrixB;
     	CudaFloatMatrix r = (CudaFloatMatrix)result;
-        checkSameSize(a, b, r);
-        CORE.execute(MUL_MATRIX.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixMatrixElementWiseOperation(MUL_MATRIX, a, b, r);
       	return result;
     }
 
     @Override
     public FloatMatrix mul(FloatMatrix matrix, float scalar, FloatMatrix result) {
 		CudaFloatMatrix a = (CudaFloatMatrix)matrix;
-		CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	CudaFloatMatrix r = (CudaFloatMatrix)result;
-    	CORE.execute(MUL_SCALAR.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
-        b.free();
+    	runMatrixScalarElementWiseOperation(MUL_SCALAR, a, scalar, r);
     	return result;
     }
 
     public static void mulColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(MUL_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixColumnVectorElementWiseOperation(MUL_C_VECTOR, a, b, result);
     }
 
     public static void mulRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(MUL_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixRowVectorElementWiseOperation(MUL_R_VECTOR, a, b, result);
     }
     
     
@@ -344,46 +321,36 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
     	CudaFloatMatrix a = (CudaFloatMatrix)matrixA;
     	CudaFloatMatrix b = (CudaFloatMatrix)matrixB;
     	CudaFloatMatrix r = (CudaFloatMatrix)result;
-        checkSameSize(a, b, r);
-        CORE.execute(DIV_MATRIX.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixMatrixElementWiseOperation(DIV_MATRIX, a, b, r);
       	return result;
     }
 
     @Override
     public FloatMatrix div(FloatMatrix matrix, float scalar, FloatMatrix result) {
 		CudaFloatMatrix a = (CudaFloatMatrix)matrix;
-		CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	CudaFloatMatrix r = (CudaFloatMatrix)result;
-    	CORE.execute(DIV_SCALAR.getProgramName(), r.rows, r.columns, r.dataPointer, a.dataPointer, b.dataPointer);
-        b.free();
+    	runMatrixScalarElementWiseOperation(DIV_SCALAR, a, scalar, r);
     	return result;
     }
 
     public static void divColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(DIV_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixColumnVectorElementWiseOperation(DIV_C_VECTOR, a, b, result);
     }
 
     public static void divRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(DIV_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixRowVectorElementWiseOperation(DIV_R_VECTOR, a, b, result);
     }
 	
-    public static void rdiv(CudaFloatMatrix a, float x, CudaFloatMatrix result) {
-        CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { x });
-
-        CORE.execute(RDIV_SCALAR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
-        b.free();
+    public static void rdiv(CudaFloatMatrix a, float scalar, CudaFloatMatrix result) {
+    	runMatrixScalarElementWiseOperation(RDIV_SCALAR, a, scalar, result);
     }
 
     public static void rdivColumnVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkColumnVectorSize(a, b, result);
-        CORE.execute(RDIV_C_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+        runMatrixColumnVectorElementWiseOperation(RDIV_C_VECTOR, a, b, result);
     }
 
     public static void rdivRowVector(CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(RDIV_R_VECTOR.getProgramName(), result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+    	runMatrixRowVectorElementWiseOperation(RDIV_R_VECTOR, a, b, result);
     }
     
     
@@ -543,4 +510,90 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
         CORE.setSubMatrix(dst.dataPointer, src.dataPointer, src.rows, src.rows, dst.rows, offsetRow, offsetColumn);
         return destination;
     }
+    
+    
+  // --------------------------------------- helper methods ----------------------------------------
+    
+    /**
+     * Führe ein OpenCL Programm auf einer Matrix aus.
+     * 
+     * @param subprogram
+     * @param a
+     */
+	protected static void runMatrixOperation(Subprogram<CUfunction> subprogram, CudaFloatMatrix a) {
+		CORE.execute(subprogram, a.rows, a.columns, a.dataPointer);
+	}
+	
+    
+    /**
+     * Führe ein OpenCL Programm auf zwei gleich große Matrizen durch,
+     * das Resultat wird in eine dritte Matrix gespeichert
+     *  
+     * @param programId
+     * @param a
+     * @param b
+     * @param result
+     */
+	protected static void runMatrixMatrixElementWiseOperation(Subprogram<CUfunction> subprogram, CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
+		checkSameSize(a, b, result);
+        CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+	}
+	
+	
+	/**
+     * Führe ein OpenCL Programm auf einer Matrix durch,
+     * das Resultat wird in eine zweite Matrix gespeichert
+     * 
+	 * @param programId
+	 * @param matrix
+	 * @param scalar
+	 * @param result
+	 */
+	protected static void runMatrixElementWiseOperation(Subprogram<CUfunction> subprogram, CudaFloatMatrix a, CudaFloatMatrix result) {
+		checkSameSize(a, result);
+        CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, a.dataPointer);
+	}
+	
+	/**
+     * Führe ein OpenCL Programm auf einer Matrix und einem Scalar durch,
+     * das Resultat wird in eine zweite Matrix gespeichert
+     * 
+	 * @param programId
+	 * @param matrix
+	 * @param scalar
+	 * @param result
+	 */
+	protected static void runMatrixScalarElementWiseOperation(Subprogram<CUfunction> subprogram, CudaFloatMatrix a, float scalar, CudaFloatMatrix result) {
+		CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
+        CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+        b.free();
+	}
+	
+	/**
+     * Führe ein OpenCL Programm auf einer Matrix und einem Row Vector durch,
+     * das Resultat wird in eine zweite Matrix gespeichert
+     * 
+	 * @param programId
+	 * @param matrix 
+	 * @param row vector
+	 * @param result
+	 */
+	protected static void runMatrixRowVectorElementWiseOperation(Subprogram<CUfunction> subprogram, CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
+        checkRowVectorSize(a, b, result);
+        CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+	}	
+	
+	/**
+     * Führe ein OpenCL Programm auf einer Matrix und einem Column Vector durch,
+     * das Resultat wird in eine zweite Matrix gespeichert
+     * 
+	 * @param programId
+	 * @param matrix
+	 * @param column vector
+	 * @param result
+	 */
+	protected static void runMatrixColumnVectorElementWiseOperation(Subprogram<CUfunction> subprogram, CudaFloatMatrix a, CudaFloatMatrix b, CudaFloatMatrix result) {
+		checkColumnVectorSize(a, b, result);
+		CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+	}	
 }
