@@ -1,9 +1,6 @@
 package org.nblas.cl;
 
 
-import java.util.Optional;
-
-import org.jblas.util.Random;
 import org.jocl.cl_kernel;
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
@@ -19,13 +16,12 @@ import org.nblas.generic.Subprogram;
  */
 public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
 
-	protected static final CLFloatFunctionBuilder builder;
 	protected static final CLLevel1 level1;
 	
 
 	static {
         
-		builder = new CLFloatFunctionBuilder();
+		CLFloatFunctionBuilder builder = new CLFloatFunctionBuilder();
 		
         // lade alle Predefined Kernels
         for (Subprogram<cl_kernel> subprogram : CLPredefined.getAllSubPrograms())
@@ -186,14 +182,23 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     	return result;
     }
 
-    public static void addColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
-    	level1.addColumnVector(matrix, columnVector, result);
+    /**
+ 	 * @see FloatMatrix#addColumnVector(FloatMatrix, FloatMatrix, FloatMatrix)
+ 	 */
+    @Override
+    public FloatMatrix addColumnVector(FloatMatrix a, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.addColumnVector((CLFloatMatrix)a, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
+    	return result;
     }
 
-    public static void addRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
-    	level1.addRowVector(matrix, rowVector, result);
-    }
-	 
+    /**
+  	 * @see FloatMatrix#addRowVector(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix addRowVector(FloatMatrix a, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.addRowVector((CLFloatMatrix)a, (CLFloatMatrix)rowVector, (CLFloatMatrix)result);
+    	return result;
+    } 
     
     
     // --------------------------------------- sub methods ----------------------------------------
@@ -218,13 +223,23 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     	return result;
     }
 
-    public static void subColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
-    	level1.subColumnVector(matrix, columnVector, result);
+    /**
+ 	 * @see FloatMatrix#subColumnVector(FloatMatrix, FloatMatrix, FloatMatrix)
+ 	 */
+    @Override
+    public FloatMatrix subColumnVector(FloatMatrix a, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.subColumnVector((CLFloatMatrix)a, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
+    	return result;
     }
 
-    public static void subRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
-    	level1.subRowVector(matrix, rowVector, result);
-    }
+    /**
+  	 * @see FloatMatrix#subRowVector(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix subRowVector(FloatMatrix a, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.subRowVector((CLFloatMatrix)a, (CLFloatMatrix)rowVector, (CLFloatMatrix)result);
+    	return result;
+    } 
 
     public static void rsub(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
     	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
@@ -263,13 +278,23 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     	return result;
     }
 
-    public static void mulColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
-    	level1.mulColumnVector(matrix, columnVector, result);
+    /**
+ 	 * @see FloatMatrix#mulColumnVector(FloatMatrix, FloatMatrix, FloatMatrix)
+ 	 */
+    @Override
+    public FloatMatrix mulColumnVector(FloatMatrix a, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.mulColumnVector((CLFloatMatrix)a, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
+    	return result;
     }
 
-    public static void mulRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
-    	level1.mulRowVector(matrix, rowVector, result);
-    }
+    /**
+  	 * @see FloatMatrix#mulRowVector(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix mulRowVector(FloatMatrix a, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.mulRowVector((CLFloatMatrix)a, (CLFloatMatrix)rowVector, (CLFloatMatrix)result);
+    	return result;
+    } 
 
     
     // --------------------------------------- div methods ----------------------------------------
@@ -293,14 +318,24 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     	b.free();
     	return result;
     }
-
-    public static void divColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
-    	level1.divColumnVector(matrix, columnVector, result);
+    
+    /**
+ 	 * @see FloatMatrix#divColumnVector(FloatMatrix, FloatMatrix, FloatMatrix)
+ 	 */
+    @Override
+    public FloatMatrix divColumnVector(FloatMatrix a, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.addColumnVector((CLFloatMatrix)a, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
+    	return result;
     }
 
-    public static void divRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
-    	level1.divRowVector(matrix, rowVector, result);
-    }
+    /**
+  	 * @see FloatMatrix#divRowVector(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix divRowVector(FloatMatrix a, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.divRowVector((CLFloatMatrix)a, (CLFloatMatrix)rowVector, (CLFloatMatrix)result);
+    	return result;
+    } 
     
     public static void rdiv(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
     	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });

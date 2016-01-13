@@ -115,7 +115,7 @@ class CudaCore {
         return device;
     }    
 
-    public void execute(Subprogram<CUfunction> subprogram, int rows, int columns, Pointer result, Pointer... args) {
+    protected void execute(Subprogram<CUfunction> subprogram, int rows, int columns, Pointer result, Pointer... args) {
         int blocksY = (int) Math.ceil(columns / (double) threadCount_2DX);
         int blocksX = (int) Math.ceil(rows / (double) threadCount_2DY);
         
@@ -138,233 +138,7 @@ class CudaCore {
         JCudaDriver.cuCtxSynchronize();
     }
     
-
-    public float reduce(String reductionName, Pointer data, int n, float initValue) {
-        CUfunction f = functions.get(reductionName).getKernel();
-        int blocks = (int) Math.ceil(n / (double) threadCount);
-        Pointer temp = malloc(blocks);
-        Pointer kernelParameters = Pointer.to(new Pointer[]{
-                Pointer.to(data),
-                Pointer.to(temp),
-                Pointer.to(new int[]{n}),
-                Pointer.to(new float[]{initValue})
-
-        });
-        JCudaDriver.cuLaunchKernel(f,
-                blocks, 1, 1,
-                threadCount, 1, 1,
-                threadCount * Sizeof.FLOAT,
-                null,
-                kernelParameters, null);
-        JCudaDriver.cuCtxSynchronize();
-        while (blocks > 1) {
-            int b = blocks;
-            blocks = (int) Math.ceil(blocks / (double) threadCount);
-            kernelParameters = Pointer.to(new Pointer[]{
-                    Pointer.to(temp),
-                    Pointer.to(temp),
-                    Pointer.to(new int[]{b}),
-                    Pointer.to(new float[]{initValue})
-
-            });
-            JCudaDriver.cuLaunchKernel(f,
-                    blocks, 1, 1,
-                    threadCount, 1, 1,
-                    threadCount * Sizeof.FLOAT,
-                    null,
-                    kernelParameters, null);
-            JCudaDriver.cuCtxSynchronize();
-        }
-        float[] result = new float[1];
-        getData(temp, result);
-        return result[0];
-    }
-
-    public void reduceRows(String functionName, Pointer data, Pointer result, int rows, int columns, float initValue) {
-
-        int blocksX = (int) Math.ceil(rows / (double) threadCount_2DX);
-        int blocksY = (int) Math.ceil(columns / (double) threadCount_2DY);
-        Pointer temp = malloc(rows * blocksY);
-        CUfunction f = functions.get(functionName).getKernel();
-        reduceCall(f, data, temp, rows, columns, blocksX, blocksY, initValue);
-        while (blocksY > 1) {
-            int c = blocksY;
-            blocksY = (int) Math.ceil(blocksY / (double) threadCount_2DY);
-            reduceCall(f, temp, temp, rows, c, blocksX, blocksY, initValue);
-        }
-        copy1d(temp, result, rows);
-        free(temp);
-    }
-
-    public void reduceColumns(String functionName, Pointer data, Pointer result, int rows, int columns, float initValue) {
-
-        int blocksX = (int) Math.ceil(rows / (double) threadCount_2DX);
-        int blocksY = (int) Math.ceil(columns / (double) threadCount_2DY);
-        Pointer temp = malloc(columns * blocksX);
-        CUfunction f = functions.get(functionName).getKernel();
-        reduceCall(f, data, temp, rows, columns, blocksX, blocksY, initValue);
-        while (blocksX > 1) {
-            int r = blocksX;
-            blocksX = (int) Math.ceil(blocksX / (double) threadCount_2DY);
-            reduceCall(f, temp, temp, r, columns, blocksX, blocksY, initValue);
-        }
-        copy1d(temp, result, columns);
-        free(temp);
-    }
-
-    private void reduceCall(CUfunction f, Pointer data, Pointer result, int rows, int columns, int blocksX, int blocksY, float initValue) {
-
-        Pointer kernelParameters = Pointer.to(new Pointer[]{
-                Pointer.to(data),
-                Pointer.to(result),
-                Pointer.to(new int[]{rows}),
-                Pointer.to(new int[]{columns}),
-                Pointer.to(new float[]{initValue})
-
-        });
-        JCudaDriver.cuLaunchKernel(f,
-                blocksX, blocksY, 1,
-                threadCount_2DX, threadCount_2DY, 1,
-                threadCount * Sizeof.FLOAT,
-                null,
-                kernelParameters, null);
-        JCudaDriver.cuCtxSynchronize();
-
-    }
-
-    public void getSubMatrix(Pointer data, Pointer result, int resultRows, int resultColumns, int dataRows, int offsetRow, int offsetColumn) {
-        int blocksY = (int) Math.ceil(resultColumns / (double) threadCount_2DX);
-        int blocksX = (int) Math.ceil(resultRows / (double) threadCount_2DY);
-
-        Pointer kernelParameters = Pointer.to(new Pointer[]{
-                Pointer.to(data),
-                Pointer.to(result),
-                Pointer.to(new int[]{resultRows}),
-                Pointer.to(new int[]{resultColumns}),
-                Pointer.to(new int[]{dataRows}),
-                Pointer.to(new int[]{offsetRow}),
-                Pointer.to(new int[]{offsetColumn})
-
-        });
-
-        JCudaDriver.cuLaunchKernel(functions.get("getsub").getKernel(),
-                blocksX, blocksY, 1,
-                threadCount_2DX, threadCount_2DY, 1,
-                0,
-                null,
-                kernelParameters, null);
-        JCudaDriver.cuCtxSynchronize();
-    }
-
-    public void setSubMatrix(Pointer result, Pointer data, int rows, int columns, int dataRows, int offsetRow, int offsetColumn) {
-        int blocksY = (int) Math.ceil(columns / (double) threadCount_2DX);
-        int blocksX = (int) Math.ceil(rows / (double) threadCount_2DY);
-
-        Pointer kernelParameters = Pointer.to(new Pointer[]{
-                Pointer.to(data),
-                Pointer.to(result),
-                Pointer.to(new int[]{rows}),
-                Pointer.to(new int[]{columns}),
-                Pointer.to(new int[]{dataRows}),
-                Pointer.to(new int[]{offsetRow}),
-                Pointer.to(new int[]{offsetColumn})
-
-        });
-
-        JCudaDriver.cuLaunchKernel(functions.get("setsub").getKernel(),
-                blocksX, blocksY, 1,
-                threadCount_2DX, threadCount_2DY, 1,
-                0,
-                null,
-                kernelParameters, null);
-        JCudaDriver.cuCtxSynchronize();
-    }
-
-
-    public void mmul(Pointer a, int aRows, int aColumnsbRows,
-                     Pointer b, int bColumns,
-                     Pointer c) {
-        JCublas2.cublasSgemm(cublasHandle, CUBLAS_OP_N, CUBLAS_OP_N,
-                aRows, bColumns, aColumnsbRows,
-                Pointer.to(new float[]{1.0f}), a, aRows,
-                b, aColumnsbRows,
-                Pointer.to(new float[]{0.0f}), c, aRows);
-        JCudaDriver.cuCtxSynchronize();
-        cudaDeviceSynchronize();
-    }
-
-    public void mmulTransposeA(Pointer a, int aRowsbRows, int aColumns,
-                               Pointer b, int bColumns,
-                               Pointer c) {
-        JCublas2.cublasSgemm(cublasHandle, CUBLAS_OP_T, CUBLAS_OP_N,
-                aColumns, bColumns, aRowsbRows,
-                Pointer.to(new float[]{1.0f}), a, aRowsbRows,
-                b, aRowsbRows,
-                Pointer.to(new float[]{0.0f}), c, aColumns);
-        JCudaDriver.cuCtxSynchronize();
-        cudaDeviceSynchronize();
-    }
-
-    public void mmulTransposeB(Pointer a, int aRows, int aColumnsbColumns,
-                               Pointer b, int bRows,
-                               Pointer c) {
-        JCublas2.cublasSgemm(cublasHandle, CUBLAS_OP_N, CUBLAS_OP_T,
-                aRows, bRows, aColumnsbColumns,
-                Pointer.to(new float[]{1.0f}), a, aRows,
-                b, bRows,
-                Pointer.to(new float[]{0.0f}), c, aRows);
-        JCudaDriver.cuCtxSynchronize();
-        cudaDeviceSynchronize();
-    }
-
-    private void copy1d(Pointer data, Pointer copy, int n) {
-        int blocks = (int) Math.ceil(n / (double) threadCount);
-        CUfunction f = functions.get("copy1D").getKernel();
-
-        Pointer kernelParameters = Pointer.to(Pointer.to(data), Pointer.to(copy), Pointer.to(new int[]{n}));
-        JCudaDriver.cuLaunchKernel(f,
-                blocks, 1, 1,
-                threadCount, 1, 1,
-                0,
-                null,
-                kernelParameters, null);
-        JCudaDriver.cuCtxSynchronize();
-    }
-
-    public void transpose(Pointer data, Pointer result, int rows, int columns) {
-        int blocksX = (int) Math.ceil(rows / (double) threadCount_2DX);
-        int blocksY = (int) Math.ceil(columns / (double) threadCount_2DY);
-        int sharedSize = (threadCount_2DX + 1) * threadCount_2DY;
-        Pointer kernelParameters = Pointer.to(new Pointer[]{
-                Pointer.to(data),
-                Pointer.to(result),
-                Pointer.to(new int[]{rows}),
-                Pointer.to(new int[]{columns})
-        });
-
-        CUfunction f = functions.get("transpose").getKernel();
-        JCudaDriver.cuLaunchKernel(f,
-                blocksX, blocksY, 1,
-                threadCount_2DX, threadCount_2DY, 1,
-                sharedSize * Sizeof.FLOAT,
-                null,
-                kernelParameters, null);
-        JCudaDriver.cuCtxSynchronize();
-
-    }
-
-    public void randn(Pointer a, int n) {
-        curandGenerateNormal(generator, a, n, 0.0f, 1.0f);
-        JCudaDriver.cuCtxSynchronize();
-    }
-
-    public void rand(Pointer a, int n) {
-        curandGenerateUniform(generator, a, n);
-        JCudaDriver.cuCtxSynchronize();
-    }
-
-
-    public void loadFromGeneratedFunction(Subprogram<CUfunction> subprogram) {
+    protected void loadFromGeneratedSubprogram(Subprogram<CUfunction> subprogram) {
         try {
         	
         	String name = subprogram.getProgramName();
@@ -495,30 +269,285 @@ class CudaCore {
         return baos.toByteArray();
     }
 
-    public Pointer malloc(float[] values) {
-        Pointer pointer = new Pointer();
-        cudaMalloc(pointer, values.length * Sizeof.FLOAT);
-        cublasSetVector(values.length, Sizeof.FLOAT, Pointer.to(values), 1, pointer, 1);
-        return pointer;
-    }
-
-    public Pointer malloc(int length) {
-        Pointer pointer = new Pointer();
-        cudaMalloc(pointer, length * Sizeof.FLOAT);
-        return pointer;
-    }
-
-    public void free(Pointer pointer) {
+    protected void free(Pointer pointer) {
         cudaFree(pointer);
     }
+    
+    
+    
+    // --------------------------------------------------------------------------------------------------------
+    // -------------------------------------------- manipulation ----------------------------------------------
+    // --------------------------------------------------------------------------------------------------------
 
-    public void setData(Pointer pointer, float[] values) {
+    /**
+     * TODO copy1D vs FloatMatrix.dup()
+     * 
+     * @param data
+     * @param copy
+     * @param n
+     */
+    private void copy1d(Pointer data, Pointer copy, int n) {
+        int blocks = (int) Math.ceil(n / (double) threadCount);
+        CUfunction f = functions.get("copy1D").getKernel();
+
+        Pointer kernelParameters = Pointer.to(Pointer.to(data), Pointer.to(copy), Pointer.to(new int[]{n}));
+        JCudaDriver.cuLaunchKernel(f,
+                blocks, 1, 1,
+                threadCount, 1, 1,
+                0,
+                null,
+                kernelParameters, null);
+        JCudaDriver.cuCtxSynchronize();
+    }
+
+
+    protected void randn(Pointer a, int n) {
+        curandGenerateNormal(generator, a, n, 0.0f, 1.0f);
+        JCudaDriver.cuCtxSynchronize();
+    }
+
+    protected void rand(Pointer a, int n) {
+        curandGenerateUniform(generator, a, n);
+        JCudaDriver.cuCtxSynchronize();
+    }
+    
+    // --------------------------------------------------------------------------------------------------------
+    // ------------------------------------------ matrix methods ----------------------------------------------
+    // --------------------------------------------------------------------------------------------------------
+
+    protected void getSubMatrix(Pointer data, Pointer result, int resultRows, int resultColumns, int dataRows, int offsetRow, int offsetColumn) {
+        int blocksY = (int) Math.ceil(resultColumns / (double) threadCount_2DX);
+        int blocksX = (int) Math.ceil(resultRows / (double) threadCount_2DY);
+
+        Pointer kernelParameters = Pointer.to(new Pointer[]{
+                Pointer.to(data),
+                Pointer.to(result),
+                Pointer.to(new int[]{resultRows}),
+                Pointer.to(new int[]{resultColumns}),
+                Pointer.to(new int[]{dataRows}),
+                Pointer.to(new int[]{offsetRow}),
+                Pointer.to(new int[]{offsetColumn})
+
+        });
+
+        JCudaDriver.cuLaunchKernel(functions.get("getsub").getKernel(),
+                blocksX, blocksY, 1,
+                threadCount_2DX, threadCount_2DY, 1,
+                0,
+                null,
+                kernelParameters, null);
+        JCudaDriver.cuCtxSynchronize();
+    }
+
+    protected void setSubMatrix(Pointer result, Pointer data, int rows, int columns, int dataRows, int offsetRow, int offsetColumn) {
+        int blocksY = (int) Math.ceil(columns / (double) threadCount_2DX);
+        int blocksX = (int) Math.ceil(rows / (double) threadCount_2DY);
+
+        Pointer kernelParameters = Pointer.to(new Pointer[]{
+                Pointer.to(data),
+                Pointer.to(result),
+                Pointer.to(new int[]{rows}),
+                Pointer.to(new int[]{columns}),
+                Pointer.to(new int[]{dataRows}),
+                Pointer.to(new int[]{offsetRow}),
+                Pointer.to(new int[]{offsetColumn})
+
+        });
+
+        JCudaDriver.cuLaunchKernel(functions.get("setsub").getKernel(),
+                blocksX, blocksY, 1,
+                threadCount_2DX, threadCount_2DY, 1,
+                0,
+                null,
+                kernelParameters, null);
+        JCudaDriver.cuCtxSynchronize();
+    }
+
+    
+    
+    // --------------------------------------------------------------------------------------------------------
+    // ------------------------------------ float matrix methods ----------------------------------------------
+    // --------------------------------------------------------------------------------------------------------
+    
+    /**
+     * z.b. Sizeof.FLOAT
+     * 
+     * @param values
+     * @param sizeof
+     * @return
+     */
+    protected Pointer malloc(float[] values, int sizeof) {
+        Pointer pointer = new Pointer();
+        cudaMalloc(pointer, values.length * sizeof);
+        cublasSetVector(values.length, sizeof, Pointer.to(values), 1, pointer, 1);
+        return pointer;
+    }
+
+    protected Pointer malloc(int length, int sizeof) {
+        Pointer pointer = new Pointer();
+        cudaMalloc(pointer, length * sizeof);
+        return pointer;
+    }
+    
+    
+    protected void setData(Pointer pointer, float[] values) {
         cublasSetVector(values.length, Sizeof.FLOAT, Pointer.to(values), 1, pointer, 1);
     }
 
-    public void getData(Pointer pointer, float[] values) {
+    protected void getData(Pointer pointer, float[] values) {
         JCublas2.cublasGetVector(values.length, Sizeof.FLOAT, pointer, 1, Pointer.to(values), 1);
     }
+    
+    protected float reduce(String reductionName, Pointer data, int n, float initValue) {
+        CUfunction f = functions.get(reductionName).getKernel();
+        int blocks = (int) Math.ceil(n / (double) threadCount);
+        Pointer temp = malloc(blocks, Sizeof.FLOAT);
+        Pointer kernelParameters = Pointer.to(new Pointer[]{
+                Pointer.to(data),
+                Pointer.to(temp),
+                Pointer.to(new int[]{n}),
+                Pointer.to(new float[]{initValue})
 
+        });
+        JCudaDriver.cuLaunchKernel(f,
+                blocks, 1, 1,
+                threadCount, 1, 1,
+                threadCount * Sizeof.FLOAT,
+                null,
+                kernelParameters, null);
+        JCudaDriver.cuCtxSynchronize();
+        while (blocks > 1) {
+            int b = blocks;
+            blocks = (int) Math.ceil(blocks / (double) threadCount);
+            kernelParameters = Pointer.to(new Pointer[]{
+                    Pointer.to(temp),
+                    Pointer.to(temp),
+                    Pointer.to(new int[]{b}),
+                    Pointer.to(new float[]{initValue})
+
+            });
+            JCudaDriver.cuLaunchKernel(f,
+                    blocks, 1, 1,
+                    threadCount, 1, 1,
+                    threadCount * Sizeof.FLOAT,
+                    null,
+                    kernelParameters, null);
+            JCudaDriver.cuCtxSynchronize();
+        }
+        float[] result = new float[1];
+        getData(temp, result);
+        return result[0];
+    }
+
+
+    
+    protected void reduceRows(String functionName, Pointer data, Pointer result, int rows, int columns, float initValue) {
+
+        int blocksX = (int) Math.ceil(rows / (double) threadCount_2DX);
+        int blocksY = (int) Math.ceil(columns / (double) threadCount_2DY);
+        Pointer temp = malloc(rows * blocksY, Sizeof.FLOAT);
+        CUfunction f = functions.get(functionName).getKernel();
+        reduceCall(f, data, temp, rows, columns, blocksX, blocksY, initValue);
+        while (blocksY > 1) {
+            int c = blocksY;
+            blocksY = (int) Math.ceil(blocksY / (double) threadCount_2DY);
+            reduceCall(f, temp, temp, rows, c, blocksX, blocksY, initValue);
+        }
+        copy1d(temp, result, rows);
+        free(temp);
+    }
+
+    public void reduceColumns(String functionName, Pointer data, Pointer result, int rows, int columns, float initValue) {
+
+        int blocksX = (int) Math.ceil(rows / (double) threadCount_2DX);
+        int blocksY = (int) Math.ceil(columns / (double) threadCount_2DY);
+        Pointer temp = malloc(columns * blocksX, Sizeof.FLOAT);
+        CUfunction f = functions.get(functionName).getKernel();
+        reduceCall(f, data, temp, rows, columns, blocksX, blocksY, initValue);
+        while (blocksX > 1) {
+            int r = blocksX;
+            blocksX = (int) Math.ceil(blocksX / (double) threadCount_2DY);
+            reduceCall(f, temp, temp, r, columns, blocksX, blocksY, initValue);
+        }
+        copy1d(temp, result, columns);
+        free(temp);
+    }
+
+    private void reduceCall(CUfunction f, Pointer data, Pointer result, int rows, int columns, int blocksX, int blocksY, float initValue) {
+
+        Pointer kernelParameters = Pointer.to(new Pointer[]{
+                Pointer.to(data),
+                Pointer.to(result),
+                Pointer.to(new int[]{rows}),
+                Pointer.to(new int[]{columns}),
+                Pointer.to(new float[]{initValue})
+
+        });
+        JCudaDriver.cuLaunchKernel(f,
+                blocksX, blocksY, 1,
+                threadCount_2DX, threadCount_2DY, 1,
+                threadCount * Sizeof.FLOAT,
+                null,
+                kernelParameters, null);
+        JCudaDriver.cuCtxSynchronize();
+
+    }
+
+    protected void transpose(Pointer data, Pointer result, int rows, int columns) {
+        int blocksX = (int) Math.ceil(rows / (double) threadCount_2DX);
+        int blocksY = (int) Math.ceil(columns / (double) threadCount_2DY);
+        int sharedSize = (threadCount_2DX + 1) * threadCount_2DY;
+        Pointer kernelParameters = Pointer.to(new Pointer[]{
+                Pointer.to(data),
+                Pointer.to(result),
+                Pointer.to(new int[]{rows}),
+                Pointer.to(new int[]{columns})
+        });
+
+        CUfunction f = functions.get("transpose").getKernel();
+        JCudaDriver.cuLaunchKernel(f,
+                blocksX, blocksY, 1,
+                threadCount_2DX, threadCount_2DY, 1,
+                sharedSize * Sizeof.FLOAT,
+                null,
+                kernelParameters, null);
+        JCudaDriver.cuCtxSynchronize();
+    }
+
+    protected void sgemmNN(Pointer a, int aRows, int aColumnsbRows,
+                     Pointer b, int bColumns,
+                     Pointer c) {
+        JCublas2.cublasSgemm(cublasHandle, CUBLAS_OP_N, CUBLAS_OP_N,
+                aRows, bColumns, aColumnsbRows,
+                Pointer.to(new float[]{1.0f}), a, aRows,
+                b, aColumnsbRows,
+                Pointer.to(new float[]{0.0f}), c, aRows);
+        JCudaDriver.cuCtxSynchronize();
+        cudaDeviceSynchronize();
+    }
+
+    protected void sgemmTN(Pointer a, int aRowsbRows, int aColumns,
+                               Pointer b, int bColumns,
+                               Pointer c) {
+        JCublas2.cublasSgemm(cublasHandle, CUBLAS_OP_T, CUBLAS_OP_N,
+                aColumns, bColumns, aRowsbRows,
+                Pointer.to(new float[]{1.0f}), a, aRowsbRows,
+                b, aRowsbRows,
+                Pointer.to(new float[]{0.0f}), c, aColumns);
+        JCudaDriver.cuCtxSynchronize();
+        cudaDeviceSynchronize();
+    }
+
+    protected void sgemmNT(Pointer a, int aRows, int aColumnsbColumns,
+                               Pointer b, int bRows,
+                               Pointer c) {
+        JCublas2.cublasSgemm(cublasHandle, CUBLAS_OP_N, CUBLAS_OP_T,
+                aRows, bRows, aColumnsbColumns,
+                Pointer.to(new float[]{1.0f}), a, aRows,
+                b, bRows,
+                Pointer.to(new float[]{0.0f}), c, aRows);
+        JCudaDriver.cuCtxSynchronize();
+        cudaDeviceSynchronize();
+    }
 
 }

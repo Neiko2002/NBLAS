@@ -12,6 +12,7 @@ class CudaFloatFunctionBuilder extends AFunctionBuilder<CUfunction> {
 
 	protected Context context = Context.createCudaSinglePrecisionContext();
 
+	@Override
     protected Subprogram<CUfunction> buildFunction(String function, ArgumentType[] args) {
         StringBuilder builder = new StringBuilder();
         StringBuilder parameters = new StringBuilder();

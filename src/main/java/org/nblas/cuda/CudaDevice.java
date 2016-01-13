@@ -1,15 +1,11 @@
 package org.nblas.cuda;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import jcuda.driver.CUcomputemode;
 import jcuda.driver.CUcontext;
 import jcuda.driver.CUctx_flags;
 import jcuda.driver.CUdevice;
-import jcuda.driver.CUdevice_attribute;
 import jcuda.driver.JCudaDriver;
 import jcuda.runtime.JCuda;
 import jcuda.runtime.cudaDeviceProp;
@@ -36,7 +32,7 @@ import jcuda.runtime.cudaDeviceProp;
  * @author Nico
  *
  */
-public class CudaDevice {
+class CudaDevice {
 
 	private CUcontext contextPointer;
 	private CUdevice devicePointer;

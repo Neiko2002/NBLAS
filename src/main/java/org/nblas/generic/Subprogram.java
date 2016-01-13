@@ -4,6 +4,8 @@ package org.nblas.generic;
  * Basic Linear Algebra Subprograms
  * Jede Funktion ist ausgelagert in eine Subprogram.
  * 
+ * TODO sollte seinen kernel lazy laden
+ * 
  * @author Nico
  *
  */

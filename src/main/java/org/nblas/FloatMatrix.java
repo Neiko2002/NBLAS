@@ -193,7 +193,7 @@ public interface FloatMatrix {
     
 	// --------------------------------------- add methods ----------------------------------------
     /**
-     * expert only
+     * add element wise a to b and store in result 
      * 
      * @param a
      * @param b
@@ -203,7 +203,7 @@ public interface FloatMatrix {
     public FloatMatrix add(FloatMatrix a, FloatMatrix b, FloatMatrix result);    
     
     /**
-     * expert only 
+     * add element wise the scalar to a and store in result 
      * 
      * @param a
      * @param scalar
@@ -211,6 +211,26 @@ public interface FloatMatrix {
      * @return
      */
     public FloatMatrix add(FloatMatrix a, float scalar, FloatMatrix result);
+    
+    /**
+     * add column wise the column vector to a and store in result 
+     * 
+     * @param matrix
+     * @param columnVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix addColumnVector(FloatMatrix a, FloatMatrix columnVector, FloatMatrix result);
+    
+    /**
+     * add row wise the row vector to a and store in result 
+     * 
+     * @param matrix
+     * @param rowVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix addRowVector(FloatMatrix a, FloatMatrix rowVector, FloatMatrix result);
 
     public default FloatMatrix add(FloatMatrix b, FloatMatrix result) {
         add(this, b, result);
@@ -248,7 +268,7 @@ public interface FloatMatrix {
     
     // --------------------------------------- sub methods ----------------------------------------
     /**
-     * expert only
+     * subtract element wise the a from b and store in result 
      * 
      * @param a
      * @param b
@@ -258,7 +278,7 @@ public interface FloatMatrix {
     public FloatMatrix sub(FloatMatrix a, FloatMatrix b, FloatMatrix result);    
     
     /**
-     * expert only 
+     * subtract element wise the scalar from a and store in result 
      * 
      * @param a
      * @param scalar
@@ -266,6 +286,10 @@ public interface FloatMatrix {
      * @return
      */
     public FloatMatrix sub(FloatMatrix a, float scalar, FloatMatrix result);
+    
+    public FloatMatrix subColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result);
+
+    public FloatMatrix subRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result);
 
     public default FloatMatrix sub(FloatMatrix b, FloatMatrix result) {
         sub(this, b, result);
@@ -322,6 +346,10 @@ public interface FloatMatrix {
      */
     public FloatMatrix mul(FloatMatrix a, float scalar, FloatMatrix result);
 
+    public FloatMatrix mulColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result);
+
+    public FloatMatrix mulRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result);
+    
     public default FloatMatrix mul(FloatMatrix b, FloatMatrix result) {
         mul(this, b, result);
         return result;
@@ -377,6 +405,10 @@ public interface FloatMatrix {
      */
     public FloatMatrix div(FloatMatrix a, float scalar, FloatMatrix result);
 
+    public FloatMatrix divColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result);
+
+    public FloatMatrix divRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result);
+    
     public default FloatMatrix div(FloatMatrix b, FloatMatrix result) {
         div(this, b, result);
         return result;

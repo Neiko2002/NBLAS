@@ -36,20 +36,36 @@ public class CudaTest {
 		result.randni();
 
 		long start2 = System.currentTimeMillis();
-		result.mmul(a, b, result);
+		for (int run = 0; run < 1000; run++)
+			a.sub(b, result);
 		long stop2 = System.currentTimeMillis();
 		System.out.println("time: " + (stop2 - start2) + "ms \n");
-
-		long start1 = System.currentTimeMillis();
-		a.transpose(a, result);
-		result.mmul(result, b, a);
-		long stop1 = System.currentTimeMillis();
-		System.out.println("time: " + (stop1 - start1) + "ms \n");
-
-		long start = System.currentTimeMillis();
-		result.mmulTN(a, b, result);
-		long stop = System.currentTimeMillis();
-		System.out.println("time: " + (stop - start) + "ms \n");
+		
+		
+		
+		FloatMatrix aFM = new FloatMatrix(a.toArray2());
+		FloatMatrix bFM = new FloatMatrix(a.toArray2());
+		FloatMatrix resultFM = new FloatMatrix(a.toArray2());
+		
+		boolean similar = aFM.sub(bFM).compare(resultFM, 0.0001f);
+		System.out.println("similar "+ similar);
+		
+		
+//		long start2 = System.currentTimeMillis();
+//		result.mmul(a, b, result);
+//		long stop2 = System.currentTimeMillis();
+//		System.out.println("time: " + (stop2 - start2) + "ms \n");
+//
+//		long start1 = System.currentTimeMillis();
+//		a.transpose(a, result);
+//		result.mmul(result, b, a);
+//		long stop1 = System.currentTimeMillis();
+//		System.out.println("time: " + (stop1 - start1) + "ms \n");
+//
+//		long start = System.currentTimeMillis();
+//		result.mmulTN(a, b, result);
+//		long stop = System.currentTimeMillis();
+//		System.out.println("time: " + (stop - start) + "ms \n");
 	}
 
 
