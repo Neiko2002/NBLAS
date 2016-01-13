@@ -17,9 +17,10 @@ import org.nblas.generic.Subprogram;
 public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
 
 	protected static final CLLevel1 level1;
-	
+    protected static final Context context;
 
 	static {
+        context = Context.createOpenCLSinglePrecisionContext();
         
 		CLFloatFunctionBuilder builder = new CLFloatFunctionBuilder();
 		
@@ -72,7 +73,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
   	 */
 	@Override
 	public Context getContext() {
-		return Context.createOpenCLSinglePrecisionContext();
+		return context;
 	}  	
     
 	/**

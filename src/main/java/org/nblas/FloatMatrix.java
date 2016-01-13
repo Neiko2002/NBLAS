@@ -68,20 +68,19 @@ public interface FloatMatrix {
     }
     
     public static FloatMatrix ones(int rows, int columns, Context context) {
-    	FloatMatrix matrix = zeros(rows, columns, context);
+    	FloatMatrix matrix = create(rows, columns, context);
     	matrix.setOne();
     	return matrix;
-    }
-    
+    }    
     
     public static FloatMatrix rand(int rows, int columns, Context context) {
-      	FloatMatrix matrix = zeros(rows, columns, context);
+      	FloatMatrix matrix = create(rows, columns, context);
     	matrix.randi();
     	return matrix;
     }
     
     public static FloatMatrix randn(int rows, int columns, Context context) {
-      	FloatMatrix matrix = zeros(rows, columns, context);
+      	FloatMatrix matrix = create(rows, columns, context);
     	matrix.randni();
     	return matrix;
     }

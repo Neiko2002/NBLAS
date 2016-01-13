@@ -20,8 +20,11 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
    
     protected static final CudaLevel1 level1;
+    protected static final Context context;
 
     static {
+    	context = Context.createCudaSinglePrecisionContext();
+    	
         CudaFloatFunctionBuilder builder = new CudaFloatFunctionBuilder();
                
         for (Subprogram<CUfunction> subprogram : CudaPredefined.kernels.values()) {
@@ -56,7 +59,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
 
 	@Override
 	public Context getContext() {
-		return Context.createOpenCLSinglePrecisionContext();
+		return context;
 	}
 	
     @Override
@@ -291,7 +294,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
  	 */
     @Override
     public FloatMatrix divColumnVector(FloatMatrix a, FloatMatrix columnVector, FloatMatrix result) {
-    	level1.addColumnVector((CudaFloatMatrix)a, (CudaFloatMatrix)columnVector, (CudaFloatMatrix)result);
+    	level1.divColumnVector((CudaFloatMatrix)a, (CudaFloatMatrix)columnVector, (CudaFloatMatrix)result);
     	return result;
     }
 
