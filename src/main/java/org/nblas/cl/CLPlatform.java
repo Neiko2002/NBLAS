@@ -4,15 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.jocl.CL;
 import org.jocl.Pointer;
-import org.jocl.cl_device_id;
 import org.jocl.cl_platform_id;
-import org.nblas.cl.CLDevice.CLDeviceType;
-
-import javafx.scene.shape.CircleBuilder;
 
 public class CLPlatform {
 

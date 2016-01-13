@@ -11,6 +11,7 @@ class CLFloatFunctionBuilder extends AFunctionBuilder<cl_kernel> {
 
 	protected Context context = Context.createOpenCLSinglePrecisionContext();
 	
+	@Override
     protected Subprogram<cl_kernel> buildFunction(String function, ArgumentType[] args) {
         StringBuilder builder = new StringBuilder();
         StringBuilder parameters = new StringBuilder();
@@ -30,7 +31,6 @@ class CLFloatFunctionBuilder extends AFunctionBuilder<cl_kernel> {
         }
 
         String functionName = generateFunctionName(function);
-
         builder.append("__kernel void " + functionName + "(");
         builder.append("__global float* result");
         builder.append(", const uint columns");

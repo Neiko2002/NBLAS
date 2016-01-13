@@ -1,11 +1,14 @@
 package org.nblas.generic;
 
+import org.nblas.cl.CLMatrix;
 
 public abstract class AMatrix {
-    private static final String abRowsMessage = "a Matrix rows is not b Matrix rows: ";
-    private static final String abColumnsMesage = "a Matrix columns is not b Matrix columns: ";
-    private static final String aResultRowsMessage = "a Matrix rows is not result Matrix rows: ";
-    private static final String aResultColumnsMessage = "a Matrix columns is not result Matrix columns: ";
+	
+	private static final String aNotScalar = "matrix 'a' is not scalar: ";
+    private static final String abRowsMessage = "matrix 'a' rows is not matrix 'b' rows: ";
+    private static final String abColumnsMesage = "matrix 'a' columns is not matrix 'b' columns: ";
+    private static final String aResultRowsMessage = "matrix 'a' rows is not matrix 'result' rows: ";
+    private static final String aResultColumnsMessage = "matrix 'a' columns is not matrix 'result' columns: ";
     
     protected int rows;
     protected int columns;
@@ -15,7 +18,11 @@ public abstract class AMatrix {
     public AMatrix(int rows, int columns) {
     	this.columns = columns;
 		this.rows = rows;
-		this.length = columns * rows;
+		this.length = columns*rows;
+	}
+    
+    public int getLength() {
+		return length;
 	}
     
     public int getRows() {
@@ -25,17 +32,12 @@ public abstract class AMatrix {
     public int getColumns() {
         return columns;
     }
-
-    public int getLength() {
-        return length;
-    }
-
     public boolean isColumnVector() {
-        return columns == 1;
+        return getColumns() == 1;
     }
 
     public boolean isRowVector() {
-        return rows == 1;
+        return getRows() == 1;
     }
 
     public boolean isScalar() {
@@ -52,50 +54,51 @@ public abstract class AMatrix {
     
     public abstract void free();  
     
-    
-    
 
     private static boolean isNotSameColumnSize(AMatrix a, AMatrix b) {
-        return a.columns != b.columns;
+        return a.getColumns() != b.getColumns();
     }
 
     private static boolean isNotSameRowSize(AMatrix a, AMatrix b) {
-        return a.rows != b.rows;
+        return a.getRows() != b.getRows();
     }
 
     protected static void isTransposeable(AMatrix a, AMatrix b) {
-        if (!(a.rows == b.columns && a.columns == b.rows))
+        if (!(a.getRows() == b.getColumns() && a.getColumns() == b.getRows()))
             throw new IllegalArgumentException("b Matrix does not fit transposed a in its size!");
     }
 
     protected static void isMmulable(AMatrix a, AMatrix b, AMatrix result) {
-        if (a.columns != b.rows)
-            throw new IllegalArgumentException("a Matrix columns is not b Matrix rows: " + a.columns + " != " + b.rows);
-        checkRowSize(a, result, " a Matrix rows is not result Matrix rows: " + a.rows + " !=  " + result.rows);
-        checkColumnSize(b, result, " b Matrix columns is not result Matrix columns: " + b.columns + " !=  " + result.columns);
+        if (a.getColumns() != b.getRows())
+            throw new IllegalArgumentException("a Matrix columns is not b Matrix rows: " + a.getColumns() + " != " + b.getRows());
+        checkRowSize(a, result, " a Matrix rows is not result Matrix rows: " + a.getRows() + " !=  " + result.getRows());
+        checkColumnSize(b, result, " b Matrix columns is not result Matrix columns: " + b.getColumns() + " !=  " + result.getColumns());
     }
-
 
     protected static void checkSameSize(AMatrix a, AMatrix b, AMatrix result) {
-        checkSizes(a, b, abRowsMessage + a.rows + " !=  " + b.rows, abColumnsMesage + a.columns + " !=  " + b.columns);
-        checkSizes(a, result, aResultRowsMessage + a.rows + " !=  " + result.rows, aResultColumnsMessage + a.columns + " !=  " + result.columns);
+        checkSizes(a, b, abRowsMessage + a.getRows() + " !=  " + b.getRows(), abColumnsMesage + a.getColumns() + " !=  " + b.getColumns());
+        checkSizes(a, result, aResultRowsMessage + a.getRows() + " !=  " + result.getRows(), aResultColumnsMessage + a.getColumns() + " !=  " + result.getColumns());
     }
-
+	
+    protected static void checkScalarSize(CLMatrix scalar) {
+		if (scalar.getRows() != 1 && scalar.getColumns() != 1)
+			throw new IllegalArgumentException(aNotScalar + scalar.getRows() + "," + scalar.getColumns());
+	}
 
     protected static void checkSameSize(AMatrix a, AMatrix result) {
-        checkSizes(a, result, aResultRowsMessage + a.rows + " !=  " + result.rows, aResultColumnsMessage + a.columns + " !=  " + result.columns);
+        checkSizes(a, result, aResultRowsMessage + a.getRows() + " !=  " + result.getRows(), aResultColumnsMessage + a.getColumns() + " !=  " + result.getColumns());
     }
 
     protected static void checkColumnVectorSize(AMatrix a, AMatrix b, AMatrix result) {
         if (!b.isColumnVector()) throw new IllegalArgumentException("b Matrix is not a column Vector");
-        checkRowSize(a, b, abRowsMessage + a.rows + " !=  " + b.rows);
-        checkSizes(a, result, aResultRowsMessage + a.rows + " !=  " + result.rows, aResultColumnsMessage + a.columns + " !=  " + result.columns);
+        checkRowSize(a, b, abRowsMessage + a.getRows() + " !=  " + b.getRows());
+        checkSizes(a, result, aResultRowsMessage + a.getRows() + " !=  " + result.getRows(), aResultColumnsMessage + a.getColumns() + " !=  " + result.getColumns());
     }
 
     protected static void checkRowVectorSize(AMatrix a, AMatrix b, AMatrix result) {
         if (!b.isRowVector()) throw new IllegalArgumentException("b Matrix is not a row Vector");
-        checkColumnSize(a, b, abColumnsMesage + a.columns + " !=  " + b.columns);
-        checkSizes(a, result, aResultRowsMessage + a.rows + " !=  " + result.rows, aResultColumnsMessage + a.columns + " !=  " + result.columns);
+        checkColumnSize(a, b, abColumnsMesage + a.getColumns() + " !=  " + b.getColumns());
+        checkSizes(a, result, aResultRowsMessage + a.getRows() + " !=  " + result.getRows(), aResultColumnsMessage + a.getColumns() + " !=  " + result.getColumns());
     }
 
     private static void checkSizes(AMatrix a, AMatrix result, String s, String s2) {

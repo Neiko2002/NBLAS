@@ -1,6 +1,7 @@
 package org.nblas.cl;
 
 import org.jocl.cl_kernel;
+import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.generic.AFunctionObject;
 import org.nblas.generic.Subprogram;
@@ -13,7 +14,6 @@ import org.nblas.generic.Subprogram;
  * Level 2 operations quadratic time and 
  * Level 3 operations cubic time.
  * 
- * TODO hier sollten nur ACLMatrix verwendet werden und alle Methoden sollten aus dem core arbeiten anstatt der CLFloatMatrix
  * 
  * @author Nico
  *
@@ -21,9 +21,21 @@ import org.nblas.generic.Subprogram;
 public abstract class CLBLASBase {
 	
 	private static final CLCore CORE = CLCore.getCore();
-	private static final CLFloatFunctionBuilder builder = new CLFloatFunctionBuilder();
     
-	protected static Subprogram<cl_kernel> buildPredefinedFunction(AFunctionObject functionObject, ArgumentType... argumentTypes) {
+	private final AFunctionBuilder<cl_kernel> builder;
+	
+    protected CLBLASBase(AFunctionBuilder<cl_kernel> builder) {
+		this.builder = builder;
+	}
+	
+    /**
+     * Läd und kompiliert eine Kernel
+     * 
+     * @param functionObject
+     * @param argumentTypes
+     * @return
+     */
+	protected Subprogram<cl_kernel> buildPredefinedFunction(AFunctionObject functionObject, ArgumentType... argumentTypes) {
 		Subprogram<cl_kernel> subprogram = builder.buildFunction(functionObject, argumentTypes);
 		subprogram.setCustom(false);
 		CORE.loadFromGeneratedSubprogram(subprogram);
@@ -36,8 +48,8 @@ public abstract class CLBLASBase {
      * @param subprogram
      * @param a
      */
-	protected static void runMatrixOperation(Subprogram<cl_kernel> subprogram, CLFloatMatrix a) {
-		CLFloatMatrix.runMatrixOperation(subprogram, a);
+	protected void runMatrixOperation(Subprogram<cl_kernel> subprogram, CLMatrix a) {
+		CLMatrix.runMatrixOperation(subprogram, a);
 	}
 	
     /**
@@ -49,8 +61,8 @@ public abstract class CLBLASBase {
      * @param b
      * @param result
      */
-	protected static void runMatrixMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-		CLFloatMatrix.runMatrixMatrixElementWiseOperation(subprogram, a, b, result);
+	protected void runMatrixMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix b, CLMatrix result) {
+		CLMatrix.runMatrixMatrixElementWiseOperation(subprogram, a, b, result);
 	}
 	
 	/**
@@ -62,8 +74,8 @@ public abstract class CLBLASBase {
 	 * @param scalar
 	 * @param result
 	 */
-	protected static void runMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLFloatMatrix a, CLFloatMatrix result) {
-		CLFloatMatrix.runMatrixElementWiseOperation(subprogram, a, result);
+	protected void runMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix result) {
+		CLMatrix.runMatrixElementWiseOperation(subprogram, a, result);
 	}
 	
 	/**
@@ -75,8 +87,8 @@ public abstract class CLBLASBase {
 	 * @param scalar
 	 * @param result
 	 */
-	protected static void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLFloatMatrix a, float scalar, CLFloatMatrix result) {
-	    CLFloatMatrix.runMatrixScalarElementWiseOperation(subprogram, a, scalar, result);
+	protected void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix scalar, CLMatrix result) {
+		CLMatrix.runMatrixScalarElementWiseOperation(subprogram, a, scalar, result);
 	}
 	
 	/**
@@ -88,8 +100,8 @@ public abstract class CLBLASBase {
 	 * @param row vector
 	 * @param result
 	 */
-	protected static void runMatrixRowVectorElementWiseOperation(Subprogram<cl_kernel> subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-		CLFloatMatrix.runMatrixRowVectorElementWiseOperation(subprogram, a, b, result);
+	protected void runMatrixRowVectorElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix b, CLMatrix result) {
+		CLMatrix.runMatrixRowVectorElementWiseOperation(subprogram, a, b, result);
 	}	
 	
 	
@@ -102,7 +114,7 @@ public abstract class CLBLASBase {
 	 * @param column vector
 	 * @param result
 	 */
-	protected static void runMatrixColumnVectorElementWiseOperation(Subprogram<cl_kernel> subprogram, CLFloatMatrix a, CLFloatMatrix b, CLFloatMatrix result) {
-		CLFloatMatrix.runMatrixColumnVectorElementWiseOperation(subprogram, a, b, result);
+	protected void runMatrixColumnVectorElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix b, CLMatrix result) {
+		CLMatrix.runMatrixColumnVectorElementWiseOperation(subprogram, a, b, result);
 	}	
 }

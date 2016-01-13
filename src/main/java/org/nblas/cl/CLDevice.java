@@ -10,9 +10,7 @@ import java.util.List;
 
 public class CLDevice {
 
-    public enum CLDeviceType {CPU, GPU}
-
-    ;
+    public enum CLDeviceType {CPU, GPU};
 
     private CLPlatform platform;
     private cl_device_id device_id;
@@ -63,7 +61,12 @@ public class CLDevice {
         sb.append("maxWorkGroupSize: " + maxWorkGroupSize + "\n");
         sb.append("maxWorkItemDimensions: " + maxWorkItemDimensions + "\n");
         sb.append("maxWorkItemSizes: " + Arrays.toString(maxWorkItemSizes) + "\n");
-
+        sb.append("available: " + available + "\n");
+        sb.append("extensions: " + extensions + "\n");
+        sb.append("openclVersion: " + openclVersion + "\n");
+        sb.append("profile: " + profile + "\n");
+        sb.append("version: " + version + "\n");
+        
         return sb.toString();
     }
 

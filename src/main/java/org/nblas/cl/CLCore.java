@@ -1,9 +1,6 @@
 package org.nblas.cl;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -14,7 +11,6 @@ import java.util.Objects;
 
 import org.jocl.CL;
 import org.jocl.CLException;
-import org.jocl.NativePointerObject;
 import org.jocl.Pointer;
 import org.jocl.Sizeof;
 import org.jocl.cl_command_queue;
@@ -24,10 +20,15 @@ import org.jocl.cl_device_id;
 import org.jocl.cl_event;
 import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
-import org.jocl.cl_platform_id;
 import org.jocl.cl_program;
 import org.nblas.generic.Subprogram;
 
+/**
+ * Matrix funktionen wie transpose() gehören in eine allgemeine CLMatrix Klasse und sgemm_nn sogar in die CLFloatMatrix.
+ * 
+ * @author Nico
+ *
+ */
 class CLCore {
 
     private static final CLCore CORE = new CLCore();
@@ -69,11 +70,6 @@ class CLCore {
 
         customSubprograms = new ArrayList<>();
         matrixSubprograms = new ArrayList<>();
-        
-        // lade alle Predefined Kernels
-        for (Subprogram<cl_kernel> subprogram : CLPredefined.getAllSubPrograms()) {
-        	loadFromGeneratedSubprogram(subprogram);
-        }
         
         sharedData = new float[computeUnits];
         sharedBuffer = mallocSinglePrecision(computeUnits);
@@ -332,7 +328,7 @@ class CLCore {
         // create program source from all kernels
         String programSource = builder.toString();
         matrixProgram = CL.clCreateProgramWithSource(context, 1, new String[]{programSource}, null, null);
-        int result = CL.clBuildProgram(matrixProgram, 0, null, null, null, null);
+        CL.clBuildProgram(matrixProgram, 0, null, null, null, null);
 
         for (Subprogram<cl_kernel> subprogram : matrixSubprograms) {
 	        String kernelName = subprogram.getProgramName();

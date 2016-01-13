@@ -9,6 +9,9 @@ import org.nblas.generic.Subprogram;
 
 /**
  * Created by Moritz on 7/7/2015.
+ * 
+ * TODO sind nur gültig für float Matrizen
+ * 
  */
 class CLPredefined {
 		
