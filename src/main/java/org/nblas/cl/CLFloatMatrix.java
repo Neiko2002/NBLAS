@@ -497,20 +497,28 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
         return CORE.reduce1D("sumFloats1D", mat.dataPointer, mat.clRows*mat.clColumns);
     }
     
-    public static float mean(CLFloatMatrix matrix) {
-        return matrix.sum(matrix) / matrix.length;
+    @Override
+    public float mean(FloatMatrix matrix) {
+    	CLFloatMatrix mat = (CLFloatMatrix) matrix;
+        return matrix.sum(matrix) / mat.length;
     }
 
-    public static float prod(CLFloatMatrix matrix) {
-        return CORE.reduce2D("productFloats", matrix.dataPointer, matrix.rows, matrix.columns, 1);
+    @Override
+    public float prod(FloatMatrix matrix) {
+    	CLFloatMatrix mat = (CLFloatMatrix) matrix;
+        return CORE.reduce2D("productFloats", mat.dataPointer, mat.rows, mat.columns, 1);
     }
 
-    public static float max(CLFloatMatrix matrix) {
-        return CORE.reduce2D("maxFloats", matrix.dataPointer, matrix.rows, matrix.columns, Float.NEGATIVE_INFINITY);
+    @Override
+    public float max(FloatMatrix matrix) {
+    	CLFloatMatrix mat = (CLFloatMatrix) matrix;
+        return CORE.reduce2D("maxFloats", mat.dataPointer, mat.rows, mat.columns, Float.NEGATIVE_INFINITY);
     }
 
-    public static float min(CLFloatMatrix matrix) {
-        return CORE.reduce2D("minFloats", matrix.dataPointer, matrix.rows, matrix.columns, Float.POSITIVE_INFINITY);
+    @Override
+    public float min(FloatMatrix matrix) {
+    	CLFloatMatrix mat = (CLFloatMatrix) matrix;
+        return CORE.reduce2D("minFloats", mat.dataPointer, mat.rows, mat.columns, Float.POSITIVE_INFINITY);
     }
     
     public static CLFloatMatrix testsum(CLFloatMatrix matrix) {

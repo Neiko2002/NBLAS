@@ -420,21 +420,25 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
         return CORE.reduce("sumFloats", mat.dataPointer, mat.getLength(), 0);
     }
 
+    @Override
     public float mean(FloatMatrix matrix) {
     	CudaMatrix mat = (CudaMatrix) matrix;
         return sum(matrix) / mat.getLength();
     }
 
+    @Override
     public float prod(FloatMatrix matrix) {
     	CudaMatrix mat = (CudaMatrix) matrix;
         return CORE.reduce("productFloats", mat.dataPointer, mat.getLength(), 1);
     }
 
+    @Override
     public float max(FloatMatrix matrix) {
     	CudaMatrix mat = (CudaMatrix) matrix;
         return CORE.reduce("maxFloats", mat.dataPointer, mat.getLength(), Float.NEGATIVE_INFINITY);
     }
 
+    @Override
     public float min(FloatMatrix matrix) {
     	CudaMatrix mat = (CudaMatrix) matrix;
         return CORE.reduce("minFloats", mat.dataPointer, mat.getLength(), Float.POSITIVE_INFINITY);

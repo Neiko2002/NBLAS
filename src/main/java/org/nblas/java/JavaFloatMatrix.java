@@ -327,7 +327,25 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrix {
 		return ((JavaFloatMatrix) a).matrix.sum();
 	}
 	
-	
+	@Override
+	public float mean(FloatMatrix a) {
+		return ((JavaFloatMatrix) a).matrix.mean();
+	}
+
+	@Override
+	public float prod(FloatMatrix a) {
+		return ((JavaFloatMatrix) a).matrix.prod();
+	}
+
+	@Override
+	public float max(FloatMatrix a) {
+		return ((JavaFloatMatrix) a).matrix.max();
+	}
+
+	@Override
+	public float min(FloatMatrix a) {
+		return ((JavaFloatMatrix) a).matrix.min();
+	}
 
 	// --------------------------------------- getter and setter methods ----------------------------------------
 
@@ -341,5 +359,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrix {
 	public FloatMatrix getSubMatrix(FloatMatrix src, FloatMatrix dst, int rowOffset,	int columnOffset) {
 		throw new NotImplementedException();
 	}
+
+	
 
 }

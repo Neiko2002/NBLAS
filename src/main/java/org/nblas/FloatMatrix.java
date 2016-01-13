@@ -1008,7 +1008,53 @@ public interface FloatMatrix {
 		return sum(this);
 	}
 	
+    /**
+     * expert only  
+     * 
+     * @param a
+     * @return
+     */
+	public float mean(FloatMatrix a);
 	
+	public default float mean() {
+		return mean(this);
+	}
+	
+	/**
+     * expert only  
+     * 
+     * @param a
+     * @return
+     */
+	public float prod(FloatMatrix a);
+	
+	public default float prod() {
+		return prod(this);
+	}
+	
+	/**
+     * expert only  
+     * 
+     * @param a
+     * @return
+     */
+	public float max(FloatMatrix a);
+	
+	public default float max() {
+		return max(this);
+	}
+	
+	/**
+     * expert only  
+     * 
+     * @param a
+     * @return
+     */
+	public float min(FloatMatrix a);
+	
+	public default float min() {
+		return min(this);
+	}
 	
 	
 	// --------------------------------------- getter and setter methods ----------------------------------------
