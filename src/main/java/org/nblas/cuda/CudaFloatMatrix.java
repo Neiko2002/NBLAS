@@ -4,10 +4,6 @@ package org.nblas.cuda;
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
 import org.nblas.cuda.blas.CudaLevel1;
-import org.nblas.function.ArgumentType;
-import org.nblas.function.common.Arg;
-import org.nblas.function.common.Value;
-import org.nblas.function.generic.AFunctionObject;
 import org.nblas.generic.Subprogram;
 
 import jcuda.Sizeof;
@@ -197,20 +193,34 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
     	return result;
     } 
     
-    public static void rsub(CudaFloatMatrix matrix, float scalar, CudaFloatMatrix result) {
+    /**
+  	 * @see FloatMatrix#rsub(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix rsub(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CudaMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
-    	level1.rsubScalar(matrix, b, result);
+    	level1.rsubScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
     	b.free();
+    	return result;
     }
 
-    public static void rsubColumnVector(CudaFloatMatrix matrix, CudaFloatMatrix columnVector, CudaFloatMatrix result) {
-    	level1.rsubColumnVector(matrix, columnVector, result);
+    /**
+  	 * @see FloatMatrix#rsubColumnVector(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix rsubColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.rsubColumnVector((CudaFloatMatrix)matrix, (CudaFloatMatrix)columnVector, (CudaFloatMatrix)result);
+    	return result;
     }
 
-    public static void rsubRowVector(CudaFloatMatrix matrix, CudaFloatMatrix rowVector, CudaFloatMatrix result) {
-    	level1.rsubRowVector(matrix, rowVector, result);
+    /**
+  	 * @see FloatMatrix#rsubRowVector(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix rsubRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.rsubRowVector((CudaFloatMatrix)matrix, (CudaFloatMatrix)rowVector, (CudaFloatMatrix)result);
+    	return result;
     }
-    
     
     
     // --------------------------------------- mul methods ----------------------------------------
@@ -306,6 +316,35 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
 
     public static void rdivRowVector(CudaFloatMatrix matrix, CudaFloatMatrix rowVector, CudaFloatMatrix result) {
     	level1.rdivRowVector(matrix, rowVector, result);
+    }
+    
+    /**
+  	 * @see FloatMatrix#rdiv(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix rdiv(FloatMatrix matrix, float scalar, FloatMatrix result) {
+    	CudaMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
+    	level1.rdivScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
+    	b.free();
+    	return result;
+    }
+
+    /**
+  	 * @see FloatMatrix#rdivColumnVector(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix rdivColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.rdivColumnVector((CudaFloatMatrix)matrix, (CudaFloatMatrix)columnVector, (CudaFloatMatrix)result);
+    	return result;
+    }
+
+    /**
+  	 * @see FloatMatrix#rdivRowVector(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix rdivRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.rdivRowVector((CudaFloatMatrix)matrix, (CudaFloatMatrix)rowVector, (CudaFloatMatrix)result);
+    	return result;
     }
     
     

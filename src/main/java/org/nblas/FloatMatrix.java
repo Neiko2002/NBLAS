@@ -191,9 +191,12 @@ public interface FloatMatrix {
     public FloatMatrix randni();
     
     
-	// --------------------------------------- add methods ----------------------------------------
+    // ----------------------------------------------------------------------------------------------------------
+    // --------------------------------------------- add methods ------------------------------------------------
+	// ----------------------------------------------------------------------------------------------------------
+    
     /**
-     * add element wise a to b and store in result 
+     * expert only
      * 
      * @param a
      * @param b
@@ -202,36 +205,6 @@ public interface FloatMatrix {
      */
     public FloatMatrix add(FloatMatrix a, FloatMatrix b, FloatMatrix result);    
     
-    /**
-     * add element wise the scalar to a and store in result 
-     * 
-     * @param a
-     * @param scalar
-     * @param result
-     * @return
-     */
-    public FloatMatrix add(FloatMatrix a, float scalar, FloatMatrix result);
-    
-    /**
-     * add column wise the column vector to a and store in result 
-     * 
-     * @param matrix
-     * @param columnVector
-     * @param result
-     * @return
-     */
-    public FloatMatrix addColumnVector(FloatMatrix a, FloatMatrix columnVector, FloatMatrix result);
-    
-    /**
-     * add row wise the row vector to a and store in result 
-     * 
-     * @param matrix
-     * @param rowVector
-     * @param result
-     * @return
-     */
-    public FloatMatrix addRowVector(FloatMatrix a, FloatMatrix rowVector, FloatMatrix result);
-
     public default FloatMatrix add(FloatMatrix b, FloatMatrix result) {
         add(this, b, result);
         return result;
@@ -243,10 +216,20 @@ public interface FloatMatrix {
     }
 
     public default FloatMatrix add(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrix.create(b.getRows(), b.getColumns(), b.getContext());
         add(this, b, result);
         return result;
     }
+    
+    /**
+     * expert only 
+     * 
+     * @param a
+     * @param scalar
+     * @param result
+     * @return
+     */
+    public FloatMatrix add(FloatMatrix a, float scalar, FloatMatrix result);
     
     public default FloatMatrix add(float scalar, FloatMatrix result) {
         add(this, scalar, result);
@@ -259,16 +242,71 @@ public interface FloatMatrix {
     }
 
     public default FloatMatrix add(float scalar) {
-    	FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
         add(this, scalar, result);
         return result;
     }
-        
     
     
-    // --------------------------------------- sub methods ----------------------------------------
     /**
-     * subtract element wise the a from b and store in result 
+     * expert only 
+     * 
+     * @param matrix
+     * @param columnVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix addColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result);
+    
+    public default FloatMatrix addColumnVector(FloatMatrix columnVector, FloatMatrix result) {
+    	addColumnVector(this, columnVector, result);
+        return result;
+    }    
+
+    public default FloatMatrix addiColumnVector(FloatMatrix columnVector) {
+    	addColumnVector(this, columnVector, this);
+        return this;
+    }  
+    
+    public default FloatMatrix addColumnVector(FloatMatrix columnVector) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	addColumnVector(this, columnVector, result);
+        return result;
+    } 
+    
+    /**
+     * expert only 
+     * 
+     * @param matrix
+     * @param rowVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix addRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result);
+    
+    public default FloatMatrix addRowVector(FloatMatrix rowVector, FloatMatrix result) {
+    	addRowVector(this, rowVector, result);
+        return result;
+    }    
+
+    public default FloatMatrix addiRowVector(FloatMatrix rowVector) {
+    	addRowVector(this, rowVector, this);
+        return this;
+    }  
+    
+    public default FloatMatrix addRowVector(FloatMatrix rowVector) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	addRowVector(this, rowVector, result);
+        return result;
+    } 
+    
+    
+    // ----------------------------------------------------------------------------------------------------------
+    // --------------------------------------------- sub methods ------------------------------------------------
+	// ----------------------------------------------------------------------------------------------------------
+    
+    /**
+     * expert only
      * 
      * @param a
      * @param b
@@ -277,20 +315,6 @@ public interface FloatMatrix {
      */
     public FloatMatrix sub(FloatMatrix a, FloatMatrix b, FloatMatrix result);    
     
-    /**
-     * subtract element wise the scalar from a and store in result 
-     * 
-     * @param a
-     * @param scalar
-     * @param result
-     * @return
-     */
-    public FloatMatrix sub(FloatMatrix a, float scalar, FloatMatrix result);
-    
-    public FloatMatrix subColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result);
-
-    public FloatMatrix subRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result);
-
     public default FloatMatrix sub(FloatMatrix b, FloatMatrix result) {
         sub(this, b, result);
         return result;
@@ -302,10 +326,20 @@ public interface FloatMatrix {
     }
 
     public default FloatMatrix sub(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrix.create(b.getRows(), b.getColumns(), b.getContext());
         sub(this, b, result);
         return result;
     }
+    
+    /**
+     * expert only 
+     * 
+     * @param a
+     * @param scalar
+     * @param result
+     * @return
+     */
+    public FloatMatrix sub(FloatMatrix a, float scalar, FloatMatrix result);
     
     public default FloatMatrix sub(float scalar, FloatMatrix result) {
         sub(this, scalar, result);
@@ -318,14 +352,146 @@ public interface FloatMatrix {
     }
 
     public default FloatMatrix sub(float scalar) {
-    	FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
         sub(this, scalar, result);
         return result;
     }
     
     
+    /**
+     * expert only 
+     * 
+     * @param matrix
+     * @param columnVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix subColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result);
     
-	// --------------------------------------- mul methods ----------------------------------------
+    public default FloatMatrix subColumnVector(FloatMatrix columnVector, FloatMatrix result) {
+    	subColumnVector(this, columnVector, result);
+        return result;
+    }    
+
+    public default FloatMatrix subiColumnVector(FloatMatrix columnVector) {
+    	subColumnVector(this, columnVector, this);
+        return this;
+    }  
+    
+    public default FloatMatrix subColumnVector(FloatMatrix columnVector) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	subColumnVector(this, columnVector, result);
+        return result;
+    } 
+    
+    /**
+     * expert only 
+     * 
+     * @param matrix
+     * @param rowVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix subRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result);
+    
+    public default FloatMatrix subRowVector(FloatMatrix rowVector, FloatMatrix result) {
+    	subRowVector(this, rowVector, result);
+        return result;
+    }    
+
+    public default FloatMatrix subiRowVector(FloatMatrix rowVector) {
+    	subRowVector(this, rowVector, this);
+        return this;
+    }  
+    
+    public default FloatMatrix subRowVector(FloatMatrix rowVector) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	subRowVector(this, rowVector, result);
+        return result;
+    } 
+    
+    /**
+     * expert only 
+     * 
+     * @param matrix
+     * @param scalar
+     * @param result
+     * @return
+     */
+    public FloatMatrix rsub(FloatMatrix matrix, float scalar, FloatMatrix result);
+    
+    public default FloatMatrix rsub(float scalar, FloatMatrix result) {
+    	rsub(this, scalar, result);
+        return result;
+    }    
+
+    public default FloatMatrix rsubi(float scalar) {
+    	rsub(this, scalar, this);
+        return this;
+    }  
+    
+    public default FloatMatrix rsub(float scalar) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	rsub(this, scalar, result);
+        return result;
+    } 
+
+    /**
+     * expert only 
+     * 
+     * @param matrix
+     * @param columnVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix rsubColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result);
+
+    public default FloatMatrix rsubColumnVector(FloatMatrix columnVector, FloatMatrix result) {
+    	rsubColumnVector(this, columnVector, result);
+        return result;
+    }    
+
+    public default FloatMatrix rsubiColumnVector(FloatMatrix columnVector) {
+    	rsubColumnVector(this, columnVector, this);
+        return this;
+    }  
+    
+    public default FloatMatrix rsubColumnVector(FloatMatrix columnVector) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	rsubColumnVector(this, columnVector, result);
+        return result;
+    } 
+    
+    /**
+     * expert only 
+     * 
+     * @param matrix
+     * @param rowVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix rsubRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result);
+    
+    public default FloatMatrix rsubRowVector(FloatMatrix rowVector, FloatMatrix result) {
+    	rsubRowVector(this, rowVector, result);
+        return result;
+    }    
+
+    public default FloatMatrix rsubiRowVector(FloatMatrix rowVector) {
+    	rsubRowVector(this, rowVector, this);
+        return this;
+    }  
+    
+    public default FloatMatrix rsubRowVector(FloatMatrix rowVector) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	rsubRowVector(this, rowVector, result);
+        return result;
+    } 
+    
+    // ----------------------------------------------------------------------------------------------------------
+    // --------------------------------------------- mul methods ------------------------------------------------
+	// ----------------------------------------------------------------------------------------------------------
+    
     /**
      * expert only
      * 
@@ -335,20 +501,6 @@ public interface FloatMatrix {
      * @return
      */
     public FloatMatrix mul(FloatMatrix a, FloatMatrix b, FloatMatrix result);    
-    
-    /**
-     * expert only 
-     * 
-     * @param a
-     * @param scalar
-     * @param result
-     * @return
-     */
-    public FloatMatrix mul(FloatMatrix a, float scalar, FloatMatrix result);
-
-    public FloatMatrix mulColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result);
-
-    public FloatMatrix mulRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result);
     
     public default FloatMatrix mul(FloatMatrix b, FloatMatrix result) {
         mul(this, b, result);
@@ -361,10 +513,20 @@ public interface FloatMatrix {
     }
 
     public default FloatMatrix mul(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrix.create(b.getRows(), b.getColumns(), b.getContext());
         mul(this, b, result);
         return result;
     }
+    
+    /**
+     * expert only 
+     * 
+     * @param a
+     * @param scalar
+     * @param result
+     * @return
+     */
+    public FloatMatrix mul(FloatMatrix a, float scalar, FloatMatrix result);
     
     public default FloatMatrix mul(float scalar, FloatMatrix result) {
         mul(this, scalar, result);
@@ -377,14 +539,69 @@ public interface FloatMatrix {
     }
 
     public default FloatMatrix mul(float scalar) {
-    	FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
         mul(this, scalar, result);
         return result;
     }
     
     
+    /**
+     * expert only 
+     * 
+     * @param matrix
+     * @param columnVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix mulColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result);
     
-    // --------------------------------------- div methods ----------------------------------------
+    public default FloatMatrix mulColumnVector(FloatMatrix columnVector, FloatMatrix result) {
+    	mulColumnVector(this, columnVector, result);
+        return result;
+    }    
+
+    public default FloatMatrix muliColumnVector(FloatMatrix columnVector) {
+    	mulColumnVector(this, columnVector, this);
+        return this;
+    }  
+    
+    public default FloatMatrix mulColumnVector(FloatMatrix columnVector) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	mulColumnVector(this, columnVector, result);
+        return result;
+    } 
+    
+    /**
+     * expert only 
+     * 
+     * @param matrix
+     * @param rowVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix mulRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result);
+    
+    public default FloatMatrix mulRowVector(FloatMatrix rowVector, FloatMatrix result) {
+    	mulRowVector(this, rowVector, result);
+        return result;
+    }    
+
+    public default FloatMatrix muliRowVector(FloatMatrix rowVector) {
+    	mulRowVector(this, rowVector, this);
+        return this;
+    }  
+    
+    public default FloatMatrix mulRowVector(FloatMatrix rowVector) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	mulRowVector(this, rowVector, result);
+        return result;
+    } 
+    
+    
+    // ----------------------------------------------------------------------------------------------------------
+    // --------------------------------------------- div methods ------------------------------------------------
+	// ----------------------------------------------------------------------------------------------------------
+    
     /**
      * expert only
      * 
@@ -394,20 +611,6 @@ public interface FloatMatrix {
      * @return
      */
     public FloatMatrix div(FloatMatrix a, FloatMatrix b, FloatMatrix result);    
-    
-    /**
-     * expert only 
-     * 
-     * @param a
-     * @param scalar
-     * @param result
-     * @return
-     */
-    public FloatMatrix div(FloatMatrix a, float scalar, FloatMatrix result);
-
-    public FloatMatrix divColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result);
-
-    public FloatMatrix divRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result);
     
     public default FloatMatrix div(FloatMatrix b, FloatMatrix result) {
         div(this, b, result);
@@ -420,10 +623,20 @@ public interface FloatMatrix {
     }
 
     public default FloatMatrix div(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrix.zeros(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrix.create(b.getRows(), b.getColumns(), b.getContext());
         div(this, b, result);
         return result;
     }
+    
+    /**
+     * expert only 
+     * 
+     * @param a
+     * @param scalar
+     * @param result
+     * @return
+     */
+    public FloatMatrix div(FloatMatrix a, float scalar, FloatMatrix result);
     
     public default FloatMatrix div(float scalar, FloatMatrix result) {
         div(this, scalar, result);
@@ -436,11 +649,141 @@ public interface FloatMatrix {
     }
 
     public default FloatMatrix div(float scalar) {
-    	FloatMatrix result = FloatMatrix.zeros(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
         div(this, scalar, result);
         return result;
     }
     
+    
+    /**
+     * expert only 
+     * 
+     * @param matrix
+     * @param columnVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix divColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result);
+    
+    public default FloatMatrix divColumnVector(FloatMatrix columnVector, FloatMatrix result) {
+    	divColumnVector(this, columnVector, result);
+        return result;
+    }    
+
+    public default FloatMatrix diviColumnVector(FloatMatrix columnVector) {
+    	divColumnVector(this, columnVector, this);
+        return this;
+    }  
+    
+    public default FloatMatrix divColumnVector(FloatMatrix columnVector) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	divColumnVector(this, columnVector, result);
+        return result;
+    } 
+    
+    /**
+     * expert only 
+     * 
+     * @param matrix
+     * @param rowVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix divRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result);
+    
+    public default FloatMatrix divRowVector(FloatMatrix rowVector, FloatMatrix result) {
+    	divRowVector(this, rowVector, result);
+        return result;
+    }    
+
+    public default FloatMatrix diviRowVector(FloatMatrix rowVector) {
+    	divRowVector(this, rowVector, this);
+        return this;
+    }  
+    
+    public default FloatMatrix divRowVector(FloatMatrix rowVector) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	divRowVector(this, rowVector, result);
+        return result;
+    } 
+    
+    /**
+     * expert only 
+     * 
+     * @param matrix
+     * @param scalar
+     * @param result
+     * @return
+     */
+    public FloatMatrix rdiv(FloatMatrix matrix, float scalar, FloatMatrix result);
+    
+    public default FloatMatrix rdiv(float scalar, FloatMatrix result) {
+    	rdiv(this, scalar, result);
+        return result;
+    }    
+
+    public default FloatMatrix rdivi(float scalar) {
+    	rdiv(this, scalar, this);
+        return this;
+    }  
+    
+    public default FloatMatrix rdiv(float scalar) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	rdiv(this, scalar, result);
+        return result;
+    } 
+
+    /**
+     * expert only 
+     * 
+     * @param matrix
+     * @param columnVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix rdivColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result);
+
+    public default FloatMatrix rdivColumnVector(FloatMatrix columnVector, FloatMatrix result) {
+    	rdivColumnVector(this, columnVector, result);
+        return result;
+    }    
+
+    public default FloatMatrix rdiviColumnVector(FloatMatrix columnVector) {
+    	rdivColumnVector(this, columnVector, this);
+        return this;
+    }  
+    
+    public default FloatMatrix rdivColumnVector(FloatMatrix columnVector) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	rdivColumnVector(this, columnVector, result);
+        return result;
+    } 
+    
+    /**
+     * expert only 
+     * 
+     * @param matrix
+     * @param rowVector
+     * @param result
+     * @return
+     */
+    public FloatMatrix rdivRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result);
+    
+    public default FloatMatrix rdivRowVector(FloatMatrix rowVector, FloatMatrix result) {
+    	rdivRowVector(this, rowVector, result);
+        return result;
+    }    
+
+    public default FloatMatrix rdiviRowVector(FloatMatrix rowVector) {
+    	rdivRowVector(this, rowVector, this);
+        return this;
+    }  
+    
+    public default FloatMatrix rdivRowVector(FloatMatrix rowVector) {
+    	FloatMatrix result = FloatMatrix.create(this.getRows(), this.getColumns(), this.getContext());
+    	rdivRowVector(this, rowVector, result);
+        return result;
+    } 
     
     // --------------------------------------- exp methods ----------------------------------------
     

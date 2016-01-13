@@ -133,14 +133,12 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrix {
     
 	@Override
 	public FloatMatrix addColumnVector(FloatMatrix a, FloatMatrix columnVector, FloatMatrix result) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException();
 	}
 
 	@Override
 	public FloatMatrix addRowVector(FloatMatrix a, FloatMatrix rowVector, FloatMatrix result) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException();
 	}
 
     // --------------------------------------- sub methods ----------------------------------------
@@ -157,18 +155,29 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrix {
     	return result;
     }
 	
-
-
 	@Override
 	public FloatMatrix subColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException();
 	}
 
 	@Override
 	public FloatMatrix subRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public FloatMatrix rsub(FloatMatrix matrix, float scalar, FloatMatrix result) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public FloatMatrix rsubColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public FloatMatrix rsubRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
+		throw new NotImplementedException();
 	}
 
     // --------------------------------------- mul methods ----------------------------------------
@@ -187,14 +196,12 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrix {
 
 	@Override
 	public FloatMatrix mulColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException();
 	}
 
 	@Override
 	public FloatMatrix mulRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException();
 	}
     
     // --------------------------------------- div methods ----------------------------------------
@@ -213,14 +220,27 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrix {
 
 	@Override
 	public FloatMatrix divColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException();
 	}
 
 	@Override
 	public FloatMatrix divRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException();
+	}
+	
+	@Override
+	public FloatMatrix rdiv(FloatMatrix matrix, float scalar, FloatMatrix result) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public FloatMatrix rdivColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public FloatMatrix rdivRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
+		throw new NotImplementedException();
 	}
     
     // --------------------------------------- mathematical functions ----------------------------------------
@@ -321,10 +341,5 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrix {
 	public FloatMatrix getSubMatrix(FloatMatrix src, FloatMatrix dst, int rowOffset,	int columnOffset) {
 		throw new NotImplementedException();
 	}
-    
-	
-	// -------------------------------------- other ----------------------------------
-
-
 
 }

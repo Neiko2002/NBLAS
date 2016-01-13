@@ -1352,7 +1352,7 @@ public class CudaFloatMatrixTest {
 
         // Berechnung auf der GPU
         CudaFloatMatrix matC_GPU = new CudaFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-        CudaFloatMatrix.rsub(matA_GPU, 2, matC_GPU);
+        matA_GPU.rsub(matA_GPU, 2, matC_GPU);
 
         // Ergebnisse vergleichen
         float[] result_CPU = matC_CPU.toArray();
@@ -1379,7 +1379,7 @@ public class CudaFloatMatrixTest {
         // Berechnung auf der GPU
         CudaFloatMatrix columnVector_GPU = new CudaFloatMatrix(matA_GPU.getRows(), 1, columnVector_arr);
         CudaFloatMatrix matC_GPU = new CudaFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-        CudaFloatMatrix.rsubColumnVector(matA_GPU, columnVector_GPU, matC_GPU);
+        matA_GPU.rsubColumnVector(matA_GPU, columnVector_GPU, matC_GPU);
 
         // Ergebnisse vergleichen
         float[] result_CPU = matC_CPU.toArray();
@@ -1407,7 +1407,7 @@ public class CudaFloatMatrixTest {
         // Berechnung auf der GPU
         CudaFloatMatrix rowVector_GPU = new CudaFloatMatrix(1, matA_GPU.getColumns(), rowVector_arr);
         CudaFloatMatrix matC_GPU = new CudaFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-        CudaFloatMatrix.rsubRowVector(matA_GPU, rowVector_GPU, matC_GPU);
+        matA_GPU.rsubRowVector(matA_GPU, rowVector_GPU, matC_GPU);
 
         // Ergebnisse vergleichen
         float[] result_CPU = matC_CPU.toArray();

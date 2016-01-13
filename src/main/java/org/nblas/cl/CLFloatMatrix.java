@@ -241,18 +241,33 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     	return result;
     } 
 
-    public static void rsub(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    /**
+  	 * @see FloatMatrix#rsub(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix rsub(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.rsubScalar(matrix, b, result);
+    	level1.rsubScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
     	b.free();
+    	return result;
     }
 
-    public static void rsubColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
-    	level1.rsubColumnVector(matrix, columnVector, result);
+    /**
+  	 * @see FloatMatrix#rsubColumnVector(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix rsubColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.rsubColumnVector((CLFloatMatrix)matrix, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
+    	return result;
     }
 
-    public static void rsubRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
-    	level1.rsubRowVector(matrix, rowVector, result);
+    /**
+  	 * @see FloatMatrix#rsubRowVector(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix rsubRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.rsubRowVector((CLFloatMatrix)matrix, (CLFloatMatrix)rowVector, (CLFloatMatrix)result);
+    	return result;
     }
 
     
@@ -303,8 +318,8 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
   	 * @see FloatMatrix#div(FloatMatrix, FloatMatrix, FloatMatrix)
   	 */
     @Override
-    public FloatMatrix div(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
-    	level1.div((CLFloatMatrix)matrixA, (CLFloatMatrix)matrixB, (CLFloatMatrix)result);
+    public FloatMatrix div(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
+    	level1.div((CLFloatMatrix)a, (CLFloatMatrix)b, (CLFloatMatrix)result);
     	return result;
     }
 
@@ -312,9 +327,9 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
   	 * @see FloatMatrix#div(FloatMatrix, float, FloatMatrix)
   	 */
     @Override
-    public FloatMatrix div(FloatMatrix matrix, float scalar, FloatMatrix result) {
+    public FloatMatrix div(FloatMatrix a, float scalar, FloatMatrix result) {
     	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.divScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
+    	level1.divScalar((CLFloatMatrix)a, b, (CLFloatMatrix)result);
     	b.free();
     	return result;
     }
@@ -337,18 +352,33 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     	return result;
     } 
     
-    public static void rdiv(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
+    /**
+  	 * @see FloatMatrix#rdiv(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix rdiv(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.rdivScalar(matrix, b, result);
+    	level1.rdivScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
     	b.free();
+    	return result;
     }
 
-    public static void rdivColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
-    	level1.rdivColumnVector(matrix, columnVector, result);
+    /**
+  	 * @see FloatMatrix#rdivColumnVector(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix rdivColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.rdivColumnVector((CLFloatMatrix)matrix, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
+    	return result;
     }
 
-    public static void rdivRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
-    	level1.rdivRowVector(matrix, rowVector, result);
+    /**
+  	 * @see FloatMatrix#rdivRowVector(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix rdivRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.rdivRowVector((CLFloatMatrix)matrix, (CLFloatMatrix)rowVector, (CLFloatMatrix)result);
+    	return result;
     }
 
     
