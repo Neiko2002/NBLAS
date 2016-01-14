@@ -51,11 +51,11 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
 		if (rows * columns != values.length)
 			throw new IllegalArgumentException("rows times columns " + (rows * columns) + " != " + "data length = " + values.length);
 
-        float[] clValues = getCLMatrix(rows, columns, values);
+        float[] clValues = getFloatArray2D(rows, columns, values);
 		this.dataPointer = CORE.malloc(clValues);
     }
     
-    private float[] getCLMatrix(int rows, int columns, float[] values) {
+    private float[] getFloatArray2D(int rows, int columns, float[] values) {
         float[] clValues = new float[clLength];
         for (int i = 0; i < columns; i++) {
             for (int j = 0; j < rows; j++) {
@@ -177,7 +177,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
 	 */
     @Override
     public FloatMatrix add(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.addScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
     	b.free();
     	return result;
@@ -218,7 +218,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
 	 */
     @Override
     public FloatMatrix sub(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.subScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
     	b.free();
     	return result;
@@ -247,7 +247,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
   	 */
     @Override
     public FloatMatrix rsub(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.rsubScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
     	b.free();
     	return result;
@@ -288,7 +288,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
   	 */
     @Override
     public FloatMatrix mul(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.mulScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
     	b.free();
     	return result;
@@ -329,7 +329,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
   	 */
     @Override
     public FloatMatrix div(FloatMatrix a, float scalar, FloatMatrix result) {
-    	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.divScalar((CLFloatMatrix)a, b, (CLFloatMatrix)result);
     	b.free();
     	return result;
@@ -340,7 +340,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
  	 */
     @Override
     public FloatMatrix divColumnVector(FloatMatrix a, FloatMatrix columnVector, FloatMatrix result) {
-    	level1.addColumnVector((CLFloatMatrix)a, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
+    	level1.divColumnVector((CLFloatMatrix)a, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
     	return result;
     }
 
@@ -358,7 +358,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
   	 */
     @Override
     public FloatMatrix rdiv(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.rdivScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
     	b.free();
     	return result;
@@ -430,20 +430,233 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
   	 */
     @Override
     public FloatMatrix gt(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.gtScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
     	b.free();
     	return result;
     }
-
-    public static void gtColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
-    	level1.gtColumnVector(matrix, columnVector, result);
+    
+    /**
+  	 * @see FloatMatrix#gtColumnVector(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix gtColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.gtColumnVector((CLFloatMatrix)matrix, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
+    	return result;
     }
 
-    public static void gtRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
-    	level1.gtRowVector(matrix, rowVector, result);
+    /**
+  	 * @see FloatMatrix#gtRowVector(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix gtRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.gtRowVector((CLFloatMatrix)matrix, (CLFloatMatrix)rowVector, (CLFloatMatrix)result);
+    	return result;
     }   
         
+    
+    // --------------------------------------- greater or equal than ----------------------------------------
+    
+    /**
+  	 * @see FloatMatrix#ge(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix ge(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
+    	level1.ge((CLFloatMatrix)matrixA, (CLFloatMatrix)matrixB, (CLFloatMatrix)result);
+    	return result;
+    }
+    
+    /**
+  	 * @see FloatMatrix#ge(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix ge(FloatMatrix matrix, float scalar, FloatMatrix result) {
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	level1.geScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
+    	b.free();
+    	return result;
+    }
+    
+    /**
+  	 * @see FloatMatrix#geColumnVector(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix geColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.geColumnVector((CLFloatMatrix)matrix, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
+    	return result;
+    }
+
+    /**
+  	 * @see FloatMatrix#geRowVector(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix geRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.geRowVector((CLFloatMatrix)matrix, (CLFloatMatrix)rowVector, (CLFloatMatrix)result);
+    	return result;
+    }  
+    
+    // --------------------------------------- less than ----------------------------------------
+    
+    /**
+  	 * @see FloatMatrix#lt(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix lt(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
+    	level1.lt((CLFloatMatrix)matrixA, (CLFloatMatrix)matrixB, (CLFloatMatrix)result);
+    	return result;
+    }
+    
+    /**
+  	 * @see FloatMatrix#lt(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix lt(FloatMatrix matrix, float scalar, FloatMatrix result) {
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	level1.ltScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
+    	b.free();
+    	return result;
+    }
+    
+    /**
+  	 * @see FloatMatrix#ltColumnVector(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix ltColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.ltColumnVector((CLFloatMatrix)matrix, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
+    	return result;
+    }
+
+    /**
+  	 * @see FloatMatrix#ltRowVector(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix ltRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.ltRowVector((CLFloatMatrix)matrix, (CLFloatMatrix)rowVector, (CLFloatMatrix)result);
+    	return result;
+    }   
+    
+    
+    // --------------------------------------- less or equal than ----------------------------------------
+    
+    /**
+  	 * @see FloatMatrix#le(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix le(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
+    	level1.le((CLFloatMatrix)matrixA, (CLFloatMatrix)matrixB, (CLFloatMatrix)result);
+    	return result;
+    }
+    
+    /**
+  	 * @see FloatMatrix#le(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix le(FloatMatrix matrix, float scalar, FloatMatrix result) {
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	level1.leScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
+    	b.free();
+    	return result;
+    }
+    
+    /**
+  	 * @see FloatMatrix#leColumnVector(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix leColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.leColumnVector((CLFloatMatrix)matrix, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
+    	return result;
+    }
+
+    /**
+  	 * @see FloatMatrix#leRowVector(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix leRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.leRowVector((CLFloatMatrix)matrix, (CLFloatMatrix)rowVector, (CLFloatMatrix)result);
+    	return result;
+    }   
+    
+    
+	// --------------------------------------- equal to ----------------------------------------
+    
+    /**
+  	 * @see FloatMatrix#eq(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix eq(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
+    	level1.eq((CLFloatMatrix)matrixA, (CLFloatMatrix)matrixB, (CLFloatMatrix)result);
+    	return result;
+    }
+    
+    /**
+  	 * @see FloatMatrix#eq(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix eq(FloatMatrix matrix, float scalar, FloatMatrix result) {
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	level1.eqScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
+    	b.free();
+    	return result;
+    }
+    
+    /**
+  	 * @see FloatMatrix#eqColumnVector(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix eqColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.eqColumnVector((CLFloatMatrix)matrix, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
+    	return result;
+    }
+
+    /**
+  	 * @see FloatMatrix#eqRowVector(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix eqRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.eqRowVector((CLFloatMatrix)matrix, (CLFloatMatrix)rowVector, (CLFloatMatrix)result);
+    	return result;
+    }   
+    
+    
+    // --------------------------------------- not equal to ----------------------------------------
+    
+    /**
+  	 * @see FloatMatrix#ne(FloatMatrix, FloatMatrix, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix ne(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
+    	level1.ne((CLFloatMatrix)matrixA, (CLFloatMatrix)matrixB, (CLFloatMatrix)result);
+    	return result;
+    }
+    
+    /**
+  	 * @see FloatMatrix#ne(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix ne(FloatMatrix matrix, float scalar, FloatMatrix result) {
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	level1.neScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
+    	b.free();
+    	return result;
+    }
+    
+    /**
+  	 * @see FloatMatrix#neColumnVector(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix neColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
+    	level1.neColumnVector((CLFloatMatrix)matrix, (CLFloatMatrix)columnVector, (CLFloatMatrix)result);
+    	return result;
+    }
+
+    /**
+  	 * @see FloatMatrix#neRowVector(FloatMatrix, float, FloatMatrix)
+  	 */
+    @Override
+    public FloatMatrix neRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
+    	level1.neRowVector((CLFloatMatrix)matrix, (CLFloatMatrix)rowVector, (CLFloatMatrix)result);
+    	return result;
+    }   
     
     // --------------------------------------- matrix multiplication ----------------------------------------    
 
@@ -612,13 +825,13 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     
     // --------------------------------------- implementation ----------------------------------------
 
-    
-    public CLFloatMatrix repmat(int rowTimes, int columnTimes) {
-        CLFloatMatrix result = new CLFloatMatrix(rows * rowTimes, columns * columnTimes);
+    @Override
+    public FloatMatrix repmat(FloatMatrix source, FloatMatrix destination, int rowMultiplicator, int columnMultiplicator) {
+        CLFloatMatrix result = (CLFloatMatrix)destination;
         CORE.repmat(dataPointer, result.dataPointer,
                 result.clRows, result.clColumns,
                 result.rows, result.columns, rows, columns, clRows);
-        return result;
+        return destination;
     }
 
     
@@ -629,7 +842,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     }
     
     public static void ge(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
-    	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.geScalar(matrix, b, result);
     	b.free();
     }
@@ -650,7 +863,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     }
     
     public static void lt(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
-    	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.ltScalar(matrix, b, result);
     	b.free();
     }
@@ -671,7 +884,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     }
     
     public static void le(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
-    	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.leScalar(matrix, b, result);
     	b.free();
     }
@@ -692,7 +905,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     }
     
     public static void eq(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
-    	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.eqScalar(matrix, b, result);
     	b.free();
     }
@@ -713,7 +926,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     }
     
     public static void ne(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
-    	CLMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
+    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.neScalar(matrix, b, result);
     	b.free();
     }
@@ -724,6 +937,30 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
 
     public static void neRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
     	level1.neRowVector(matrix, rowVector, result);
-    } 
+    }
+
+//	@Override
+//	public FloatMatrix getRow(FloatMatrix src, FloatMatrix row, int rowIndex) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public FloatMatrix getColumn(FloatMatrix src, FloatMatrix column, int columnIndex) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public FloatMatrix setRow(FloatMatrix dst, FloatMatrix row, int rowIndex) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	@Override
+//	public FloatMatrix setColumn(FloatMatrix dst, FloatMatrix column, int columnIndex) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	} 
  
 }

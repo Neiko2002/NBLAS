@@ -411,6 +411,9 @@ public class CLLevel1 extends CLBLASBase {
     	runMatrixRowVectorElementWiseOperation(NE_R_VECTOR, matrix, rowVector, result);
     } 
     
+    
+    
+    
     public void setOne(CLMatrix matrix) {
         runMatrixOperation(SET_ONE, matrix);
     }

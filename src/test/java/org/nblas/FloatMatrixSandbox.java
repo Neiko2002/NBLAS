@@ -3,13 +3,30 @@ package org.nblas;
 import java.util.Random;
 
 import org.junit.Assert;
+import org.junit.Test;
 
 public class FloatMatrixSandbox extends FloatMatrixTest {
 
+	
 	public static void main(String[] args) throws Exception {
 		FloatMatrixSandbox testSuit = new FloatMatrixSandbox();
+		testSuit.context = Context.createOpenCLSinglePrecisionContext();
 		testSuit.setUp();
 		testSuit.sumWithDifferentSizesTest();
+	}
+	
+	public void addRowVectorTest() {
+				
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.addRowVector(rowVector_CPU);
+		
+		// Berechnung auf der GPU
+		
+		FloatMatrix m = FloatMatrix.zeros(matA_GPU.getRows(), matA_GPU.getColumns(), context);
+		FloatMatrix matC_GPU = m.addRowVector(rowVector_GPU);		
+		
+		// Ergebnisse vergleichen 
+		assertAndFree(matC_CPU, matC_GPU);
 	}
 	
 	public void sumWithDifferentSizesTest() {
