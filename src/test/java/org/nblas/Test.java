@@ -163,9 +163,9 @@ public class Test {
         System.out.println(test.sum());
         System.out.println(gpuTest.sum(gpuTest));
         System.out.println(test.max());
-        System.out.println(CLFloatMatrix.max(gpuTest));
+        System.out.println(gpuTest.max(gpuTest));
         System.out.println(test.min());
-        System.out.println(CLFloatMatrix.min(gpuTest));
+        System.out.println(gpuTest.min(gpuTest));
 
     }
 }

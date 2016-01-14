@@ -63,30 +63,30 @@ public class CLFloatMatrixTest {
 		matB_GPU.free();
 	}
 
-	@Test
-	public void memoryLeakTest() {
-		
-		CLFloatMatrix ones_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		ones_GPU.setOne();
-		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
-		matC_GPU.setZero();
-		
-		Instant start = Instant.now();
-		for (int i = 0; i < runs; i++)
-			matA_GPU.add(matC_GPU, ones_GPU, matC_GPU);
-		System.out.println("took "+Duration.between(start, Instant.now()));
-		
-		// überprüfe die Richtigkeit
-		org.jblas.FloatMatrix matC_CPU = org.jblas.FloatMatrix.ones(matA_CPU.getRows(), matA_CPU.getColumns()).muli(runs);
-
-		float[] result_CPU = matC_CPU.toArray();
-		float[] result_GPU = matC_GPU.toArray();
-		
-		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
-
-		matC_GPU.free();
-		ones_GPU.free();
-	}
+//	@Test
+//	public void memoryLeakTest() {
+//		
+//		CLFloatMatrix ones_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+//		ones_GPU.setOne();
+//		CLFloatMatrix matC_GPU = new CLFloatMatrix(matA_GPU.getRows(), matA_GPU.getColumns());
+//		matC_GPU.setZero();
+//		
+//		Instant start = Instant.now();
+//		for (int i = 0; i < runs; i++)
+//			matA_GPU.add(matC_GPU, ones_GPU, matC_GPU);
+//		System.out.println("took "+Duration.between(start, Instant.now()));
+//		
+//		// überprüfe die Richtigkeit
+//		org.jblas.FloatMatrix matC_CPU = org.jblas.FloatMatrix.ones(matA_CPU.getRows(), matA_CPU.getColumns()).muli(runs);
+//
+//		float[] result_CPU = matC_CPU.toArray();
+//		float[] result_GPU = matC_GPU.toArray();
+//		
+//		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+//
+//		matC_GPU.free();
+//		ones_GPU.free();
+//	}
 	
 	@Test
 	public void repmatTest() {
@@ -957,7 +957,7 @@ public class CLFloatMatrixTest {
 		float max_CPU = matA_CPU.max();
 		
 		// Berechnung auf der GPU
-		float max_GPU = CLFloatMatrix.max(matA_GPU);
+		float max_GPU = matA_GPU.max();
 		
 		Assert.assertEquals(max_CPU, max_GPU, 0.1f);
 	}
@@ -969,7 +969,7 @@ public class CLFloatMatrixTest {
 		float mean_CPU = matA_CPU.mean();
 		
 		// Berechnung auf der GPU
-		float mean_GPU = CLFloatMatrix.mean(matA_GPU);
+		float mean_GPU = matA_GPU.mean();
 		
 		Assert.assertEquals(mean_CPU, mean_GPU, 0.1f);
 	}
@@ -981,7 +981,7 @@ public class CLFloatMatrixTest {
 		float min_CPU = matA_CPU.min();
 		
 		// Berechnung auf der GPU
-		float min_GPU = CLFloatMatrix.min(matA_GPU);
+		float min_GPU = matA_GPU.min();
 		
 		Assert.assertEquals(min_CPU, min_GPU, 0.1f);
 	}
@@ -1153,7 +1153,7 @@ public class CLFloatMatrixTest {
 		float prod_CPU = matA_CPU.prod();
 		
 		// Berechnung auf der GPU
-		float prod_GPU = CLFloatMatrix.prod(matA_GPU);
+		float prod_GPU = matA_GPU.prod();
 		
 		Assert.assertEquals(prod_CPU, prod_GPU, 0.1f);
 	}
