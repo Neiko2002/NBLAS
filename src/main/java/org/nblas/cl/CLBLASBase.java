@@ -35,8 +35,8 @@ public abstract class CLBLASBase {
      * @param argumentTypes
      * @return
      */
-	protected Subprogram<cl_kernel> buildPredefinedFunction(AFunctionObject functionObject, ArgumentType... argumentTypes) {
-		Subprogram<cl_kernel> subprogram = builder.buildFunction(functionObject, argumentTypes);
+	protected Subprogram<cl_kernel> buildPredefinedFunction(String name, AFunctionObject functionObject, ArgumentType... argumentTypes) {
+		Subprogram<cl_kernel> subprogram = builder.buildFunction(name, functionObject, argumentTypes);
 		subprogram.setCustom(false);
 		CORE.loadFromGeneratedSubprogram(subprogram);
 		return subprogram;

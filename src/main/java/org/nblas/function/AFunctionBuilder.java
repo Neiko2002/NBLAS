@@ -12,27 +12,27 @@ import org.nblas.generic.Subprogram;
 
 
 public abstract class AFunctionBuilder<K> {
-    private HashSet<Integer> argumentsTest;
-    protected String functionName;
 
-    public AFunctionBuilder() {
-        argumentsTest = new HashSet<>();
-    }
+    public Subprogram<K> buildFunction(String name, AFunctionObject func, ArgumentType... argumentTypes) {
 
-    public Subprogram<K> buildFunction(AFunctionObject func, ArgumentType... argumentTypes) {
-
-        argumentsTest.clear();
+    	HashSet<Integer> argumentsTest = new HashSet<>();
         AFunctionObject function = new Identity(func);
-        checkFunctionArgs(function, argumentTypes.length);
+        checkFunctionArgs(function, argumentTypes.length, argumentsTest);
         if (argumentsTest.size() != argumentTypes.length)
             throw new IllegalArgumentException("argument count or numeration is not equal to the argument types' list");
         buildContextBasedFunctions(function, getContext());
 
-        return buildFunction(function.toString(), argumentTypes);
+        return buildFunction(name, function.toString(), argumentTypes);
     }
 
-    protected abstract Subprogram<K> buildFunction(String function, ArgumentType[] args);
+    protected abstract Subprogram<K> buildFunction(String name, String function, ArgumentType[] args);
 
+    protected String generateFunctionName(String basename, ArgumentType[] args) {
+        for (ArgumentType argumentType : args)
+        	basename += argumentType.getShortName();
+        return basename;
+    }
+    
     protected String generateFunctionName(String function) {
         StringBuilder builder = new StringBuilder();
         char[] chars = function.toCharArray();
@@ -41,10 +41,6 @@ public abstract class AFunctionBuilder<K> {
         }
 
         return builder.toString();
-    }
-
-    public String getFunctionName() {
-        return functionName;
     }
 
     private void transform(StringBuilder builder, char aChar) {
@@ -114,7 +110,7 @@ public abstract class AFunctionBuilder<K> {
         }
     }
 
-    private void checkFunctionArgs(AFunctionObject function, int argsCount) {
+    private void checkFunctionArgs(AFunctionObject function, int argsCount, HashSet<Integer> argumentsTest) {
         if (function instanceof Arg) {
 
             int argNumber = ((Arg) function).getArgNumber();
@@ -126,7 +122,7 @@ public abstract class AFunctionBuilder<K> {
         }
 
         for (AFunctionObject functionObject : function.getChildren()) {
-            checkFunctionArgs(functionObject, argsCount);
+            checkFunctionArgs(functionObject, argsCount, argumentsTest);
         }
 
     }

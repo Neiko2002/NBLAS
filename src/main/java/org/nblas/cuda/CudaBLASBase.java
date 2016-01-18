@@ -36,8 +36,8 @@ public abstract class CudaBLASBase {
      * @param argumentTypes
      * @return
      */
-	protected Subprogram<CUfunction> buildPredefinedFunction(AFunctionObject functionObject, ArgumentType... argumentTypes) {
-		Subprogram<CUfunction> subprogram = builder.buildFunction(functionObject, argumentTypes);
+	protected Subprogram<CUfunction> buildPredefinedFunction(String name, AFunctionObject functionObject, ArgumentType... argumentTypes) {
+		Subprogram<CUfunction> subprogram = builder.buildFunction(name, functionObject, argumentTypes);
 		subprogram.setCustom(false);
 		CORE.loadFromGeneratedSubprogram(subprogram);
 		return subprogram;

@@ -13,7 +13,7 @@ class CudaFloatFunctionBuilder extends AFunctionBuilder<CUfunction> {
 	protected Context context = Context.createCudaSinglePrecisionContext();
 
 	@Override
-    protected Subprogram<CUfunction> buildFunction(String function, ArgumentType[] args) {
+    protected Subprogram<CUfunction> buildFunction(String name, String function, ArgumentType[] args) {
         StringBuilder builder = new StringBuilder();
         StringBuilder parameters = new StringBuilder();
         for (int i = 0; i < args.length; i++) {
@@ -30,7 +30,8 @@ class CudaFloatFunctionBuilder extends AFunctionBuilder<CUfunction> {
             }
             parameters.append(", float* arg" + String.format("%02d", i));
         }
-        functionName = "f" + generateFunctionName(function);
+        String functionName = generateFunctionName(name, args);
+//      String functionName = "f" + generateFunctionName(function);
         builder.append("extern \"C\"\n\n__global__\nvoid " + functionName + "(");
         builder.append("float* result");
         builder.append(", const unsigned int columns");

@@ -1,8 +1,5 @@
 package org.nblas.cuda;
 
-import org.nblas.function.AFunctionBuilder;
-import org.nblas.function.ArgumentType;
-import org.nblas.function.generic.AFunctionObject;
 import org.nblas.generic.AMatrix;
 import org.nblas.generic.Subprogram;
 
@@ -18,13 +15,6 @@ public class CudaMatrix extends AMatrix {
 
 	protected static final CudaCore CORE = CudaCore.getCore();
 	
-	protected static Subprogram<CUfunction> buildPredefinedFunction(AFunctionBuilder<CUfunction> builder, AFunctionObject functionObject, ArgumentType... argumentTypes) {
-        Subprogram<CUfunction> subprogram = builder.buildFunction(functionObject, argumentTypes);
-        subprogram.setCustom(false);
-        CORE.loadFromGeneratedSubprogram(subprogram);
-        return subprogram;
-    }
-		
 	protected Pointer dataPointer;
 	  
 	protected CudaMatrix(int rows, int columns) {

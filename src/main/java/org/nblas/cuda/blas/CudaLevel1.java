@@ -105,92 +105,92 @@ public class CudaLevel1 extends CudaBLASBase {
 		
         // add Functions
         AFunctionObject add = new Add(new Arg(0), new Arg(1));
-        ADD_MATRIX = buildPredefinedFunction(add, ArgumentType.MATRIX, ArgumentType.MATRIX);
-        ADD_SCALAR = buildPredefinedFunction(add, ArgumentType.MATRIX, ArgumentType.SCALAR);
-        ADD_R_VECTOR = buildPredefinedFunction(add, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
-        ADD_C_VECTOR = buildPredefinedFunction(add, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
+        ADD_MATRIX = buildPredefinedFunction("add", add, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        ADD_SCALAR = buildPredefinedFunction("add", add, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        ADD_R_VECTOR = buildPredefinedFunction("add", add, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        ADD_C_VECTOR = buildPredefinedFunction("add", add, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
         
         AFunctionObject mul = new Mul(new Arg(0), new Arg(1));
-        MUL_MATRIX = buildPredefinedFunction(mul, ArgumentType.MATRIX, ArgumentType.MATRIX);
-        MUL_SCALAR = buildPredefinedFunction(mul, ArgumentType.MATRIX, ArgumentType.SCALAR);
-        MUL_R_VECTOR = buildPredefinedFunction(mul, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
-        MUL_C_VECTOR = buildPredefinedFunction(mul, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
+        MUL_MATRIX = buildPredefinedFunction("mul", mul, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        MUL_SCALAR = buildPredefinedFunction("mul", mul, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        MUL_R_VECTOR = buildPredefinedFunction("mul", mul, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        MUL_C_VECTOR = buildPredefinedFunction("mul", mul, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
         AFunctionObject sub = new Sub(new Arg(0), new Arg(1));
-        SUB_MATRIX = buildPredefinedFunction(sub, ArgumentType.MATRIX, ArgumentType.MATRIX);
-        SUB_SCALAR = buildPredefinedFunction(sub, ArgumentType.MATRIX, ArgumentType.SCALAR);
-        SUB_R_VECTOR = buildPredefinedFunction(sub, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
-        SUB_C_VECTOR = buildPredefinedFunction(sub, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
+        SUB_MATRIX = buildPredefinedFunction("sub", sub, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        SUB_SCALAR = buildPredefinedFunction("sub", sub, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        SUB_R_VECTOR = buildPredefinedFunction("sub", sub, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        SUB_C_VECTOR = buildPredefinedFunction("sub", sub, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
         AFunctionObject rsub = new Sub(new Arg(1), new Arg(0));
-        RSUB_SCALAR = buildPredefinedFunction(rsub, ArgumentType.MATRIX, ArgumentType.SCALAR);
-        RSUB_R_VECTOR = buildPredefinedFunction(rsub, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
-        RSUB_C_VECTOR = buildPredefinedFunction(rsub, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
+        RSUB_SCALAR = buildPredefinedFunction("rsub", rsub, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        RSUB_R_VECTOR = buildPredefinedFunction("rsub", rsub, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        RSUB_C_VECTOR = buildPredefinedFunction("rsub", rsub, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
         AFunctionObject div = new Div(new Arg(0), new Arg(1));
-        DIV_MATRIX = buildPredefinedFunction(div, ArgumentType.MATRIX, ArgumentType.MATRIX);
-        DIV_SCALAR = buildPredefinedFunction(div, ArgumentType.MATRIX, ArgumentType.SCALAR);
-        DIV_R_VECTOR = buildPredefinedFunction(div, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
-        DIV_C_VECTOR = buildPredefinedFunction(div, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
+        DIV_MATRIX = buildPredefinedFunction("div", div, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        DIV_SCALAR = buildPredefinedFunction("div", div, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        DIV_R_VECTOR = buildPredefinedFunction("div", div, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        DIV_C_VECTOR = buildPredefinedFunction("div", div, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
 
         AFunctionObject rdiv = new Div(new Arg(1), new Arg(0));
-        RDIV_SCALAR = buildPredefinedFunction(rdiv, ArgumentType.MATRIX, ArgumentType.SCALAR);
-        RDIV_R_VECTOR = buildPredefinedFunction(rdiv, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
-        RDIV_C_VECTOR = buildPredefinedFunction(rdiv, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
+        RDIV_SCALAR = buildPredefinedFunction("rdiv", rdiv, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        RDIV_R_VECTOR = buildPredefinedFunction("rdiv", rdiv, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        RDIV_C_VECTOR = buildPredefinedFunction("rdiv", rdiv, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
         
         AFunctionObject greaterThan = new Comparator(">", new Arg(0), new Arg(1));
-        GT_MATRIX = buildPredefinedFunction(greaterThan, ArgumentType.MATRIX, ArgumentType.MATRIX);
-        GT_SCALAR = buildPredefinedFunction(greaterThan, ArgumentType.MATRIX, ArgumentType.SCALAR);
-        GT_R_VECTOR = buildPredefinedFunction(greaterThan, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
-        GT_C_VECTOR = buildPredefinedFunction(greaterThan, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);                
+        GT_MATRIX = buildPredefinedFunction("gt", greaterThan, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        GT_SCALAR = buildPredefinedFunction("gt", greaterThan, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        GT_R_VECTOR = buildPredefinedFunction("gt", greaterThan, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        GT_C_VECTOR = buildPredefinedFunction("gt", greaterThan, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);                
         
         AFunctionObject greaterEqual = new Comparator(">=", new Arg(0), new Arg(1));
-        GE_MATRIX = buildPredefinedFunction(greaterEqual, ArgumentType.MATRIX, ArgumentType.MATRIX);
-        GE_SCALAR = buildPredefinedFunction(greaterEqual, ArgumentType.MATRIX, ArgumentType.SCALAR);
-        GE_R_VECTOR = buildPredefinedFunction(greaterEqual, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
-        GE_C_VECTOR = buildPredefinedFunction(greaterEqual, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
+        GE_MATRIX = buildPredefinedFunction("ge", greaterEqual, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        GE_SCALAR = buildPredefinedFunction("ge", greaterEqual, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        GE_R_VECTOR = buildPredefinedFunction("ge", greaterEqual, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        GE_C_VECTOR = buildPredefinedFunction("ge", greaterEqual, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
         
         AFunctionObject lowerThan = new Comparator("<", new Arg(0), new Arg(1));
-        LT_MATRIX = buildPredefinedFunction(lowerThan, ArgumentType.MATRIX, ArgumentType.MATRIX);
-        LT_SCALAR = buildPredefinedFunction(lowerThan, ArgumentType.MATRIX, ArgumentType.SCALAR);
-        LT_R_VECTOR = buildPredefinedFunction(lowerThan, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
-        LT_C_VECTOR = buildPredefinedFunction(lowerThan, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);                
+        LT_MATRIX = buildPredefinedFunction("lt", lowerThan, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        LT_SCALAR = buildPredefinedFunction("lt", lowerThan, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        LT_R_VECTOR = buildPredefinedFunction("lt", lowerThan, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        LT_C_VECTOR = buildPredefinedFunction("lt", lowerThan, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);                
         
         AFunctionObject lowerEqual = new Comparator("<=", new Arg(0), new Arg(1));
-        LE_MATRIX = buildPredefinedFunction(lowerEqual, ArgumentType.MATRIX, ArgumentType.MATRIX);
-        LE_SCALAR = buildPredefinedFunction(lowerEqual, ArgumentType.MATRIX, ArgumentType.SCALAR);
-        LE_R_VECTOR = buildPredefinedFunction(lowerEqual, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
-        LE_C_VECTOR = buildPredefinedFunction(lowerEqual, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
+        LE_MATRIX = buildPredefinedFunction("le", lowerEqual, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        LE_SCALAR = buildPredefinedFunction("le", lowerEqual, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        LE_R_VECTOR = buildPredefinedFunction("le", lowerEqual, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        LE_C_VECTOR = buildPredefinedFunction("le", lowerEqual, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
         
         AFunctionObject equal = new Comparator("==", new Arg(0), new Arg(1));
-        EQ_MATRIX = buildPredefinedFunction(equal, ArgumentType.MATRIX, ArgumentType.MATRIX);
-        EQ_SCALAR = buildPredefinedFunction(equal, ArgumentType.MATRIX, ArgumentType.SCALAR);
-        EQ_R_VECTOR = buildPredefinedFunction(equal, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
-        EQ_C_VECTOR = buildPredefinedFunction(equal, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);                
+        EQ_MATRIX = buildPredefinedFunction("eq", equal, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        EQ_SCALAR = buildPredefinedFunction("eq", equal, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        EQ_R_VECTOR = buildPredefinedFunction("eq", equal, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        EQ_C_VECTOR = buildPredefinedFunction("eq", equal, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);                
         
         AFunctionObject notEqual = new Comparator("!=", new Arg(0), new Arg(1));
-        NE_MATRIX = buildPredefinedFunction(notEqual, ArgumentType.MATRIX, ArgumentType.MATRIX);
-        NE_SCALAR = buildPredefinedFunction(notEqual, ArgumentType.MATRIX, ArgumentType.SCALAR);
-        NE_R_VECTOR = buildPredefinedFunction(notEqual, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
-        NE_C_VECTOR = buildPredefinedFunction(notEqual, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
+        NE_MATRIX = buildPredefinedFunction("ne", notEqual, ArgumentType.MATRIX, ArgumentType.MATRIX);
+        NE_SCALAR = buildPredefinedFunction("ne", notEqual, ArgumentType.MATRIX, ArgumentType.SCALAR);
+        NE_R_VECTOR = buildPredefinedFunction("ne", notEqual, ArgumentType.MATRIX, ArgumentType.ROW_VECTOR);
+        NE_C_VECTOR = buildPredefinedFunction("ne", notEqual, ArgumentType.MATRIX, ArgumentType.COLUMN_VECTOR);
         
         AFunctionObject one = new Value(1.0);
-        SET_ONE = buildPredefinedFunction(one);
+        SET_ONE = buildPredefinedFunction("one", one);
        
         AFunctionObject zero = new Value(0.0);
-        SET_ZERO = buildPredefinedFunction(zero);
+        SET_ZERO = buildPredefinedFunction("zero", zero);
         
         AFunctionObject exp = new Exp(new Arg(0));
-        EXP = buildPredefinedFunction(exp, ArgumentType.MATRIX);
+        EXP = buildPredefinedFunction("epx", exp, ArgumentType.MATRIX);
           
         AFunctionObject negate = new Negate(new Arg(0));
-        NEG = buildPredefinedFunction(negate, ArgumentType.MATRIX);
+        NEG = buildPredefinedFunction("neg", negate, ArgumentType.MATRIX);
         
         AFunctionObject sigmoid = MatrixFunctions.sigmoid(new Arg(0));
-        SIGMOID = buildPredefinedFunction(sigmoid, ArgumentType.MATRIX);
+        SIGMOID = buildPredefinedFunction("sigmoid", sigmoid, ArgumentType.MATRIX);
         
         AFunctionObject copy = new Arg(0);
-        DUP = buildPredefinedFunction(copy, ArgumentType.MATRIX);
+        DUP = buildPredefinedFunction("dup", copy, ArgumentType.MATRIX);
     }
     
     
