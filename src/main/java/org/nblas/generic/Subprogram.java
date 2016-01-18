@@ -1,5 +1,11 @@
 package org.nblas.generic;
 
+import java.io.Reader;
+import java.io.StringReader;
+
+import net.barenca.jastyle.ASFormatter;
+import net.barenca.jastyle.FormatterHelper;
+
 /**
  * Basic Linear Algebra Subprograms
  * Jede Funktion ist ausgelagert in eine Subprogram.
@@ -59,7 +65,7 @@ public class Subprogram<K> {
 		if(super.equals(obj))
 			return true;
 		
-		// beinhaltät es den gleichen Source code
+		// ist es der gleiche Source code
 		if(obj instanceof Subprogram<?>) {
 			Subprogram<?> anotherSubprogram = (Subprogram<?>)obj;
 			if(anotherSubprogram.getProgramName().equalsIgnoreCase(programName))
@@ -67,5 +73,13 @@ public class Subprogram<K> {
 		}
 				
 		return false;
+	}
+	
+	@Override
+	public String toString() {
+		ASFormatter formatter = new ASFormatter();
+		formatter.setSharpStyle();
+		Reader reader = new StringReader(sourceCode);
+		return FormatterHelper.format(reader, formatter);
 	}
 }
