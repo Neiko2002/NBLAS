@@ -1,8 +1,5 @@
 package org.nblas.cl;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -32,6 +29,13 @@ import org.nblas.generic.Subprogram;
 class CLCore {
 
     private static final CLCore CORE = new CLCore();
+
+    public static CLCore getCore() {
+        return CORE;
+    }
+    
+    
+    
     private CLDevice device;
     
     private cl_context context;
@@ -93,10 +97,6 @@ class CLCore {
         
         return fastestDevice;
 	}
-
-    public static CLCore getCore() {
-        return CORE;
-    }
 
     public int getThreadCount_X() {
         return threadCount_X;
@@ -245,31 +245,12 @@ class CLCore {
 //        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
-
-    public String loadSource(String path) {
-        try {
-            return new String(Files.readAllBytes(Paths.get(path)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     private long[] getLocalWorkSize(int m, int n) {
         long[] local_work_size = {threadCount_X, threadCount_Y};
-        if (m == 1) {
-            local_work_size[0] = 1;
-        }
-        if (n == 1) {
-            local_work_size[1] = 1;
-        }
+        if (m == 1) local_work_size[0] = 1;
+        if (n == 1) local_work_size[1] = 1;
         return local_work_size;
     }
-
-    public cl_context getContext() {
-        return context;
-    }
-
 
     public float[] getData(cl_mem buffer, float[] n) {
         Pointer pointer = Pointer.to(n);
@@ -285,7 +266,7 @@ class CLCore {
         	matrixSubprograms.add(subprogram);
         } else {
             // remove kernels to recompile;
-            if (customSubprograms != null) {
+            if (customProgram != null) {
             	
             	for (Subprogram<cl_kernel> customSubprogram : customSubprograms) {
             		CL.clReleaseKernel(customSubprogram.getKernel());
@@ -384,6 +365,8 @@ class CLCore {
                 new long[]{clRows, clColumns},
                 new long[]{threadCount_X, threadCount_Y}, 0, null, null);
 //        CL.clWaitForEvents(1, new cl_event[]{event});
+        
+//    	System.out.println("CLCore: \n"+subprogram.toString());
     }
     
     public void execute(Subprogram<cl_kernel> subprogram, int clRows, int clColumns, cl_mem result) {
@@ -569,7 +552,7 @@ class CLCore {
 
         Pointer pointer = Pointer.to(values);
 
-        cl_mem cl_mem = CL.clCreateBuffer(getContext(),
+        cl_mem cl_mem = CL.clCreateBuffer(context,
                 CL.CL_MEM_READ_WRITE | CL.CL_MEM_COPY_HOST_PTR,
                 Sizeof.cl_float * values.length, pointer, null);
         return cl_mem;
@@ -580,14 +563,14 @@ class CLCore {
 
         Pointer pointer = Pointer.to(values);
 
-        cl_mem cl_mem = CL.clCreateBuffer(getContext(),
+        cl_mem cl_mem = CL.clCreateBuffer(context,
                 CL.CL_MEM_READ_WRITE | CL.CL_MEM_COPY_HOST_PTR,
                 Sizeof.cl_uint4 * values.length / 4, pointer, null);
         return cl_mem;
     }
 
     public cl_mem mallocSinglePrecision(int length) {
-        return CL.clCreateBuffer(getContext(),
+        return CL.clCreateBuffer(context,
                 CL.CL_MEM_READ_WRITE,
                 Sizeof.cl_float * length, null, null);
     }

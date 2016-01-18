@@ -25,8 +25,14 @@ public abstract class CLMatrix extends AMatrix {
 	public CLMatrix(int rows, int columns) {
 		super(rows, columns);
 
-		this.clColumns = (int) Math.ceil(columns / (double) CORE.getThreadCount_Y()) * CORE.getThreadCount_Y();
-		this.clRows = (int) Math.ceil(rows / (double) CORE.getThreadCount_X()) * CORE.getThreadCount_X();
+		// row or column vector else matrix
+		if(rows == 1 || columns == 1) {
+			this.clRows = rows;
+			this.clColumns = columns;
+		} else {
+			this.clRows = (int) Math.ceil(rows / (double) CORE.getThreadCount_X()) * CORE.getThreadCount_X();			
+			this.clColumns = (int) Math.ceil(columns / (double) CORE.getThreadCount_Y()) * CORE.getThreadCount_Y();
+		}
 		this.clLength = clColumns * clRows;
 
 		this.randomDataPointer = Optional.empty();
