@@ -3,6 +3,7 @@ package org.nblas.cuda;
 
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
+import org.nblas.FloatMatrixDefault;
 import org.nblas.cuda.blas.CudaLevel1;
 import org.nblas.generic.Subprogram;
 
@@ -16,7 +17,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * @author Nico
  *
  */
-public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
+public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
    
     protected static final CudaLevel1 level1;
     protected static final Context context;
@@ -745,6 +746,9 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
     
     // --------------------------------------- getter and setter methods ----------------------------------------
 
+    /**
+     * @see FloatMatrix#getSubMatrix(FloatMatrix, FloatMatrix, int, int)
+     */
     public FloatMatrix getSubMatrix(FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
     	CudaFloatMatrix src = (CudaFloatMatrix) source;
     	CudaFloatMatrix dst = (CudaFloatMatrix) destination;    	
@@ -752,37 +756,73 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrix  {
         return destination;
     }
     
+    /**
+     * @see FloatMatrix#setSubMatrix(FloatMatrix, FloatMatrix, int, int)
+     */
     public FloatMatrix setSubMatrix(FloatMatrix source, FloatMatrix destination, int offsetRow, int offsetColumn) {
     	CudaFloatMatrix src = (CudaFloatMatrix) source;
     	CudaFloatMatrix dst = (CudaFloatMatrix) destination;   
         CORE.setSubMatrix(dst.dataPointer, src.dataPointer, src.getRows(), src.getRows(), dst.getRows(), offsetRow, offsetColumn);
         return destination;
     }
+    
+    /**
+     * @see FloatMatrix#put(FloatMatrix, int, int, float)
+     */
+	@Override
+	public FloatMatrix put(FloatMatrix src, int rowIndex, int columnIndex, float value) {
+		CudaFloatMatrix val = new CudaFloatMatrix(1, 1, new float[] { value });
+		setSubMatrix(val, this, rowIndex, columnIndex);
+		val.free();
+		return this;
+	}
 
-//	@Override
-//	public FloatMatrix getRow(FloatMatrix src, FloatMatrix row, int rowIndex) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public FloatMatrix getColumn(FloatMatrix src, FloatMatrix column, int columnIndex) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public FloatMatrix setRow(FloatMatrix dst, FloatMatrix row, int rowIndex) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public FloatMatrix setColumn(FloatMatrix dst, FloatMatrix column, int columnIndex) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-    
-    
+	/**
+     * @see FloatMatrix#get(FloatMatrix, int, int)
+     */
+	@Override
+	public float get(FloatMatrix src, int rowIndex, int columnIndex) {
+		CudaFloatMatrix val = new CudaFloatMatrix(1, 1, new float[] { 0 });
+		getSubMatrix(this, val, rowIndex, columnIndex);
+		float value = val.toArray()[0];
+		val.free();
+		return value;
+	}
+	
+	/**
+     * @see FloatMatrix#getRow(FloatMatrix, FloatMatrix, int)
+     */
+	@Override
+	public FloatMatrix getRow(FloatMatrix src, FloatMatrix row, int rowIndex) {
+		getSubMatrix(this, row, rowIndex, 0);
+		return row;
+	}
+
+	/**
+     * @see FloatMatrix#getColumn(FloatMatrix, FloatMatrix, int)
+     */
+	@Override
+	public FloatMatrix getColumn(FloatMatrix src, FloatMatrix column, int columnIndex) {
+		getSubMatrix(this, column, 0, columnIndex);
+		return column;
+	}
+	
+	/**
+     * @see FloatMatrix#putRow(FloatMatrix, FloatMatrix, int)
+     */
+	@Override
+	public FloatMatrix putRow(FloatMatrix dst, FloatMatrix row, int rowIndex) {
+		setSubMatrix(dst, row, rowIndex, 0);
+		return dst;
+	}
+
+	/**
+     * @see FloatMatrix#putColumn(FloatMatrix, FloatMatrix, int)
+     */
+	@Override
+	public FloatMatrix putColumn(FloatMatrix dst, FloatMatrix column, int columnIndex) {
+		setSubMatrix(dst, column, 0, columnIndex);
+		return dst;
+	} 
 
 }

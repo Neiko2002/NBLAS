@@ -26,23 +26,22 @@ public abstract class CLMatrix extends AMatrix {
 		super(rows, columns);
 
 		// row or column vector else matrix
-		if(rows == 1 || columns == 1) {
-			this.clRows = rows;
-			this.clColumns = columns;
-		} else {
-			this.clRows = (int) Math.ceil(rows / (double) CORE.getThreadCount_X()) * CORE.getThreadCount_X();			
-			this.clColumns = (int) Math.ceil(columns / (double) CORE.getThreadCount_Y()) * CORE.getThreadCount_Y();
-		}
+		this.clRows = getValidSize(rows, CORE.getThreadCountX());			
+		this.clColumns = getValidSize(columns, CORE.getThreadCountY());
 		this.clLength = clColumns * clRows;
 
 		this.randomDataPointer = Optional.empty();
 	}
 	
+	protected int getValidSize(int size, int divisor) {
+		if(size == 1) return 1;
+		return (int) Math.ceil((double)size / divisor) * divisor;
+	}
 
 	
     protected void initRandom() {
         if (!randomDataPointer.isPresent()) {
-            int[] initRandom = new int[CORE.getThreadCount_Y() * CORE.getThreadCount_X() * 4];
+            int[] initRandom = new int[CORE.getThreadCountY() * CORE.getThreadCountX() * 4];
             for (int i = 0; i < initRandom.length; i++) {
                 initRandom[i] = Random.nextInt(Integer.MAX_VALUE - 1234) + 1234;
             }
@@ -72,7 +71,6 @@ public abstract class CLMatrix extends AMatrix {
 	protected static void runMatrixOperation(Subprogram<cl_kernel> subprogram, CLMatrix a) {
 		CORE.execute(subprogram, a.clRows, a.clColumns, a.rows, a.columns, a.dataPointer);
 	}
-	
     
     /**
      * Führe ein OpenCL Programm auf zwei gleich große Matrizen durch,

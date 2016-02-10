@@ -3,18 +3,17 @@ package org.nblas.java;
 import org.jblas.util.Random;
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
+import org.nblas.FloatMatrixDefault;
 import org.nblas.generic.AMatrix;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 /**
- * TODO sometime very slow implementations
+ * TODO sometimes very slow implementations
  * TODO ebenfalls eine BLAS Level Klasse wo Lamda's gespeichert werden und dann mit consumer Funktionen arbeiten ähnlich wie Iterable.forEach(Consumer<? super T> action)
  * 
  * @author Nico
  *
  */
-public class JavaFloatMatrix extends AMatrix implements FloatMatrix {
+public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 
 	protected org.jblas.FloatMatrix matrix;
 	
@@ -667,7 +666,6 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrix {
 
 	// --------------------------------------- getter and setter methods ----------------------------------------
 
-	
 	@Override
 	public FloatMatrix setSubMatrix(FloatMatrix src, FloatMatrix dst, int rowOffset, int columnOffset) {
 		
@@ -687,30 +685,56 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrix {
 		return dst;
 	}
 
-//	@Override
-//	public FloatMatrix getRow(FloatMatrix src, FloatMatrix row, int rowIndex) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public FloatMatrix getColumn(FloatMatrix src, FloatMatrix column, int columnIndex) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public FloatMatrix setRow(FloatMatrix dst, FloatMatrix row, int rowIndex) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public FloatMatrix setColumn(FloatMatrix dst, FloatMatrix column, int columnIndex) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
+	@Override
+	public FloatMatrix put(FloatMatrix src, int rowIndex, int columnIndex, float value) {
+		((JavaFloatMatrix) src).matrix.put(rowIndex, columnIndex, value);
+		return src;
+	}
+
+	@Override
+	public float get(FloatMatrix src, int rowIndex, int columnIndex) {
+		return ((JavaFloatMatrix) src).matrix.get(rowIndex, columnIndex);
+	}
+
+	@Override
+	public FloatMatrix getRow(FloatMatrix src, FloatMatrix row, int rowIndex) {
+		
+		org.jblas.FloatMatrix srcMatrix = ((JavaFloatMatrix) src).matrix;
+		org.jblas.FloatMatrix rowMatrix = ((JavaFloatMatrix) row).matrix;
+		srcMatrix.getRow(rowIndex, rowMatrix);
+		
+		return row;
+	}
+
+	@Override
+	public FloatMatrix getColumn(FloatMatrix src, FloatMatrix column, int columnIndex) {
+		
+		org.jblas.FloatMatrix srcMatrix = ((JavaFloatMatrix) src).matrix;
+		org.jblas.FloatMatrix columnMatrix = ((JavaFloatMatrix) column).matrix;
+		srcMatrix.getColumn(columnIndex, columnMatrix);
+		
+		return column;
+	}
 
 	
+	@Override
+	public FloatMatrix putRow(FloatMatrix dst, FloatMatrix row, int rowIndex) {
+		
+		org.jblas.FloatMatrix dstMatrix = ((JavaFloatMatrix) dst).matrix;
+		org.jblas.FloatMatrix rowMatrix = ((JavaFloatMatrix) row).matrix;
+		dstMatrix.putRow(rowIndex, rowMatrix);
+		
+		return dst;
+	}
+
+	@Override
+	public FloatMatrix putColumn(FloatMatrix dst, FloatMatrix column, int columnIndex) {
+		
+		org.jblas.FloatMatrix dstMatrix = ((JavaFloatMatrix) dst).matrix;
+		org.jblas.FloatMatrix columnMatrix = ((JavaFloatMatrix) column).matrix;
+		dstMatrix.putColumn(columnIndex, columnMatrix);
+		
+		return dst;
+	}
 
 }

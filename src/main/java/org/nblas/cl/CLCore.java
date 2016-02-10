@@ -98,31 +98,26 @@ class CLCore {
         return fastestDevice;
 	}
 
-    public int getThreadCount_X() {
+    public int getThreadCountX() {
         return threadCount_X;
     }
 
-    public int getThreadCount_Y() {
+    public int getThreadCountY() {
         return threadCount_Y;
     }
 
-    public void copy(cl_mem input, cl_mem copy, int m, int n) {
-
+    public void copy(cl_mem input, cl_mem copy, int clRows, int clColumns) {
         cl_kernel kernel = CLPredefined.getSubprogram("copy").getKernel();
-//        cl_event event = new cl_event();
+
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(input));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(copy));
 
-        long[] local_work_size = getLocalWorkSize(m, n);
-
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{m, n}, local_work_size, 0, null, null);
-//        CL.clWaitForEvents(1, new cl_event[]{event});
+        enqueue2DRangeKernel(kernel, clRows, clColumns, 0, 0);
     }
 
-    public void repmat(cl_mem source, cl_mem result, int m, int n, int outputRows, int outputColumns, int inputRows, int inputColumns, int stride) {
-
+    public void repmat(cl_mem source, cl_mem result, int clRows, int clColumns, int outputRows, int outputColumns, int inputRows, int inputColumns, int stride) {
         cl_kernel kernel = CLPredefined.getSubprogram("repmat").getKernel();
-//        cl_event event = new cl_event();
+        
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(source));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_uint, Pointer.to(new int[]{outputRows}));
@@ -131,49 +126,52 @@ class CLCore {
         CL.clSetKernelArg(kernel, 5, Sizeof.cl_uint, Pointer.to(new int[]{inputColumns}));
         CL.clSetKernelArg(kernel, 6, Sizeof.cl_uint, Pointer.to(new int[]{stride}));
 
-        long[] local_work_size = getLocalWorkSize(m, n);
-
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{m, n}, local_work_size, 0, null, null);
-//        CL.clWaitForEvents(1, new cl_event[]{event});
+        enqueue2DRangeKernel(kernel, clRows, clColumns, 0, 0);
     }
 
-    public void setSubMatrix(cl_mem source, cl_mem result, int m, int n, int sourceRows, int sourceColumns, int offsetRows, int offsetColumns, int resultStride) {
+    
+    public void setSubMatrix(cl_mem source, cl_mem destination, int srcCLRows, int srcCLColumns, int srcRows, int srcColumns, int offsetRows, int offsetColumns, int dstStride) {
+    	cl_kernel kernel = CLPredefined.getSubprogram("setSubMatrix").getKernel();
 
-        cl_kernel kernel = CLPredefined.getSubprogram("setSubMatrix").getKernel();
-//        cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(source));
-        CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
-        CL.clSetKernelArg(kernel, 2, Sizeof.cl_uint, Pointer.to(new int[]{sourceRows}));
-        CL.clSetKernelArg(kernel, 3, Sizeof.cl_uint, Pointer.to(new int[]{sourceColumns}));
+        CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(destination));
+        CL.clSetKernelArg(kernel, 2, Sizeof.cl_uint, Pointer.to(new int[]{srcRows}));
+        CL.clSetKernelArg(kernel, 3, Sizeof.cl_uint, Pointer.to(new int[]{srcColumns}));
         CL.clSetKernelArg(kernel, 4, Sizeof.cl_uint, Pointer.to(new int[]{offsetRows}));
         CL.clSetKernelArg(kernel, 5, Sizeof.cl_uint, Pointer.to(new int[]{offsetColumns}));
-        CL.clSetKernelArg(kernel, 6, Sizeof.cl_uint, Pointer.to(new int[]{resultStride}));
+        CL.clSetKernelArg(kernel, 6, Sizeof.cl_uint, Pointer.to(new int[]{dstStride}));
 
-        long[] local_work_size = getLocalWorkSize(m, n);
-
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{m, n}, local_work_size, 0, null, null);
-//        CL.clWaitForEvents(1, new cl_event[]{event});
+        enqueue2DRangeKernel(kernel, srcCLRows, srcCLColumns, 0, 0);
     }
 
-    public void getSubMatrix(cl_mem source, cl_mem result, int m, int n, int resultRows, int resultColumns, int offsetRows, int offsetColumns, int sourceStride) {
 
-        cl_kernel kernel = CLPredefined.getSubprogram("getSubMatrix").getKernel();
-//        cl_event event = new cl_event();
+    public void getSubMatrix(cl_mem source, cl_mem destination, int dstCLRows, int dstCLColumns, int dstRows, int dstColumns, int offsetRows, int offsetColumns, int srcStride) {
+    	cl_kernel kernel = CLPredefined.getSubprogram("getSubMatrix").getKernel();
+    	
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(source));
-        CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(result));
-        CL.clSetKernelArg(kernel, 2, Sizeof.cl_uint, Pointer.to(new int[]{resultRows}));
-        CL.clSetKernelArg(kernel, 3, Sizeof.cl_uint, Pointer.to(new int[]{resultColumns}));
+        CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(destination));
+        CL.clSetKernelArg(kernel, 2, Sizeof.cl_uint, Pointer.to(new int[]{offsetRows+dstRows}));
+        CL.clSetKernelArg(kernel, 3, Sizeof.cl_uint, Pointer.to(new int[]{offsetColumns+dstColumns}));
         CL.clSetKernelArg(kernel, 4, Sizeof.cl_uint, Pointer.to(new int[]{offsetRows}));
         CL.clSetKernelArg(kernel, 5, Sizeof.cl_uint, Pointer.to(new int[]{offsetColumns}));
-        CL.clSetKernelArg(kernel, 6, Sizeof.cl_uint, Pointer.to(new int[]{sourceStride}));
+        CL.clSetKernelArg(kernel, 6, Sizeof.cl_uint, Pointer.to(new int[]{srcStride}));
 
-        long[] local_work_size = getLocalWorkSize(m, n);
-
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{m, n}, local_work_size, 0, null, null);
-//        CL.clWaitForEvents(1, new cl_event[]{event});
+        enqueue2DRangeKernel(kernel, dstCLRows, dstCLColumns, 0, 0);
     }
+    
+    public void getCustom(cl_kernel kernel, cl_mem source, cl_mem destination, int dstCLRows, int dstCLColumns, int dstRows, int dstColumns, int offsetRows, int offsetColumns, int srcStride) {
+    	
+        CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(source));
+        CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(destination));
+        CL.clSetKernelArg(kernel, 2, Sizeof.cl_uint, Pointer.to(new int[]{offsetRows+dstRows}));
+        CL.clSetKernelArg(kernel, 3, Sizeof.cl_uint, Pointer.to(new int[]{offsetColumns+dstColumns}));
+        CL.clSetKernelArg(kernel, 4, Sizeof.cl_uint, Pointer.to(new int[]{offsetRows}));
+        CL.clSetKernelArg(kernel, 5, Sizeof.cl_uint, Pointer.to(new int[]{offsetColumns}));
+        CL.clSetKernelArg(kernel, 6, Sizeof.cl_uint, Pointer.to(new int[]{srcStride}));
 
-
+        enqueue2DRangeKernel(kernel, dstCLRows, dstCLColumns, 0, 0);
+    }
+    
     public void transpose(cl_mem in, cl_mem out, int clRows, int clColumns, int rows, int columns) {
         cl_kernel kernel = CLPredefined.getSubprogram("transpose").getKernel();
 
@@ -245,18 +243,15 @@ class CLCore {
 //        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
-    private long[] getLocalWorkSize(int m, int n) {
-        long[] local_work_size = {threadCount_X, threadCount_Y};
-        if (m == 1) local_work_size[0] = 1;
-        if (n == 1) local_work_size[1] = 1;
-        return local_work_size;
-    }
 
     public float[] getData(cl_mem buffer, float[] n) {
-        Pointer pointer = Pointer.to(n);
+    	return getData(buffer, n, 0);
+    }
+    
+    public float[] getData(cl_mem buffer, float[] n, int offset) {
         cl_event event = new cl_event();
         waitOnComplete();
-        CL.clEnqueueReadBuffer(commandQueue, buffer, CL.CL_TRUE, 0, n.length * Sizeof.cl_float, pointer, 0, null, event);
+        CL.clEnqueueReadBuffer(commandQueue, buffer, CL.CL_TRUE, offset, n.length * Sizeof.cl_float, Pointer.to(n), 0, null, event);
         CL.clWaitForEvents(1, new cl_event[]{event});
         return n;
     }
@@ -352,7 +347,6 @@ class CLCore {
     
     public void execute(Subprogram<cl_kernel> subprogram, int clRows, int clColumns, int rows, int columns, cl_mem result, cl_mem... dataPointer) {
         cl_kernel kernel = subprogram.getKernel();
-//        cl_event event = new cl_event();
         
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(result));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_int, Pointer.to(new int[]{columns}));
@@ -361,25 +355,24 @@ class CLCore {
             CL.clSetKernelArg(kernel, i + 3, Sizeof.cl_mem, Pointer.to(dataPointer[i]));
         }
         
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null,
-                new long[]{clRows, clColumns},
-                new long[]{threadCount_X, threadCount_Y}, 0, null, null);
-//        CL.clWaitForEvents(1, new cl_event[]{event});
-        
-//    	System.out.println("CLCore: \n"+subprogram.toString());
+        enqueue2DRangeKernel(kernel, clRows, clColumns, 0, 0);
     }
+    
     
     public void execute(Subprogram<cl_kernel> subprogram, int clRows, int clColumns, cl_mem result) {
     	cl_kernel kernel = subprogram.getKernel();
-//    	cl_event event = new cl_event();
-        
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(result));
-        
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null,
-                new long[]{clRows, clColumns},
-                new long[]{threadCount_X, threadCount_Y}, 0, null, null);
-//        CL.clWaitForEvents(1, new cl_event[]{event});
+        enqueue2DRangeKernel(kernel, clRows, clColumns, 0, 0);
     }
+    
+	protected void enqueue2DRangeKernel(cl_kernel kernel, int clRows, int clColumns, int rowOffset, int columnOffset) {
+
+		long[] global_work_offset = new long[] { columnOffset, rowOffset };
+		long[] global_work_size = new long[] { clColumns, clRows };
+		long[] local_work_size = new long[] { Math.min(clColumns, threadCount_X), Math.min(clRows, threadCount_Y) };
+
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, global_work_offset, global_work_size, local_work_size, 0, null, null);
+	}
 
     @Deprecated
     public float reduce(String reductionName, cl_mem data, int n, float initValue) {
@@ -570,9 +563,10 @@ class CLCore {
     }
 
     public cl_mem mallocSinglePrecision(int length) {
-        return CL.clCreateBuffer(context,
+    	 cl_mem cl_mem = CL.clCreateBuffer(context,
                 CL.CL_MEM_READ_WRITE,
                 Sizeof.cl_float * length, null, null);
+        return cl_mem;
     }
 
     public void free(cl_mem buffer) {

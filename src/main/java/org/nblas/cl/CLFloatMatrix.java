@@ -4,6 +4,7 @@ package org.nblas.cl;
 import org.jocl.cl_kernel;
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
+import org.nblas.FloatMatrixDefault;
 import org.nblas.cl.blas.CLLevel1;
 import org.nblas.generic.Subprogram;
 
@@ -14,7 +15,7 @@ import org.nblas.generic.Subprogram;
  * @author Nico
  *
  */
-public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
+public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
 
 	protected static final CLLevel1 level1;
     protected static final Context context;
@@ -43,6 +44,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     public CLFloatMatrix(int rows, int columns) {
         super(rows, columns);
  		this.dataPointer = CORE.mallocSinglePrecision(this.clLength);
+// 		this.dataPointer = CORE.malloc(new float[clLength]);
      }
 
     public CLFloatMatrix(int rows, int columns, float[] values) {
@@ -51,17 +53,15 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
 		if (rows * columns != values.length)
 			throw new IllegalArgumentException("rows times columns " + (rows * columns) + " != " + "data length = " + values.length);
 
-        float[] clValues = getFloatArray2D(rows, columns, values);
+        float[] clValues = getFloatArray2D(values);
 		this.dataPointer = CORE.malloc(clValues);
     }
     
-    private float[] getFloatArray2D(int rows, int columns, float[] values) {
+    private float[] getFloatArray2D(float[] values) {
         float[] clValues = new float[clLength];
-        for (int i = 0; i < columns; i++) {
-            for (int j = 0; j < rows; j++) {
-                clValues[i * clRows + j] = values[i * rows + j];
-            }
-        }
+        for (int y = 0; y < columns; y++)
+            for (int x = 0; x < rows; x++)
+                clValues[y * clRows + x] = values[y * rows + x];
         return clValues;
     }
     
@@ -84,11 +84,9 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
 		
 		float[] clValues = new float[clLength];
 		CORE.getData(dataPointer, clValues);
-		for (int i = 0; i < columns; i++) {
-			for (int j = 0; j < rows; j++) {
-				values[i * rows + j] = clValues[i * clRows + j];
-			}
-		}
+		for (int y = 0; y < columns; y++)
+			for (int x = 0; x < rows; x++)
+				values[y * rows + x] = clValues[y * clRows + x];
 		return this;
 	}
 	
@@ -125,6 +123,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
 	 */
 	@Override
     public FloatMatrix setOne() {
+		// TODO CL.clEnqueueFillBuffer vielleicht schneller
         level1.setOne(this);
         return this;
     }
@@ -713,7 +712,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     @Override
     public float mean(FloatMatrix matrix) {
     	CLFloatMatrix mat = (CLFloatMatrix) matrix;
-        return matrix.sum(matrix) / mat.length;
+        return mat.sum(matrix) / mat.length;
     }
 
     @Override
@@ -790,38 +789,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
         CORE.reduceRows("rowMinsFloats", matrix.dataPointer, result.dataPointer, matrix.rows, matrix.columns, Float.POSITIVE_INFINITY);
     }
     
-    
-    
-	// --------------------------------------- getter and setter methods ----------------------------------------
-    
-    /**
-  	 * @see FloatMatrix#setSubMatrix(FloatMatrix, FloatMatrix, int, int)
-  	 */
-    @Override
-    public FloatMatrix setSubMatrix(FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
-    	CLFloatMatrix src = (CLFloatMatrix) source;
-    	CLFloatMatrix dst = (CLFloatMatrix) destination;
-    	CORE.setSubMatrix(src.dataPointer, dst.dataPointer, src.clRows, src.clColumns, src.rows, src.columns, rowOffset, columnOffset, dst.clRows);
-    	return destination;
-    }
-
-    /**
-  	 * @see FloatMatrix#getSubMatrix(FloatMatrix, FloatMatrix, int, int)
-  	 */
-    @Override
-    public FloatMatrix getSubMatrix(FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
-    	CLFloatMatrix src = (CLFloatMatrix) source;
-    	CLFloatMatrix dst = (CLFloatMatrix) destination;
-        CORE.getSubMatrix(src.dataPointer, dst.dataPointer, dst.clRows, dst.clColumns, dst.rows, dst.columns, rowOffset, columnOffset, src.clRows);
-        return destination;
-    }
-    
-    
-    
-    
-    
-    
-    
+        
     
     // --------------------------------------- implementation ----------------------------------------
 
@@ -939,28 +907,98 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrix {
     	level1.neRowVector(matrix, rowVector, result);
     }
 
-//	@Override
-//	public FloatMatrix getRow(FloatMatrix src, FloatMatrix row, int rowIndex) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public FloatMatrix getColumn(FloatMatrix src, FloatMatrix column, int columnIndex) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public FloatMatrix setRow(FloatMatrix dst, FloatMatrix row, int rowIndex) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public FloatMatrix setColumn(FloatMatrix dst, FloatMatrix column, int columnIndex) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	} 
+    
+    
+    
+	// --------------------------------------- getter and setter methods ----------------------------------------
+    
+    /**
+  	 * @see FloatMatrix#setSubMatrix(FloatMatrix, FloatMatrix, int, int)
+  	 */
+    @Override
+    public FloatMatrix setSubMatrix(FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
+    	CLFloatMatrix src = (CLFloatMatrix) source;
+    	CLFloatMatrix dst = (CLFloatMatrix) destination;
+    	CORE.setSubMatrix(src.dataPointer, dst.dataPointer, src.clRows, src.clColumns, src.rows, src.columns, rowOffset, columnOffset, dst.clRows);
+    	return destination;
+    }
+
+    /**
+  	 * @see FloatMatrix#getSubMatrix(FloatMatrix, FloatMatrix, int, int)
+  	 */
+    @Override
+    public FloatMatrix getSubMatrix(FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
+    	CLFloatMatrix src = (CLFloatMatrix) source;
+    	CLFloatMatrix dst = (CLFloatMatrix) destination;
+        CORE.getSubMatrix(src.dataPointer, dst.dataPointer, dst.clRows, dst.clColumns, dst.rows, dst.columns, rowOffset, columnOffset, src.clRows);
+        return destination;
+    }
+    
+
+    public FloatMatrix getCustom(cl_kernel kernel, FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
+    	CLFloatMatrix src = (CLFloatMatrix) source;
+    	CLFloatMatrix dst = (CLFloatMatrix) destination;
+        CORE.getCustom(kernel, src.dataPointer, dst.dataPointer, dst.clRows, dst.clColumns, dst.rows, dst.columns, rowOffset, columnOffset, src.clRows);
+        return destination;
+    }
+
+    /**
+     * @see FloatMatrix#put(FloatMatrix, int, int, float)
+     */
+	@Override
+	public FloatMatrix put(FloatMatrix dst, int rowIndex, int columnIndex, float value) {
+    	CLFloatMatrix val = new CLFloatMatrix(1, 1, new float[] { value });
+		setSubMatrix(val, dst, rowIndex, columnIndex);
+		val.free();
+		return this;
+	}
+
+	/**
+     * @see FloatMatrix#get(FloatMatrix, int, int)
+     */
+	@Override
+	public float get(FloatMatrix src, int rowIndex, int columnIndex) {
+    	CLFloatMatrix val = new CLFloatMatrix(1, 1, new float[] { 0 });
+		getSubMatrix(src, val, rowIndex, columnIndex);
+		float value = val.toArray()[0];
+		val.free();
+		return value;
+	}
+
+	/**
+     * @see FloatMatrix#getRow(FloatMatrix, FloatMatrix, int)
+     */
+	@Override
+	public FloatMatrix getRow(FloatMatrix src, FloatMatrix row, int rowIndex) {
+		getSubMatrix(src, row, rowIndex, 0);
+		return row;
+	}
+
+	/**
+     * @see FloatMatrix#getColumn(FloatMatrix, FloatMatrix, int)
+     */
+	@Override
+	public FloatMatrix getColumn(FloatMatrix src, FloatMatrix column, int columnIndex) {
+		getSubMatrix(src, column, 0, columnIndex);
+		return column;
+	}
+	
+	/**
+     * @see FloatMatrix#putRow(FloatMatrix, FloatMatrix, int)
+     */
+	@Override
+	public FloatMatrix putRow(FloatMatrix dst, FloatMatrix row, int rowIndex) {
+		setSubMatrix(row, dst, rowIndex, 0);
+		return dst;
+	}
+
+	/**
+     * @see FloatMatrix#putColumn(FloatMatrix, FloatMatrix, int)
+     */
+	@Override
+	public FloatMatrix putColumn(FloatMatrix dst, FloatMatrix column, int columnIndex) {
+		setSubMatrix(column, dst, 0, columnIndex);
+		return dst;
+	} 
  
 }

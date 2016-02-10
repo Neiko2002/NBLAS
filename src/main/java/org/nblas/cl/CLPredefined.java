@@ -12,6 +12,10 @@ import org.nblas.generic.Subprogram;
  * 
  * TODO sind nur gültig für float Matrizen
  * 
+ * TODO sollte ausgelagert werden in einzelne cl Dateien
+ * 
+ * https://github.com/sschaetz/nvidia-opencl-examples/blob/master/OpenCL/src/oclTranspose/transpose.cl
+ * 
  */
 class CLPredefined {
 		
@@ -30,68 +34,58 @@ class CLPredefined {
 		"    result[id] = source[sid];\n" +
 		"}\n";
     
-    private static final String setSubMatrix = " __kernel void setSubMatrix(__global const float* source, __global float* result, \n" +
-    	"const uint m, const uint n, const uint offsetM, const uint offsetN, const uint resultStride)\n" +
-		"{\n" +
-		"	uint id0 = get_global_id(0);\n" +
-		"	uint id1 = get_global_id(1);\n" +
-		"\n" +
-		"	if(id0 >= m || id1 >= n ) return;\n" +
-		"\n" +
-		"	uint id = id1 * get_global_size(0) + id0;\n" +
-		"	uint rid = (id1 + offsetN) * resultStride + id0 + offsetM;\n" +
-		"\n" +
-		"	result[rid] = source[id];\n" +
-		"}\n";
+    private static final String setSubMatrix = "__kernel void setSubMatrix(__global const float* source, __global float* destination, const uint srcRows, const uint srcColumns, const uint rowOffset, const uint columnOffset, const uint dstStride)\n" +
+    		"{\n" + 
+    		"    uint srcX = get_global_id(0);\n" +
+    		"    uint srcY = get_global_id(1);\n" + 
+    		"	 if(srcX >= srcColumns || srcY >= srcRows) return;\n" +
+    		"\n" +
+    		"    uint srcIndex = srcX * get_global_size(1) + srcY;" + 
+    		"    uint dstIndex = (srcX + columnOffset) * dstStride + (srcY + rowOffset);" +
+    		"    destination[dstIndex] = source[srcIndex];\n" +
+    		"}\n";
     
-    private static final String getSubMatrix = " __kernel void getSubMatrix(__global const float* source, __global float* result, \n" +
-    	"const uint m, const uint n, const uint offsetM, const uint offsetN, const uint sourceStride)\n" +
-    	"{\n" +
-    	"	uint id0 = get_global_id(0);\n" +
-    	"	uint id1 = get_global_id(1);\n" +
-    	"\n" +
-    	"	uint id = id1 * get_global_size(0) + id0;\n" +
-    	"\n" +
-    	"	if(id0 >= m || id1 >= n )\n" +
-    	"	{\n" +
-    	"   	result[id] = 0.0f;\n" +
-    	"   	return;\n" +
-    	"	}\n" +
-    	"	uint sid = (id1 + offsetN) * sourceStride + id0 + offsetM;\n" +
-    	"\n" +
-    	"	result[id] = source[sid];\n" +
-    	"}\n";
+    private static final String getSubMatrix = "__kernel void getSubMatrix(__global const float* source, __global float* destination, const uint dstRows, const uint dstColumns, const uint rowOffset, const uint columnOffset, const uint srcStride)\n" +
+    		"{\n" + 
+    		"    uint dstX = get_global_id(0);\n" + 
+    		"    uint dstY = get_global_id(1);\n" +
+    		"	 if(dstX >= dstColumns || dstY >= dstRows) return;\n" +
+    		"\n" +
+    		"    uint dstIndex = dstX * get_global_size(1) + dstY;" + 
+    		"    uint srcIndex = (dstX + columnOffset) * srcStride + (dstY + rowOffset);" +
+    		"    destination[dstIndex] = source[srcIndex];\n" +
+    		"}\n";
 	
     private static final String uniform = "int xorshift(__global uint4* vec)\n" +
-            "{\n" +
-            "    uint t = vec[0].x ^ (vec[0].x << 11);\n" +
-            "    *vec = vec[0].yzww;\n" +
-            "    vec[0].w = vec[0].w ^ (vec[0].w >> 19) ^ (t ^ (t >> 8));\n" +
-            "    return vec[0].w;\n" +
-            "}\n" +
-            "\n" +
-            "__kernel void auniform(__global uint4* random, __global float* values, const uint stride, const uint rows, const uint columns)\n" +
-            " {\n" +
-            "     uint gid0 = get_global_id(0);\n" +
-            "     uint gid1 = get_global_id(1);\n" +
-            "     uint gridSize0 = get_global_size(0);\n" +
-            "     uint gridSize1 = get_global_size(1);\n" +
-            "     uint tid = gid1 * gridSize1 + gid0;\n" +
-            "     while(gid1 < columns)\n" +
-            "     {\n" +
-            "         gid0 = get_global_id(0);\n" +
-            "         while(gid0 < rows)\n" +
-            "         {\n" +
-            "             uint4 rand =\n" +
-            "             values[gid1 * stride + gid0] =  (uint)xorshift(&random[tid]) / 4294967296.0f;\n" +
-            "             gid0 += gridSize0;\n" +
-            "         }\n" +
-            "         gid1 += gridSize1;\n" +
-            "     }\n" +
-            " }";
+    		"{\n" +
+    		"    uint t = vec[0].x ^ (vec[0].x << 11);\n" +
+    		"    *vec = vec[0].yzww;\n" +
+    		"    vec[0].w = vec[0].w ^ (vec[0].w >> 19) ^ (t ^ (t >> 8));\n" +
+    		"    return vec[0].w;\n" +
+    		"}\n" +
+    		"\n" +
+    		"__kernel void auniform(__global uint4* random, __global float* values, const uint stride, const uint rows, const uint columns)\n" +
+    		" {\n" +
+    		"     uint gid0 = get_global_id(0);\n" +
+    		"     uint gid1 = get_global_id(1);\n" +
+    		"     uint gridSize0 = get_global_size(0);\n" +
+    		"     uint gridSize1 = get_global_size(1);\n" +
+    		"     uint tid = gid1 * gridSize1 + gid0;\n" +
+    		"     while(gid1 < columns)\n" +
+    		"     {\n" +
+    		"         gid0 = get_global_id(0);\n" +
+    		"         while(gid0 < rows)\n" +
+    		"         {\n" +
+    		"             uint4 rand =\n" +
+    		"             values[gid1 * stride + gid0] =  (uint)xorshift(&random[tid]) / 4294967296.0f;\n" +
+    		"             gid0 += gridSize0;\n" +
+    		"         }\n" +
+    		"         gid1 += gridSize1;\n" +
+    		"     }\n" +
+    		" }";
 
     private static final String boxmuller = "__kernel void boxmuller(__global uint4* random, __global float* values, const uint stride, const uint rows, const uint columns)\n" +
-            "{\n" +
+    		"{\n" +
             "    uint gid0 = get_global_id(0);\n" +
             "    uint gid1 = get_global_id(1);\n" +
             "    uint gridSize0 = get_global_size(0);\n" +
