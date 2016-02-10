@@ -43,15 +43,27 @@ public final class Context {
 //        return new Context(Precision.DOUBLE, Host.CPU, DeviceInterface.OpenCL);
 //    }
 
-    public boolean isDouble() {
+    public boolean isDoublePrecision() {
         return precision == Context.Precision.DOUBLE;
     }
+    
+    public boolean isSinglePrecision() {
+        return precision == Context.Precision.SINGLE;
+    }
 
+    public boolean isCPU() {
+        return host == Context.Host.CPU;
+    }
+    
     public boolean isGPU() {
         return host == Context.Host.GPU;
     }
 
     public boolean isCUDA() {
         return deviceInterface == Context.DeviceInterface.CUDA;
+    }
+    
+    public boolean isOpenCL() {
+        return deviceInterface == Context.DeviceInterface.OpenCL;
     }
 }

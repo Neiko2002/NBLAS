@@ -129,8 +129,8 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 		float sum_CPU = matC_CPU.sum();
 		
 		// Berechnung auf der GPU
-		FloatMatrix matC_GPU1 = FloatMatrixDefault.create(1024, 1024, context);
-		FloatMatrix matC_GPU = FloatMatrixDefault.create(4, 4, context);
+		FloatMatrix matC_GPU1 = FloatMatrixDefault.dirtyAllocation(1024, 1024, context);
+		FloatMatrix matC_GPU = FloatMatrixDefault.dirtyAllocation(4, 4, context);
 //		matC_GPU.addi(1);
 //		matC_GPU.addi(Float.NaN);
 //		FloatMatrix matC_GPU = FloatMatrix.create(matA_GPU.getRows(), matA_GPU.getColumns(), context);

@@ -5,9 +5,7 @@ import org.nblas.cuda.CudaFloatMatrix;
 import org.nblas.java.JavaFloatMatrix;
 
 /**
- * TODO Es gibt FloatMatrixwelches FloatMatrix extended
- * FloatMatrix hat die ganzen Experten Funktionen nicht.
- * 
+ *  
  * @author Nico
  *
  */
@@ -48,69 +46,26 @@ public interface FloatMatrix  {
     }
 
     public static FloatMatrix zeros(int rows, int columns, Context context) {
-        if (context.isGPU()) {
-            if (context.isCUDA()) {
-            	return new CudaFloatMatrix(rows, columns);
-            } else {
-            	FloatMatrix mat = new CLFloatMatrix(rows, columns);
-            	mat.setZero();
-            	return mat;
-            }
-        } else {
-            return new JavaFloatMatrix(rows, columns);
-        }
+     	FloatMatrix matrix = FloatMatrixDefault.dirtyAllocation(rows, columns, context);    
+     	if (context.isGPU() && context.isOpenCL())
+     		matrix.setZero();
+    	return matrix;
     }
     
     public static FloatMatrix ones(int rows, int columns, Context context) {
-    	FloatMatrix matrix = null;
-    	
-    	// dirty allocation 
-        if (context.isGPU()) {
-            if (context.isCUDA()) {
-            	matrix = new CudaFloatMatrix(rows, columns);
-            } else {
-            	matrix = new CLFloatMatrix(rows, columns);
-            }
-        } else {
-        	matrix = new JavaFloatMatrix(rows, columns);
-        }
-        
+      	FloatMatrix matrix = FloatMatrixDefault.dirtyAllocation(rows, columns, context);        
     	matrix.setOne();
     	return matrix;
     }    
     
     public static FloatMatrix rand(int rows, int columns, Context context) {
-      	FloatMatrix matrix = null;
-      	
-      	// dirty allocation 
-        if (context.isGPU()) {
-            if (context.isCUDA()) {
-            	matrix = new CudaFloatMatrix(rows, columns);
-            } else {
-            	matrix = new CLFloatMatrix(rows, columns);
-            }
-        } else {
-        	matrix = new JavaFloatMatrix(rows, columns);
-        }
-        
+      	FloatMatrix matrix = FloatMatrixDefault.dirtyAllocation(rows, columns, context);     
     	matrix.randi();
     	return matrix;
     }
     
     public static FloatMatrix randn(int rows, int columns, Context context) {
-      	FloatMatrix matrix = null;
-      	
-    	// dirty allocation 
-        if (context.isGPU()) {
-            if (context.isCUDA()) {
-            	matrix = new CudaFloatMatrix(rows, columns);
-            } else {
-            	matrix = new CLFloatMatrix(rows, columns);
-            }
-        } else {
-        	matrix = new JavaFloatMatrix(rows, columns);
-        }
-        
+      	FloatMatrix matrix = FloatMatrixDefault.dirtyAllocation(rows, columns, context);        
     	matrix.randni();
     	return matrix;
     }

@@ -19,14 +19,14 @@ public abstract class AContextBasedExpression extends AFunctionObject {
     public void setContext(Context context) {
 
         if (context.isCUDA()) {
-            if (context.isDouble()) {
+            if (context.isDoublePrecision()) {
                 operator = getDoubleCuda();
             } else {
                 operator = getSingleCuda();
             }
 
         } else {
-            if (context.isDouble()) {
+            if (context.isDoublePrecision()) {
                 operator = getDoubleOpenCL();
             } else {
                 operator = getSingleOpenCL();

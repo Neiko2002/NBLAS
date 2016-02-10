@@ -5,8 +5,6 @@ import org.nblas.cuda.CudaFloatMatrix;
 import org.nblas.java.JavaFloatMatrix;
 
 /**
- * TODO Es gibt FloatMatrixDefault welches FloatMatrix extended
- * FloatMatrix hat die ganzen Experten Funktionen nicht.
  * 
  * @author Nico
  *
@@ -14,16 +12,14 @@ import org.nblas.java.JavaFloatMatrix;
 public interface FloatMatrixDefault extends FloatMatrix {
     
 	/**
-	 * dirty allocation 
-	 * 
-	 * TODO: sollte nach außen hin nicht sichtbar sein
+	 * Dirty allocation. Very fast but the content might not be 0. 
 	 * 
 	 * @param rows
 	 * @param columns
 	 * @param context
 	 * @return
 	 */
-    public static FloatMatrix create(int rows, int columns, Context context) {
+    public static FloatMatrix dirtyAllocation(int rows, int columns, Context context) {
     	
         if (context.isGPU()) {
             if (context.isCUDA()) {
@@ -128,7 +124,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
      * @return
      */
     public default FloatMatrix dup() {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	result.dup(this, result);
         return result;
     }
@@ -149,7 +145,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     public FloatMatrix repmat(FloatMatrix source, FloatMatrix destination, int rowMultiplicator, int columnMultiplicator);
     
     public default FloatMatrix repmat(int rowMultiplicator, int columnMultiplicator) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows() * rowMultiplicator, this.getColumns() * columnMultiplicator, this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows() * rowMultiplicator, this.getColumns() * columnMultiplicator, this.getContext());
     	repmat(this, result, rowMultiplicator, columnMultiplicator);
     	return result;
     }
@@ -189,7 +185,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix add(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrixDefault.create(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(b.getRows(), b.getColumns(), b.getContext());
         add(this, b, result);
         return result;
     }
@@ -215,7 +211,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix add(float scalar) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
         add(this, scalar, result);
         return result;
     }
@@ -242,7 +238,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix addColumnVector(FloatMatrix columnVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	addColumnVector(this, columnVector, result);
         return result;
     } 
@@ -268,7 +264,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix addRowVector(FloatMatrix rowVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	addRowVector(this, rowVector, result);
         return result;
     } 
@@ -299,7 +295,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix sub(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrixDefault.create(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(b.getRows(), b.getColumns(), b.getContext());
         sub(this, b, result);
         return result;
     }
@@ -325,7 +321,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix sub(float scalar) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
         sub(this, scalar, result);
         return result;
     }
@@ -352,7 +348,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix subColumnVector(FloatMatrix columnVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	subColumnVector(this, columnVector, result);
         return result;
     } 
@@ -378,7 +374,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix subRowVector(FloatMatrix rowVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	subRowVector(this, rowVector, result);
         return result;
     } 
@@ -404,7 +400,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix rsub(float scalar) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	rsub(this, scalar, result);
         return result;
     } 
@@ -430,7 +426,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix rsubColumnVector(FloatMatrix columnVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	rsubColumnVector(this, columnVector, result);
         return result;
     } 
@@ -456,7 +452,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix rsubRowVector(FloatMatrix rowVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	rsubRowVector(this, rowVector, result);
         return result;
     } 
@@ -486,7 +482,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix mul(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrixDefault.create(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(b.getRows(), b.getColumns(), b.getContext());
         mul(this, b, result);
         return result;
     }
@@ -512,7 +508,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix mul(float scalar) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
         mul(this, scalar, result);
         return result;
     }
@@ -539,7 +535,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix mulColumnVector(FloatMatrix columnVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	mulColumnVector(this, columnVector, result);
         return result;
     } 
@@ -565,7 +561,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix mulRowVector(FloatMatrix rowVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	mulRowVector(this, rowVector, result);
         return result;
     } 
@@ -596,7 +592,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix div(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrixDefault.create(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(b.getRows(), b.getColumns(), b.getContext());
         div(this, b, result);
         return result;
     }
@@ -622,7 +618,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix div(float scalar) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
         div(this, scalar, result);
         return result;
     }
@@ -649,7 +645,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix divColumnVector(FloatMatrix columnVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	divColumnVector(this, columnVector, result);
         return result;
     } 
@@ -675,7 +671,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix divRowVector(FloatMatrix rowVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	divRowVector(this, rowVector, result);
         return result;
     } 
@@ -701,7 +697,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix rdiv(float scalar) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	rdiv(this, scalar, result);
         return result;
     } 
@@ -727,7 +723,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix rdivColumnVector(FloatMatrix columnVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	rdivColumnVector(this, columnVector, result);
         return result;
     } 
@@ -753,7 +749,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }  
     
     public default FloatMatrix rdivRowVector(FloatMatrix rowVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	rdivRowVector(this, rowVector, result);
         return result;
     } 
@@ -782,7 +778,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
 	}
 
 	public default FloatMatrix exp() {
-		FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+		FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
         exp(this, result);
 		return result;
 	}
@@ -812,7 +808,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
 	}
 
 	public default FloatMatrix neg() {
-		FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+		FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
         neg(this, result);
 		return result;
 	}
@@ -842,7 +838,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
 	}
 	
 	public default FloatMatrix sigmoid() {
-		FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+		FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
         sigmoid(this, result);
 		return result;
 	}
@@ -874,7 +870,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix gt(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrixDefault.create(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(b.getRows(), b.getColumns(), b.getContext());
         gt(this, b, result);
         return result;
     }
@@ -901,7 +897,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix gt(float scalar) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
         gt(this, scalar, result);
         return result;
     }
@@ -928,7 +924,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix gtRowVector(FloatMatrix rowVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	gtRowVector(this, rowVector, result);
         return result;
     }
@@ -954,7 +950,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix gtColumnVector(FloatMatrix ColumnVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getColumns(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getColumns(), this.getColumns(), this.getContext());
     	gtColumnVector(this, ColumnVector, result);
         return result;
     }
@@ -986,7 +982,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix ge(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrixDefault.create(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(b.getRows(), b.getColumns(), b.getContext());
         ge(this, b, result);
         return result;
     }
@@ -1013,7 +1009,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix ge(float scalar) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
         ge(this, scalar, result);
         return result;
     }
@@ -1040,7 +1036,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix geRowVector(FloatMatrix rowVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	geRowVector(this, rowVector, result);
         return result;
     }
@@ -1066,7 +1062,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix geColumnVector(FloatMatrix ColumnVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getColumns(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getColumns(), this.getColumns(), this.getContext());
     	geColumnVector(this, ColumnVector, result);
         return result;
     }
@@ -1098,7 +1094,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix lt(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrixDefault.create(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(b.getRows(), b.getColumns(), b.getContext());
         lt(this, b, result);
         return result;
     }
@@ -1125,7 +1121,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix lt(float scalar) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
         lt(this, scalar, result);
         return result;
     }
@@ -1152,7 +1148,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix ltRowVector(FloatMatrix rowVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	ltRowVector(this, rowVector, result);
         return result;
     }
@@ -1178,7 +1174,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix ltColumnVector(FloatMatrix ColumnVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getColumns(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getColumns(), this.getColumns(), this.getContext());
     	ltColumnVector(this, ColumnVector, result);
         return result;
     }
@@ -1210,7 +1206,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix le(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrixDefault.create(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(b.getRows(), b.getColumns(), b.getContext());
         le(this, b, result);
         return result;
     }
@@ -1237,7 +1233,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix le(float scalar) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
         le(this, scalar, result);
         return result;
     }
@@ -1264,7 +1260,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix leRowVector(FloatMatrix rowVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	leRowVector(this, rowVector, result);
         return result;
     }
@@ -1290,7 +1286,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix leColumnVector(FloatMatrix ColumnVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getColumns(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getColumns(), this.getColumns(), this.getContext());
     	leColumnVector(this, ColumnVector, result);
         return result;
     }
@@ -1321,7 +1317,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix eq(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrixDefault.create(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(b.getRows(), b.getColumns(), b.getContext());
         eq(this, b, result);
         return result;
     }
@@ -1348,7 +1344,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix eq(float scalar) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
         eq(this, scalar, result);
         return result;
     }
@@ -1375,7 +1371,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix eqRowVector(FloatMatrix rowVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	eqRowVector(this, rowVector, result);
         return result;
     }
@@ -1401,7 +1397,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix eqColumnVector(FloatMatrix ColumnVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getColumns(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getColumns(), this.getColumns(), this.getContext());
     	eqColumnVector(this, ColumnVector, result);
         return result;
     }
@@ -1433,7 +1429,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix ne(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrixDefault.create(b.getRows(), b.getColumns(), b.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(b.getRows(), b.getColumns(), b.getContext());
         ne(this, b, result);
         return result;
     }
@@ -1460,7 +1456,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix ne(float scalar) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
         ne(this, scalar, result);
         return result;
     }
@@ -1487,7 +1483,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix neRowVector(FloatMatrix rowVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	neRowVector(this, rowVector, result);
         return result;
     }
@@ -1513,7 +1509,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix neColumnVector(FloatMatrix ColumnVector) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getColumns(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getColumns(), this.getColumns(), this.getContext());
     	neColumnVector(this, ColumnVector, result);
         return result;
     }
@@ -1539,7 +1535,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix mmul(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), b.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), b.getColumns(), this.getContext());
         mmul(this, b, result);
         return result;
     }
@@ -1560,7 +1556,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix mmulTN(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getColumns(), b.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getColumns(), b.getColumns(), this.getContext());
         mmulTN(this, b, result);
         return result;
     }
@@ -1581,7 +1577,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix mmulNT(FloatMatrix b) {
-    	FloatMatrix result = FloatMatrixDefault.create(this.getRows(), b.getRows(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), b.getRows(), this.getContext());
         mmulNT(this, b, result);
         return result;
     }
@@ -1685,7 +1681,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
 	public FloatMatrix getSubMatrix(FloatMatrix src, FloatMatrix dst, int rowOffset, int columnOffset);
     
 	public default FloatMatrix getSubMatrix(int rowOffset, int columnOffset, int rows, int columns) {
-		FloatMatrix result = FloatMatrixDefault.create(rows, columns, this.getContext());
+		FloatMatrix result = FloatMatrixDefault.dirtyAllocation(rows, columns, this.getContext());
 		getSubMatrix(this, result, rowOffset, columnOffset);
 		return result;
 	}
@@ -1695,7 +1691,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
 	}
 	
 	public default FloatMatrix getSubMatrix(int rowOffset, int columnOffset) {
-		FloatMatrix result = FloatMatrixDefault.create(this.getRows()-rowOffset, this.getColumns()-columnOffset, this.getContext());
+		FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows()-rowOffset, this.getColumns()-columnOffset, this.getContext());
 		getSubMatrix(this, result, rowOffset, columnOffset);
 		return result;
 	}
@@ -1742,7 +1738,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
 	}
 	
 	public default FloatMatrix getRow(int rowIndex) {
-		FloatMatrix row = FloatMatrixDefault.create(1, this.getColumns(), this.getContext());
+		FloatMatrix row = FloatMatrixDefault.dirtyAllocation(1, this.getColumns(), this.getContext());
 		return getRow(this, row, rowIndex);
 	}
 	
@@ -1761,7 +1757,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
 	}
 	
 	public default FloatMatrix getColumn(int columnIndex) {
-		FloatMatrix column = FloatMatrixDefault.create(this.getColumns(), 1, this.getContext());
+		FloatMatrix column = FloatMatrixDefault.dirtyAllocation(this.getColumns(), 1, this.getContext());
 		return getColumn(this, column, columnIndex);
 	}
 
