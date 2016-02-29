@@ -79,12 +79,11 @@ public interface FloatMatrix  {
 
 	// ------------------------------------- print methods --------------------------------------
 	
-    public String toString1D();
     public String toString2D();
     
     // ------------------------------------- utility methods --------------------------------------
     public Context getContext();
-    public void free();
+    public void release();
     public boolean isReleased();
     
     public int getRows();

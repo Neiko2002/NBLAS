@@ -10,7 +10,6 @@ import jcuda.driver.CUfunction;
 
 class CudaFloatFunctionBuilder extends AFunctionBuilder<CUfunction> {
 
-	protected Context context = Context.createCudaSinglePrecisionContext();
 
 	@Override
     protected Subprogram<CUfunction> buildFunction(String name, String function, ArgumentType[] args) {
@@ -55,6 +54,6 @@ class CudaFloatFunctionBuilder extends AFunctionBuilder<CUfunction> {
 
     @Override
     protected Context getContext() {
-        return context;
+        return Context.CudaSinglePrecisionContext;
     }
 }

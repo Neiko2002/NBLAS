@@ -50,10 +50,10 @@ public abstract class CLMatrix extends AMatrix {
     }
     
     @Override
-    public void free() {
-        CORE.free(dataPointer);
+    public void release() {
+        CORE.release(dataPointer);
         if (randomDataPointer.isPresent()) {
-            CORE.free(randomDataPointer.get());
+            CORE.release(randomDataPointer.get());
         }
         released = true;
     }  

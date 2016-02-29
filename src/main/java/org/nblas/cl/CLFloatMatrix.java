@@ -18,11 +18,8 @@ import org.nblas.generic.Subprogram;
 public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
 
 	protected static final CLLevel1 level1;
-    protected static final Context context;
 
-	static {
-        context = Context.createOpenCLSinglePrecisionContext();
-        
+	static {        
 		CLFloatFunctionBuilder builder = new CLFloatFunctionBuilder();
 		
         // lade alle Predefined Kernels
@@ -73,7 +70,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
 	@Override
 	public Context getContext() {
-		return context;
+		return Context.OpenCLSinglePrecisionContext;
 	}  	
     
 	/**
@@ -92,7 +89,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
 	
 	@Override
 	public String toString() {
-		return toString1D();
+		return toString2D();
 	}
 	
 	/**
@@ -178,7 +175,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix add(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.addScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
 
@@ -219,7 +216,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix sub(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.subScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
 
@@ -248,7 +245,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix rsub(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.rsubScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
 
@@ -289,7 +286,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix mul(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.mulScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
 
@@ -330,7 +327,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix div(FloatMatrix a, float scalar, FloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.divScalar((CLFloatMatrix)a, b, (CLFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -359,7 +356,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix rdiv(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.rdivScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
 
@@ -431,7 +428,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix gt(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.gtScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -472,7 +469,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix ge(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.geScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -512,7 +509,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix lt(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.ltScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -553,7 +550,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix le(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.leScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -594,7 +591,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix eq(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.eqScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -635,7 +632,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix ne(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.neScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -812,7 +809,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public static void ge(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.geScalar(matrix, b, result);
-    	b.free();
+    	b.release();
     }
 
     public static void geColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
@@ -833,7 +830,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public static void lt(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.ltScalar(matrix, b, result);
-    	b.free();
+    	b.release();
     }
 
     public static void ltColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
@@ -854,7 +851,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public static void le(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.leScalar(matrix, b, result);
-    	b.free();
+    	b.release();
     }
 
     public static void leColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
@@ -875,7 +872,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public static void eq(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.eqScalar(matrix, b, result);
-    	b.free();
+    	b.release();
     }
 
     public static void eqColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
@@ -896,7 +893,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public static void ne(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
     	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
     	level1.neScalar(matrix, b, result);
-    	b.free();
+    	b.release();
     }
 
     public static void neColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
@@ -949,7 +946,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
 	public FloatMatrix put(FloatMatrix dst, int rowIndex, int columnIndex, float value) {
     	CLFloatMatrix val = new CLFloatMatrix(1, 1, new float[] { value });
 		setSubMatrix(val, dst, rowIndex, columnIndex);
-		val.free();
+		val.release();
 		return this;
 	}
 
@@ -961,7 +958,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     	CLFloatMatrix val = new CLFloatMatrix(1, 1, new float[] { 0 });
 		getSubMatrix(src, val, rowIndex, columnIndex);
 		float value = val.toArray()[0];
-		val.free();
+		val.release();
 		return value;
 	}
 

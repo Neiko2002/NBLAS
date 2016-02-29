@@ -22,8 +22,8 @@ public class CudaMatrix extends AMatrix {
 	}
 	
     @Override
-    public void free() {
-        CORE.free(dataPointer);
+    public void release() {
+        CORE.release(dataPointer);
 		released = true;
     }
 

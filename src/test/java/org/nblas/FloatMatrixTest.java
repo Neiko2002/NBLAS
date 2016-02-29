@@ -31,12 +31,12 @@ public class FloatMatrixTest {
 	public static void main(String[] args) throws Exception {
 		FloatMatrixTest testSuit = new FloatMatrixTest();
 		testSuit.setUp();
-		testSuit.getTest();
+		testSuit.setSubMatrixTest();
 	}
 	
-	protected Context context = Context.createOpenCLSinglePrecisionContext();
-//	protected Context context = Context.createCudaSinglePrecisionContext();
-//	protected Context context = Context.createJBLASSinglePrecisionContext();
+	protected Context context = Context.OpenCLSinglePrecisionContext;
+//	protected Context context = Context.CudaSinglePrecisionContext;
+//	protected Context context = Context.JBLASSinglePrecisionContext;
 	
 	protected org.jblas.FloatMatrix matA_CPU;
 	protected org.jblas.FloatMatrix matB_CPU;
@@ -89,8 +89,8 @@ public class FloatMatrixTest {
 
 	@After
 	public void release() throws Exception {
-		matA_GPU.free();
-		matB_GPU.free();
+		matA_GPU.release();
+		matB_GPU.release();
 	}
 	
 	/**
@@ -109,9 +109,9 @@ public class FloatMatrixTest {
 		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
 		
 		// free the resources
-		nblasMat.free();
+		nblasMat.release();
 		for (FloatMatrix mat : other)
-			mat.free();
+			mat.release();
 	}
 
 	
@@ -2688,6 +2688,7 @@ public class FloatMatrixTest {
     // ----------------------------------------------------------------------------------------------------------
     // --------------------------------------------- manipulation tests -----------------------------------------
 	// ----------------------------------------------------------------------------------------------------------
+
 	
 	@Test
 	public void setSubMatrixTest() {

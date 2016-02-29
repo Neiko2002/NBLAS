@@ -54,9 +54,9 @@ public class Subprogram<K> {
 		this.kernel = kernel;
 	}
 
-	public boolean isBuild() {
-		return kernel != null;
-	}
+//	public boolean isBuild() {
+//		return kernel != null;
+//	}
 	
 	@Override
 	public boolean equals(Object obj) {

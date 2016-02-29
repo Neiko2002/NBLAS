@@ -22,7 +22,7 @@ import org.nblas.generic.Subprogram;
 
 /**
  * Matrix funktionen wie transpose() gehören in eine allgemeine CLMatrix Klasse und sgemm_nn sogar in die CLFloatMatrix.
- * 
+ *   
  * @author Nico
  *
  */
@@ -143,7 +143,7 @@ class CLCore {
 
         enqueue2DRangeKernel(kernel, srcCLRows, srcCLColumns, 0, 0);
     }
-
+    
 
     public void getSubMatrix(cl_mem source, cl_mem destination, int dstCLRows, int dstCLColumns, int dstRows, int dstColumns, int offsetRows, int offsetColumns, int srcStride) {
     	cl_kernel kernel = CLPredefined.getSubprogram("getSubMatrix").getKernel();
@@ -395,7 +395,7 @@ class CLCore {
 
         float[] result = new float[1];
         getData(temp, result);
-        free(temp);
+        release(temp);
 
         return result[0];
     }
@@ -441,7 +441,7 @@ class CLCore {
 
         float[] reduced = new float[1];
         getData(temp, reduced);
-        free(temp);
+        release(temp);
         
         return reduced[0];
     }
@@ -483,7 +483,7 @@ class CLCore {
         }
         
         copyRowMajor(temp, result, columns, clResultRows);
-        free(temp);
+        release(temp);
 
     }
 
@@ -506,7 +506,7 @@ class CLCore {
         }
    
         copyColumnMajor(temp, result, rows);
-        free(temp);
+        release(temp);
     }
 
     private void reduceCall(cl_kernel kernel, cl_mem data, cl_mem result, int rows, int columns, float initValue, int sizeX, int sizeY) {
@@ -548,6 +548,7 @@ class CLCore {
         cl_mem cl_mem = CL.clCreateBuffer(context,
                 CL.CL_MEM_READ_WRITE | CL.CL_MEM_COPY_HOST_PTR,
                 Sizeof.cl_float * values.length, pointer, null);
+               
         return cl_mem;
     }
 
@@ -569,7 +570,7 @@ class CLCore {
         return cl_mem;
     }
 
-    public void free(cl_mem buffer) {
+    public void release(cl_mem buffer) {
         CL.clReleaseMemObject(buffer);
     }  
     

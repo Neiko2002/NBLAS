@@ -46,7 +46,7 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 		System.out.println(matA_GPU.toString2D());
 		System.out.println(clMat.toString2D());
 		
-		clMat.free();
+		clMat.release();
 	}
 	
 		
@@ -89,7 +89,7 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 		System.out.println(rowVector_GPU.toString2D());
 		System.out.println(clMat.toString2D());
 		
-		clMat.free();
+		clMat.release();
 	}
 	
 	
@@ -116,7 +116,7 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 			System.out.println("Compare: "+sum_CPU+" vs "+sum_GPU);
 
 
-			matC_GPU.free();
+			matC_GPU.release();
 		}
 	}
 	
@@ -148,8 +148,8 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 
 		System.out.println(matA_GPU.getRows() * matA_GPU.getColumns() * Math.pow(2, 11));
 		Assert.assertEquals(sum_CPU, sum_GPU, 0.1f);
-		matC_GPU1.free();	
-		matC_GPU.free();	
+		matC_GPU1.release();	
+		matC_GPU.release();	
 	}
 	
 	

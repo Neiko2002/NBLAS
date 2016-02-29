@@ -110,7 +110,7 @@ class CudaCore {
 
         CudaDevice device = CudaDevice.getDevices()[0];
         device.use();
-        System.out.println("Use CUDA device "+device.toString());
+        //System.out.println("Use CUDA device "+device.toString());
 
         return device;
     }    
@@ -255,8 +255,7 @@ class CudaCore {
         System.out.println("Finished creating PTX file");
     }
 
-    private byte[] toByteArray(InputStream inputStream)
-            throws IOException {
+    private byte[] toByteArray(InputStream inputStream) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte buffer[] = new byte[8192];
         while (true) {
@@ -269,7 +268,7 @@ class CudaCore {
         return baos.toByteArray();
     }
 
-    protected void free(Pointer pointer) {
+    protected void release(Pointer pointer) {
         cudaFree(pointer);
     }
     
@@ -337,6 +336,9 @@ class CudaCore {
                 null,
                 kernelParameters, null);
         JCudaDriver.cuCtxSynchronize();
+        
+//        JCuda.cudaSetDeviceFlags(JCuda.cudaDeviceScheduleBlockingSync);
+//        JCuda.cudaDeviceSynchronize();        
     }
 
     protected void setSubMatrix(Pointer result, Pointer data, int rows, int columns, int dataRows, int offsetRow, int offsetColumn) {
@@ -361,6 +363,7 @@ class CudaCore {
                 null,
                 kernelParameters, null);
         JCudaDriver.cuCtxSynchronize();
+
     }
 
     
@@ -378,20 +381,20 @@ class CudaCore {
      */
     protected Pointer malloc(float[] values, int sizeof) {
         Pointer pointer = new Pointer();
-        cudaMalloc(pointer, values.length * sizeof);
-        cublasSetVector(values.length, sizeof, Pointer.to(values), 1, pointer, 1);
+        JCuda.cudaMalloc(pointer, values.length * sizeof);
+        JCublas2.cublasSetVector(values.length, sizeof, Pointer.to(values), 1, pointer, 1);
         return pointer;
     }
 
     protected Pointer malloc(int length, int sizeof) {
         Pointer pointer = new Pointer();
-        cudaMalloc(pointer, length * sizeof);
+        JCuda.cudaMalloc(pointer, length * sizeof);
         return pointer;
     }
     
     
     protected void setData(Pointer pointer, float[] values) {
-        cublasSetVector(values.length, Sizeof.FLOAT, Pointer.to(values), 1, pointer, 1);
+    	JCublas2.cublasSetVector(values.length, Sizeof.FLOAT, Pointer.to(values), 1, pointer, 1);
     }
 
     protected void getData(Pointer pointer, float[] values) {
@@ -454,7 +457,7 @@ class CudaCore {
             reduceCall(f, temp, temp, rows, c, blocksX, blocksY, initValue);
         }
         copy1d(temp, result, rows);
-        free(temp);
+        release(temp);
     }
 
     public void reduceColumns(String functionName, Pointer data, Pointer result, int rows, int columns, float initValue) {
@@ -470,7 +473,7 @@ class CudaCore {
             reduceCall(f, temp, temp, r, columns, blocksX, blocksY, initValue);
         }
         copy1d(temp, result, columns);
-        free(temp);
+        release(temp);
     }
 
     private void reduceCall(CUfunction f, Pointer data, Pointer result, int rows, int columns, int blocksX, int blocksY, float initValue) {

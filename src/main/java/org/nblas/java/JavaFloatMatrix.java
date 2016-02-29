@@ -36,11 +36,11 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 
 	@Override
 	public Context getContext() {
-		return Context.createJBLASSinglePrecisionContext();
+		return Context.JBLASSinglePrecisionContext;
 	}
 
     @Override
-    public void free() {
+    public void release() {
         matrix = null;
         released = true;
     }    
@@ -64,7 +64,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 
 	@Override
 	public String toString() {
-		return toString1D();
+		return toString2D();
 	}
 	
 	@Override

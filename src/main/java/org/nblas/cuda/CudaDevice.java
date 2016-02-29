@@ -62,7 +62,13 @@ class CudaDevice {
 	}
 	
 	public void use() {
+		
+//		JCuda.cudacre
+//		JCuda.cudaSetDeviceFlags(JCuda.cudaDeviceScheduleBlockingSync);
+//		JCudaDriver.cu
+        
 		 JCudaDriver.cuCtxCreate(contextPointer, CUctx_flags.CU_CTX_SCHED_AUTO, devicePointer);
+//		 JCudaDriver.cuCtxCreate(contextPointer, CUctx_flags.CU_CTX_SCHED_BLOCKING_SYNC, devicePointer); // Blockt CPU beim synchonisieren
 //		 JCudaDriver.cuCtxCreate(contextPointer, CUctx_flags.CU_CTX_SCHED_YIELD, devicePointer); // TODO performanter!?
 	}
 	
@@ -86,7 +92,7 @@ class CudaDevice {
 		// lese ein paar Eigenschaften aus
 		int[] valueBuffer = new int[1];
         JCuda.cudaRuntimeGetVersion(valueBuffer);
-        device.cudaVersion = valueBuffer[0];
+        device.cudaVersion = valueBuffer[0];        
         
         cudaDeviceProp prop = device.props = new cudaDeviceProp();
         JCuda.cudaGetDeviceProperties(prop, ordinal);

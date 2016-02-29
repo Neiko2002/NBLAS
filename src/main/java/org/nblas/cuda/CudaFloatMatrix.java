@@ -9,7 +9,6 @@ import org.nblas.generic.Subprogram;
 
 import jcuda.Sizeof;
 import jcuda.driver.CUfunction;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * TODO hier sollten keine CORE zugriffe statt finden
@@ -20,11 +19,8 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
    
     protected static final CudaLevel1 level1;
-    protected static final Context context;
 
-    static {
-    	context = Context.createCudaSinglePrecisionContext();
-    	
+    static {   	
         CudaFloatFunctionBuilder builder = new CudaFloatFunctionBuilder();
                
         for (Subprogram<CUfunction> subprogram : CudaPredefined.kernels.values()) {
@@ -59,7 +55,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
 
 	@Override
 	public Context getContext() {
-		return context;
+		return Context.CudaSinglePrecisionContext;
 	}
 	
     @Override
@@ -72,7 +68,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     
 	@Override
 	public String toString() {
-		return toString1D();
+		return toString2D();
 	}
     
 	@Override
@@ -90,7 +86,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     
     @Override
     public FloatMatrix repmat(FloatMatrix source, FloatMatrix destination, int rowMultiplicator, int columnMultiplicator) {
-    	throw new NotImplementedException();
+    	return null;
     }
 	
 	// ---------------------------------- inplace methods -------------------------------------
@@ -138,7 +134,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public FloatMatrix add(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	level1.addScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
 
@@ -179,7 +175,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public FloatMatrix sub(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	level1.subScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
 
@@ -208,7 +204,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public FloatMatrix rsub(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	level1.rsubScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
 
@@ -249,7 +245,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public FloatMatrix mul(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	level1.mulScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
 
@@ -290,7 +286,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public FloatMatrix div(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	level1.divScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -315,7 +311,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public static void rdiv(CudaFloatMatrix matrix, float scalar, CudaFloatMatrix result) {
     	CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	level1.rdivScalar(matrix, b, result);
-    	b.free();
+    	b.release();
     }
 
     public static void rdivColumnVector(CudaFloatMatrix matrix, CudaFloatMatrix columnVector, CudaFloatMatrix result) {
@@ -333,7 +329,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public FloatMatrix rdiv(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	level1.rdivScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
 
@@ -404,7 +400,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public FloatMatrix gt(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	level1.gtScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -445,7 +441,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public FloatMatrix ge(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	level1.geScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -485,7 +481,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public FloatMatrix lt(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	level1.ltScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -526,7 +522,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public FloatMatrix le(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	level1.leScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -567,7 +563,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public FloatMatrix eq(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	level1.eqScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -608,7 +604,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public FloatMatrix ne(FloatMatrix matrix, float scalar, FloatMatrix result) {
     	CudaFloatMatrix b = new CudaFloatMatrix(1, 1, new float[] { scalar });
     	level1.neScalar((CudaFloatMatrix)matrix, b, (CudaFloatMatrix)result);
-    	b.free();
+    	b.release();
     	return result;
     }
     
@@ -773,7 +769,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
 	public FloatMatrix put(FloatMatrix src, int rowIndex, int columnIndex, float value) {
 		CudaFloatMatrix val = new CudaFloatMatrix(1, 1, new float[] { value });
 		setSubMatrix(val, this, rowIndex, columnIndex);
-		val.free();
+		val.release();
 		return this;
 	}
 
@@ -785,7 +781,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
 		CudaFloatMatrix val = new CudaFloatMatrix(1, 1, new float[] { 0 });
 		getSubMatrix(this, val, rowIndex, columnIndex);
 		float value = val.toArray()[0];
-		val.free();
+		val.release();
 		return value;
 	}
 	

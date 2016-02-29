@@ -52,7 +52,7 @@ public abstract class AMatrix {
         return released;
     }
     
-    public abstract void free();  
+    public abstract void release();  
     
 
     private static boolean isNotSameColumnSize(AMatrix a, AMatrix b) {

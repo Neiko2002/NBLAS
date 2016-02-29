@@ -9,7 +9,6 @@ import org.nblas.generic.Subprogram;
 
 class CLFloatFunctionBuilder extends AFunctionBuilder<cl_kernel> {
 
-	protected Context context = Context.createOpenCLSinglePrecisionContext();
 	
 	@Override
     protected Subprogram<cl_kernel> buildFunction(String name, String function, ArgumentType[] args) {
@@ -55,6 +54,6 @@ class CLFloatFunctionBuilder extends AFunctionBuilder<cl_kernel> {
 
     @Override
     protected Context getContext() {
-        return context;
+        return Context.OpenCLSinglePrecisionContext;
     }
 }

@@ -19,18 +19,6 @@ public final class Context {
     	this.host = host;
     }
 
-    public static Context createCudaSinglePrecisionContext() {
-        return new Context(Precision.SINGLE, Host.GPU, DeviceInterface.CUDA);
-    }
-
-    public static Context createOpenCLSinglePrecisionContext() {
-        return new Context(Precision.SINGLE, Host.GPU, DeviceInterface.OpenCL);
-    }
-
-    public static Context createJBLASSinglePrecisionContext() {
-        return new Context(Precision.SINGLE, Host.CPU, DeviceInterface.OpenCL);
-    }
-
 //    public static Context createCudaDoublePrecisionContext() {
 //        return new Context(Precision.DOUBLE, Host.GPU, DeviceInterface.CUDA);
 //    }
@@ -66,4 +54,23 @@ public final class Context {
     public boolean isOpenCL() {
         return deviceInterface == Context.DeviceInterface.OpenCL;
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+    	if(obj instanceof Context) {
+    		Context otherContext = (Context) obj;
+    		if(host != otherContext.host) return false;
+    		if(deviceInterface != otherContext.deviceInterface) return false;
+    		if(precision != otherContext.precision) return false;
+    		return true;
+    	}
+    	return false;
+    }
+    
+    
+    
+
+    public static Context CudaSinglePrecisionContext = new Context(Precision.SINGLE, Host.GPU, DeviceInterface.CUDA);
+    public static Context OpenCLSinglePrecisionContext = new Context(Precision.SINGLE, Host.GPU, DeviceInterface.OpenCL);
+    public static Context JBLASSinglePrecisionContext = new Context(Precision.SINGLE, Host.CPU, DeviceInterface.OpenCL);
 }

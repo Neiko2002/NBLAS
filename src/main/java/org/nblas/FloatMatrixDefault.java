@@ -1,5 +1,7 @@
 package org.nblas;
 
+import java.util.Arrays;
+
 import org.nblas.cl.CLFloatMatrix;
 import org.nblas.cuda.CudaFloatMatrix;
 import org.nblas.java.JavaFloatMatrix;
@@ -52,58 +54,30 @@ public interface FloatMatrixDefault extends FloatMatrix {
 	
 	
 	// ------------------------------------- print methods --------------------------------------
-	
-    public default String toString1D() {
-        StringBuilder builder = new StringBuilder();
-        float[][] matrix = toArray2();
-        builder.append("[");
-        for (int x = 0; x < getRows() - 1; x++) {
-            for (int y = 0; y < getColumns() - 1; y++) {
-                builder.append(String.format("%.6f", matrix[y][x]));
-                builder.append(", ");
-            }
-
-            builder.append(String.format("%.6f", matrix[x][getColumns() - 1]));
-            builder.append("; ");
-        }
-        for (int y = 0; y < getColumns() - 1; y++) {
-            builder.append(String.format("%.6f", matrix[getRows() - 1][y]));
-            builder.append(", ");
-        }
-        builder.append(String.format("%.6f", matrix[getRows() - 1][getColumns() - 1]));
-        builder.append("]");
-
-        return builder.toString();
-    }
 
     public default String toString2D() {
         StringBuilder builder = new StringBuilder();
         float[][] matrix = toArray2();
-        for (int i = 0; i < getRows() - 1; i++) {
+        int maxRows = Math.min(50, matrix.length);
+        int maxColumns = Math.min(50, matrix[0].length);
+        
+        for (int y = 0; y < maxRows; y++) {
             builder.append("[");
-            for (int j = 0; j < getColumns() - 1; j++) {
-                builder.append(String.format("%.6f", matrix[i][j]));
-                builder.append(", ");
+            for (int x = 0; x < maxColumns; x++) {
+                builder.append(String.format("%.6f", matrix[y][x]));
+                if(x < maxColumns - 1) builder.append(", ");
             }
-
-            builder.append(String.format("%.6f", matrix[i][getColumns() - 1]));
-            builder.append("]\n");
+            builder.append("]");
+            if(y < maxRows - 1) builder.append(", ");
+            builder.append("\n");
         }
-
-        builder.append("[");
-        for (int j = 0; j < getColumns() - 1; j++) {
-            builder.append(String.format("%.6f", matrix[getRows() - 1][j]));
-            builder.append(", ");
-        }
-        builder.append(String.format("%.6f", matrix[getRows() - 1][getColumns() - 1]));
-        builder.append("]\n");
 
         return builder.toString();
     }
     
     // ------------------------------------- utility methods --------------------------------------
     public Context getContext();
-    public void free();
+    public void release();
     public boolean isReleased();
     
     public int getRows();
