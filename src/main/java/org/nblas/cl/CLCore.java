@@ -182,27 +182,40 @@ class CLCore {
         CL.clSetKernelArg(kernel, 3, Sizeof.cl_int, Pointer.to(new int[]{rows}));
         CL.clSetKernelArg(kernel, 4, Sizeof.cl_int, Pointer.to(new int[]{columns}));
 
-
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{clRows, clColumns}, new long[]{threadCount_X, threadCount_Y}, 0, null, null);
+        enqueue2DRangeKernel(kernel, clRows, clColumns, 0, 0);
+//        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{clRows, clColumns}, new long[]{threadCount_X, threadCount_Y}, 0, null, null);
 //        CL.clWaitForEvents(1, new cl_event[]{event});
+    }
+    
+    
+    public void sgemm_nn_custom(cl_kernel kernel, cl_mem a, cl_mem b, cl_mem result, int clM, int clN, int clK) {
+         
+        CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(a));
+        CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(b));
+        CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(result));
+        CL.clSetKernelArg(kernel, 3, Sizeof.cl_float * threadCount, null);
+        CL.clSetKernelArg(kernel, 4, Sizeof.cl_float * threadCount, null);
+        CL.clSetKernelArg(kernel, 5, Sizeof.cl_int, Pointer.to(new int[]{clM}));
+        CL.clSetKernelArg(kernel, 6, Sizeof.cl_int, Pointer.to(new int[]{clN}));
+        CL.clSetKernelArg(kernel, 7, Sizeof.cl_int, Pointer.to(new int[]{clK}));
+
+        enqueue2DRangeKernel(kernel, clM, clN, 0, 0);
+//        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{clM, clN}, new long[]{threadCount_X, 1}, 0, null, null);        
     }
 
     public void sgemm_nn(cl_mem a, cl_mem b, cl_mem result, int clM, int clN, int clK) {
         Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("sgemm_nn");
-        if(subprogram.isBuild())
-        	sgemmCall(a, b, result, clM, clN, clK, subprogram.getKernel());
+        sgemmCall(a, b, result, clM, clN, clK, subprogram.getKernel());
     }
 
     public void sgemm_nt(cl_mem a, cl_mem b, cl_mem result, int clM, int clN, int clK) {
         Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("sgemm_nt");
-        if(subprogram.isBuild())
-        	sgemmCall(a, b, result, clM, clN, clK, subprogram.getKernel());
+        sgemmCall(a, b, result, clM, clN, clK, subprogram.getKernel());
     }
 
     public void sgemm_tn(cl_mem a, cl_mem b, cl_mem result, int clM, int clN, int clK) {
         Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("sgemm_tn");
-        if(subprogram.isBuild())
-        	sgemmCall(a, b, result, clM, clN, clK, subprogram.getKernel());
+        sgemmCall(a, b, result, clM, clN, clK, subprogram.getKernel());
     }
 
 
@@ -217,7 +230,9 @@ class CLCore {
         CL.clSetKernelArg(kernel, 6, Sizeof.cl_int, Pointer.to(new int[]{clN}));
         CL.clSetKernelArg(kernel, 7, Sizeof.cl_int, Pointer.to(new int[]{clK}));
 
-        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{clM, clN}, new long[]{threadCount_X, threadCount_Y}, 0, null, null);
+        enqueue2DRangeKernel(kernel, clM, clN, 0, 0);
+
+//        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{clM, clN}, new long[]{threadCount_X, threadCount_Y}, 0, null, null);
 //        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 

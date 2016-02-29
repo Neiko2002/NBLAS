@@ -5,7 +5,8 @@ import org.nblas.cuda.CudaFloatMatrix;
 import org.nblas.java.JavaFloatMatrix;
 
 /**
- *  
+ * TODO: DropIn Replacement für JBLAS. Methoden header passt oftmals nicht (Parameter Reihenfolge)
+ * 
  * @author Nico
  *
  */

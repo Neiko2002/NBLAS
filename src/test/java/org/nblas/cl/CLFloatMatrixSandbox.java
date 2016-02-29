@@ -16,13 +16,66 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 	
 	public static void main(String[] args) throws Exception {
 		CLFloatMatrixSandbox testSuit = new CLFloatMatrixSandbox();
-		testSuit.context = Context.createOpenCLSinglePrecisionContext();
+		testSuit.context = Context.OpenCLSinglePrecisionContext;
 		testSuit.setUp();
-		testSuit.gTest();
+		testSuit.smallMmulTest();
 	}
 	
-	public void gTest() {
+	// TODO 3x4 matrix mmul 1x3 = 1x4
+	// performance
+	public void smallMmulTest() {
 		
+		String sourceCode = "" +
+			"__kernel void smallMmulTest(const __global float* a, const __global float* b, __global float* c, \n" +
+            "           __local float* aSub, __local float* bSub, \n" +
+            "           const int M, const int N, const int K) \n" +
+    		"{\n" + 
+    		"    const int tid0 = get_local_id(0);\n" + // 0 bis 0
+    		"    const int tid1 = get_local_id(1);\n" + // 0 bis 31
+    		"    const int gid0 = get_global_id(0);\n" + // 0 bis 0
+    		"    const int gid1 = get_global_id(1);\n" + // 0 bis 31
+    		"    int localSize0 = get_local_size(0);\n" + // 1
+    		"    int localSize1 = get_local_size(1);\n" + // 32
+    		"\n" +
+    	    "	float result = 0.0f;\n" +
+    	    "	int numTiles = K / localSize0;\n" + // 32
+    	    "	int index = tid1 * localSize0 + tid0;\n" + // 0 bis 31
+    	    "	for (int t =0; t < numTiles; t + +) {\n" + // 0 bis 31
+    	    "	    int tiled0 = localSize0 * t + tid0;\n" + // 0 bis 31
+    	    "	    int tiled1 = localSize1 * t + tid1;\n" + // 32*0...31 + 0...31
+    	    "	    aSub[index] = a[tiled1 * M + gid0];\n" +
+    	    "	    bSub[index] = b[gid1 * K + tiled0];\n" +
+    	    "	    barrier(CLK_LOCAL_MEM_FENCE);\n" +
+    	    "	    for (int k = 0; k < localSize0; k + +) {\n" + // wird durchlaufen auch wenn aSub und bSub noch nicht gefüllt sind
+    	    "	        result += aSub[k * localSize0 + tid0] * bSub[tid1 * localSize0 + k];\n" +
+    	    "	    }\n" +
+    	    "	    barrier(CLK_LOCAL_MEM_FENCE);\n" +
+    	    "	}\n" +
+    	    "	c[gid1 * M + gid0] = result;\n" +
+    		"}\n";
+		
+		Subprogram<cl_kernel> subprogram = new Subprogram<>("smallMmulTest", sourceCode, true);
+		CLCore CORE = CLCore.getCore();
+		CORE.loadFromGeneratedSubprogram(subprogram);
+		
+		float[][] input = new float[][] { {1,0,0},{1,0,1},{1,1,0},{1,1,1} };
+		float[][] weights = new float[][] { {1.7f}, {0.14f}, {0.71f} };
+		
+		CLFloatMatrix inputMat = (CLFloatMatrix) FloatMatrix.create(input, context);
+		CLFloatMatrix weightMat = (CLFloatMatrix) FloatMatrix.create(weights, context);
+		CLFloatMatrix outputMat = (CLFloatMatrix) FloatMatrix.zeros(1, 4, context);
+		
+		inputMat.mmulCustom(subprogram.getKernel(), inputMat, weightMat, outputMat);
+		
+		System.out.println(outputMat.toString2D());
+		
+		inputMat.release();
+		weightMat.release();
+		outputMat.release();
+	}
+	
+	
+	public void gTest() {
 		String sourceCode = "" +
 			"__kernel void gTest(__global const float* source, __global float* destination, const uint dstRows, const uint dstColumns, const uint rowOffset, const uint columnOffset, const uint srcStride)\n" +
     		"{\n" + 

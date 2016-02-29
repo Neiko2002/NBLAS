@@ -667,6 +667,14 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
         CORE.sgemm_nn(matrixA.dataPointer, matrixB.dataPointer, matrixR.dataPointer, matrixA.clRows, matrixB.clColumns, matrixA.clColumns);
         return result;
     }
+    
+     public FloatMatrix mmulCustom(cl_kernel kernel, FloatMatrix a, FloatMatrix b, FloatMatrix result) {
+     	CLFloatMatrix matrixA = (CLFloatMatrix) a;
+     	CLFloatMatrix matrixB = (CLFloatMatrix) b;
+     	CLFloatMatrix matrixR = (CLFloatMatrix) result;
+        CORE.sgemm_nn_custom(kernel, matrixA.dataPointer, matrixB.dataPointer, matrixR.dataPointer, matrixA.clRows, matrixB.clColumns, matrixA.clColumns);
+        return result;
+     }
 
     /**
   	 * @see FloatMatrix#mmulTN(FloatMatrix, FloatMatrix, FloatMatrix)
