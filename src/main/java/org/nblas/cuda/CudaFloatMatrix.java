@@ -762,7 +762,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
     public FloatMatrix setSubMatrix(FloatMatrix source, FloatMatrix destination, int offsetRow, int offsetColumn) {
     	CudaFloatMatrix src = (CudaFloatMatrix) source;
     	CudaFloatMatrix dst = (CudaFloatMatrix) destination;   
-        CORE.setSubMatrix(dst.dataPointer, src.dataPointer, src.getRows(), src.getRows(), dst.getRows(), offsetRow, offsetColumn);
+        CORE.setSubMatrix(dst.dataPointer, src.dataPointer, src.getRows(), src.getColumns(), dst.getRows(), offsetRow, offsetColumn);
         return destination;
     }
     
