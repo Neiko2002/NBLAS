@@ -680,9 +680,11 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	}
 
 	@Override
-	public FloatMatrix getSubMatrix(FloatMatrix src, FloatMatrix dst, int rowOffset, int columnOffset) {
-		((JavaFloatMatrix) dst).matrix.copy(((JavaFloatMatrix) src).matrix.getRange(rowOffset, src.getRows(), columnOffset, src.getColumns()));
-		return dst;
+	public FloatMatrix getSubMatrix(FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
+		org.jblas.FloatMatrix dst = ((JavaFloatMatrix) destination).matrix;
+		org.jblas.FloatMatrix src = ((JavaFloatMatrix) source).matrix;
+		dst.copy(src.getRange(rowOffset, rowOffset + destination.getRows(), columnOffset, columnOffset + destination.getColumns()));
+		return destination;
 	}
 
 	@Override
