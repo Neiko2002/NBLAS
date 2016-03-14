@@ -10,7 +10,7 @@ public abstract class ABinaryCommaSeparated extends AContextBasedExpression {
 
     @Override
     protected String getFunction() {
-        return operator + "(" + children.get(0).getFunction() + ", " + children.get(1).getFunction() + ")";
+        return expression + "(" + children.get(0).getFunction() + ", " + children.get(1).getFunction() + ")";
     }
 
 }

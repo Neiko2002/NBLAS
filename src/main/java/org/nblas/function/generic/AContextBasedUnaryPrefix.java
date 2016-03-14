@@ -11,7 +11,7 @@ public abstract class AContextBasedUnaryPrefix extends AContextBasedExpression {
 
     @Override
     protected String getFunction() {
-        return operator + "(" + children.get(0).getFunction() + ")";
+        return expression + "(" + children.get(0).getFunction() + ")";
     }
 
 }
