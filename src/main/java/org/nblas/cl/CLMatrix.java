@@ -105,8 +105,6 @@ public abstract class CLMatrix extends AMatrix {
      * Führe ein OpenCL Programm auf einer Matrix und einem Scalar durch,
      * das Resultat wird in eine zweite Matrix gespeichert
      * 
-     * TODO float scalar sollte zu 
-     * 
 	 * @param programId
 	 * @param matrix
 	 * @param scalar
@@ -115,6 +113,10 @@ public abstract class CLMatrix extends AMatrix {
 	protected static void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix scalar, CLMatrix result) {
 		checkScalarSize(scalar);
         CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, scalar.dataPointer);
+	}
+	
+	protected static void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLScalar scalar, CLMatrix result) {
+        CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, scalar, a.dataPointer);
 	}
 
 	/**

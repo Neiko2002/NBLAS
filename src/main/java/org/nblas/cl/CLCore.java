@@ -200,7 +200,6 @@ class CLCore {
         CL.clSetKernelArg(kernel, 7, Sizeof.cl_int, Pointer.to(new int[]{clK}));
 
         enqueue2DRangeKernel(kernel, clM, clN, 0, 0);
-//        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{clM, clN}, new long[]{threadCount_X, 1}, 0, null, null);        
     }
 
     public void sgemm_nn(cl_mem a, cl_mem b, cl_mem result, int clM, int clN, int clK) {
@@ -220,7 +219,6 @@ class CLCore {
 
 
     private void sgemmCall(cl_mem a, cl_mem b, cl_mem result, int clM, int clN, int clK, cl_kernel kernel) {
-//        cl_event event = new cl_event();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(a));
         CL.clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(b));
         CL.clSetKernelArg(kernel, 2, Sizeof.cl_mem, Pointer.to(result));
@@ -231,9 +229,6 @@ class CLCore {
         CL.clSetKernelArg(kernel, 7, Sizeof.cl_int, Pointer.to(new int[]{clK}));
 
         enqueue2DRangeKernel(kernel, clM, clN, 0, 0);
-
-//        CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, null, new long[]{clM, clN}, new long[]{threadCount_X, threadCount_Y}, 0, null, null);
-//        CL.clWaitForEvents(1, new cl_event[]{event});
     }
 
     public void boxMuller(cl_mem dataPointer, cl_mem random, int clRows, int clColumns, int rows, int columns) {
@@ -373,7 +368,28 @@ class CLCore {
         enqueue2DRangeKernel(kernel, clRows, clColumns, 0, 0);
     }
     
+    public void execute(Subprogram<cl_kernel> subprogram, int clRows, int clColumns, int rows, int columns, cl_mem result, CLScalar value, cl_mem ... dataPointer) {
+        cl_kernel kernel = subprogram.getKernel();
+        
+        CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(result));
+        CL.clSetKernelArg(kernel, 1, Sizeof.cl_int, Pointer.to(new int[]{columns}));
+        CL.clSetKernelArg(kernel, 2, Sizeof.cl_int, Pointer.to(new int[]{rows}));
+        for (int i = 0; i < dataPointer.length; i++)
+            CL.clSetKernelArg(kernel, i + 3, Sizeof.cl_mem, Pointer.to(dataPointer[i]));
+        CL.clSetKernelArg(kernel, dataPointer.length + 3, value.getSizeof(), value.getPointer());  
+        
+        enqueue2DRangeKernel(kernel, clRows, clColumns, 0, 0);
+    }
     
+    /**
+     * Für Kernel sie einmal über die ganze Matrix laufen.
+     * TODO aktuell nur von setZero genutzt
+     * 
+     * @param subprogram
+     * @param clRows
+     * @param clColumns
+     * @param result
+     */
     public void execute(Subprogram<cl_kernel> subprogram, int clRows, int clColumns, cl_mem result) {
     	cl_kernel kernel = subprogram.getKernel();
         CL.clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(result));

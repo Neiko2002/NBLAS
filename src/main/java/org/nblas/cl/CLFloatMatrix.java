@@ -1,6 +1,7 @@
 package org.nblas.cl;
 
 
+import org.jocl.Pointer;
 import org.jocl.cl_kernel;
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
@@ -173,9 +174,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix add(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.addScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.release();
+    	level1.addScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
 
@@ -214,9 +213,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix sub(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.subScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.release();
+    	level1.subScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
 
@@ -243,9 +240,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix rsub(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.rsubScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.release();
+    	level1.rsubScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
 
@@ -284,9 +279,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix mul(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.mulScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.release();
+    	level1.mulScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
 
@@ -325,9 +318,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix div(FloatMatrix a, float scalar, FloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.divScalar((CLFloatMatrix)a, b, (CLFloatMatrix)result);
-    	b.release();
+    	level1.divScalar((CLFloatMatrix)a, CLScalar.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -354,9 +345,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix rdiv(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.rdivScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.release();
+    	level1.rdivScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
 
@@ -426,9 +415,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix gt(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.gtScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.release();
+    	level1.gtScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -467,9 +454,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix ge(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.geScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.release();
+    	level1.geScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -507,9 +492,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix lt(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.ltScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.release();
+    	level1.ltScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -548,9 +531,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix le(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.leScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.release();
+    	level1.leScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -589,9 +570,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix eq(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.eqScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.release();
+    	level1.eqScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -630,9 +609,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix ne(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.neScalar((CLFloatMatrix)matrix, b, (CLFloatMatrix)result);
-    	b.release();
+    	level1.neScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -795,9 +772,12 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     }
     
         
-    
-    // --------------------------------------- implementation ----------------------------------------
 
+	// --------------------------------------- getter and setter methods ----------------------------------------
+    
+    /**
+  	 * @see FloatMatrix#repmat(FloatMatrix, FloatMatrix, int, int)
+  	 */
     @Override
     public FloatMatrix repmat(FloatMatrix source, FloatMatrix destination, int rowMultiplicator, int columnMultiplicator) {
         CLFloatMatrix result = (CLFloatMatrix)destination;
@@ -806,116 +786,6 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
                 result.rows, result.columns, rows, columns, clRows);
         return destination;
     }
-
-    
-    // GREATER THAN OR EQUAL
-
-    public static void ge(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
-    	level1.ge(matrixA, matrixB, result);
-    }
-    
-    public static void ge(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.geScalar(matrix, b, result);
-    	b.release();
-    }
-
-    public static void geColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
-    	level1.geColumnVector(matrix, columnVector, result);
-    }
-
-    public static void geRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
-    	level1.geRowVector(matrix, rowVector, result);
-    }   
-    
-    
-    // LOWER THAN
-
-    public static void lt(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
-    	level1.lt(matrixA, matrixB, result);
-    }
-    
-    public static void lt(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.ltScalar(matrix, b, result);
-    	b.release();
-    }
-
-    public static void ltColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
-    	level1.ltColumnVector(matrix, columnVector, result);
-    }
-
-    public static void ltRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
-    	level1.ltRowVector(matrix, rowVector, result);
-    }   
-    
-    
-    // LOWER THAN OR EQUAL
-
-    public static void le(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
-    	level1.le(matrixA, matrixB, result);
-    }
-    
-    public static void le(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.leScalar(matrix, b, result);
-    	b.release();
-    }
-
-    public static void leColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
-    	level1.leColumnVector(matrix, columnVector, result);
-    }
-
-    public static void leRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
-    	level1.leRowVector(matrix, rowVector, result);
-    } 
-    
-    
-    // EQUAL
-
-    public static void eq(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
-    	level1.eq(matrixA, matrixB, result);
-    }
-    
-    public static void eq(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.eqScalar(matrix, b, result);
-    	b.release();
-    }
-
-    public static void eqColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
-    	level1.eqColumnVector(matrix, columnVector, result);
-    }
-
-    public static void eqRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
-    	level1.eqRowVector(matrix, rowVector, result);
-    }   
-    
-    
-    // NOT EQUAL
-
-    public static void ne(CLFloatMatrix matrixA, CLFloatMatrix matrixB, CLFloatMatrix result) {
-    	level1.ne(matrixA, matrixB, result);
-    }
-    
-    public static void ne(CLFloatMatrix matrix, float scalar, CLFloatMatrix result) {
-    	CLFloatMatrix b = new CLFloatMatrix(1, 1, new float[] { scalar });
-    	level1.neScalar(matrix, b, result);
-    	b.release();
-    }
-
-    public static void neColumnVector(CLFloatMatrix matrix, CLFloatMatrix columnVector, CLFloatMatrix result) {
-    	level1.neColumnVector(matrix, columnVector, result);
-    }
-
-    public static void neRowVector(CLFloatMatrix matrix, CLFloatMatrix rowVector, CLFloatMatrix result) {
-    	level1.neRowVector(matrix, rowVector, result);
-    }
-
-    
-    
-    
-	// --------------------------------------- getter and setter methods ----------------------------------------
     
     /**
   	 * @see FloatMatrix#setSubMatrix(FloatMatrix, FloatMatrix, int, int)

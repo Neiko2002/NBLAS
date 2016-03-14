@@ -3,6 +3,7 @@ package org.nblas.cl.blas;
 import org.jocl.cl_kernel;
 import org.nblas.cl.CLBLASBase;
 import org.nblas.cl.CLMatrix;
+import org.nblas.cl.CLScalar;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.common.Arg;
@@ -198,7 +199,7 @@ public class CLLevel1 extends CLBLASBase {
     	runMatrixMatrixElementWiseOperation(ADD_MATRIX, matrixA, matrixB, result);
     }
 
-    public void addScalar(CLMatrix matrix, CLMatrix scalar, CLMatrix result) {
+    public void addScalar(CLMatrix matrix, CLScalar scalar, CLMatrix result) {
     	runMatrixScalarElementWiseOperation(ADD_SCALAR, matrix, scalar, result);
     }
 
@@ -216,8 +217,8 @@ public class CLLevel1 extends CLBLASBase {
     public void mul(CLMatrix matrixA, CLMatrix matrixB, CLMatrix result) {
     	runMatrixMatrixElementWiseOperation(MUL_MATRIX, matrixA, matrixB, result);
     }
-
-    public void mulScalar(CLMatrix matrix, CLMatrix scalar, CLMatrix result) {
+    
+    public void mulScalar(CLMatrix matrix, CLScalar scalar, CLMatrix result) {
     	runMatrixScalarElementWiseOperation(MUL_SCALAR, matrix, scalar, result);
     }
 
@@ -237,7 +238,7 @@ public class CLLevel1 extends CLBLASBase {
     	runMatrixMatrixElementWiseOperation(SUB_MATRIX, matrixA, matrixB, result);
     }
 
-    public void subScalar(CLMatrix matrix, CLMatrix scalar, CLMatrix result) {
+    public void subScalar(CLMatrix matrix, CLScalar scalar, CLMatrix result) {
     	runMatrixScalarElementWiseOperation(SUB_SCALAR, matrix, scalar, result);
     }
 
@@ -249,7 +250,7 @@ public class CLLevel1 extends CLBLASBase {
     	runMatrixRowVectorElementWiseOperation(SUB_R_VECTOR, matrix, rowVector, result);
     }
 
-    public void rsubScalar(CLMatrix matrix, CLMatrix scalar, CLMatrix result) {
+    public void rsubScalar(CLMatrix matrix, CLScalar scalar, CLMatrix result) {
       	runMatrixScalarElementWiseOperation(RSUB_SCALAR, matrix, scalar, result);
     }
 
@@ -268,7 +269,7 @@ public class CLLevel1 extends CLBLASBase {
     	runMatrixMatrixElementWiseOperation(DIV_MATRIX, matrixA, matrixB, result);
     }
 
-    public void divScalar(CLMatrix matrix, CLMatrix scalar, CLMatrix result) {
+    public void divScalar(CLMatrix matrix, CLScalar scalar, CLMatrix result) {
 		runMatrixScalarElementWiseOperation(DIV_SCALAR, matrix, scalar, result);
     }
 
@@ -280,7 +281,7 @@ public class CLLevel1 extends CLBLASBase {
     	runMatrixRowVectorElementWiseOperation(DIV_R_VECTOR, matrix, rowVector, result);
     }
 
-    public void rdivScalar(CLMatrix matrix, CLMatrix scalar, CLMatrix result) {
+    public void rdivScalar(CLMatrix matrix, CLScalar scalar, CLMatrix result) {
 		runMatrixScalarElementWiseOperation(RDIV_SCALAR, matrix, scalar, result);
     }
 
@@ -295,7 +296,7 @@ public class CLLevel1 extends CLBLASBase {
     
     // GREATER THAN
     
-    public void gtScalar(CLMatrix matrix, CLMatrix scalar, CLMatrix result) {
+    public void gtScalar(CLMatrix matrix, CLScalar scalar, CLMatrix result) {
 		runMatrixScalarElementWiseOperation(GT_SCALAR, matrix, scalar, result);
     }
 
@@ -315,7 +316,7 @@ public class CLLevel1 extends CLBLASBase {
     
     // GREATER THAN OR EQUAL
     
-    public void geScalar(CLMatrix matrix, CLMatrix scalar, CLMatrix result) {
+    public void geScalar(CLMatrix matrix, CLScalar scalar, CLMatrix result) {
 		runMatrixScalarElementWiseOperation(GE_SCALAR, matrix, scalar, result);
     }
 
@@ -335,7 +336,7 @@ public class CLLevel1 extends CLBLASBase {
     
     // LOWER THAN
     
-    public void ltScalar(CLMatrix matrix, CLMatrix scalar, CLMatrix result) {
+    public void ltScalar(CLMatrix matrix, CLScalar scalar, CLMatrix result) {
 		runMatrixScalarElementWiseOperation(LT_SCALAR, matrix, scalar, result);
     }
 
@@ -355,7 +356,7 @@ public class CLLevel1 extends CLBLASBase {
     
     // LOWER THAN OR EQUAL
     
-    public void leScalar(CLMatrix matrix, CLMatrix scalar, CLMatrix result) {
+    public void leScalar(CLMatrix matrix, CLScalar scalar, CLMatrix result) {
 		runMatrixScalarElementWiseOperation(LE_SCALAR, matrix, scalar, result);
     }
 
@@ -375,7 +376,7 @@ public class CLLevel1 extends CLBLASBase {
     
     // EQUAL
     
-    public void eqScalar(CLMatrix matrix, CLMatrix scalar, CLMatrix result) {
+    public void eqScalar(CLMatrix matrix, CLScalar scalar, CLMatrix result) {
 		runMatrixScalarElementWiseOperation(EQ_SCALAR, matrix, scalar, result);
     }
 
@@ -395,7 +396,7 @@ public class CLLevel1 extends CLBLASBase {
     
     // NOT EQUAL
     
-    public void neScalar(CLMatrix matrix, CLMatrix scalar, CLMatrix result) {
+    public void neScalar(CLMatrix matrix, CLScalar scalar, CLMatrix result) {
 		runMatrixScalarElementWiseOperation(NE_SCALAR, matrix, scalar, result);
     }
 

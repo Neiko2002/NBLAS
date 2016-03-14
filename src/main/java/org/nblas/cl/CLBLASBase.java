@@ -71,7 +71,6 @@ public abstract class CLBLASBase {
      * 
 	 * @param programId
 	 * @param matrix
-	 * @param scalar
 	 * @param result
 	 */
 	protected void runMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix result) {
@@ -87,7 +86,7 @@ public abstract class CLBLASBase {
 	 * @param scalar
 	 * @param result
 	 */
-	protected void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix scalar, CLMatrix result) {
+	protected void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLScalar scalar, CLMatrix result) {
 		CLMatrix.runMatrixScalarElementWiseOperation(subprogram, a, scalar, result);
 	}
 	

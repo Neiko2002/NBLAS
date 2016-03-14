@@ -17,16 +17,19 @@ class CLFloatFunctionBuilder extends AFunctionBuilder<cl_kernel> {
         
         for (int i = 0; i < args.length; i++) {
             String id = "arg" + String.format("%02d", i);
-            if (args[i] == ArgumentType.MATRIX) {
-                function = function.replaceAll(id, id + "[id]");
-            } else if (args[i] == ArgumentType.COLUMN_VECTOR) {
-                function = function.replaceAll(id, id + "[id0]");
-            } else if (args[i] == ArgumentType.ROW_VECTOR) {
-                function = function.replaceAll(id, id + "[id1]");
-            } else if (args[i] == ArgumentType.SCALAR) {
-                function = function.replaceAll(id, id + "[0]");
-            }
-            parameters.append(", __global const float* arg" + String.format("%02d", i));
+            if (args[i] == ArgumentType.SCALAR) {
+            	 parameters.append(", const float arg" + String.format("%02d", i));
+            } else {
+            	
+            	if (args[i] == ArgumentType.MATRIX) {
+                    function = function.replaceAll(id, id + "[id]");
+                } else if (args[i] == ArgumentType.COLUMN_VECTOR) {
+                    function = function.replaceAll(id, id + "[id0]");
+                } else if (args[i] == ArgumentType.ROW_VECTOR) {
+                    function = function.replaceAll(id, id + "[id1]");
+                }  
+                parameters.append(", __global const float* arg" + String.format("%02d", i));
+            }           
         }
 
         String functionName = generateFunctionName(name, args);
