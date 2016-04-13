@@ -1,4 +1,4 @@
-package org.nblas.cl;
+package org.nblas.cl.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;

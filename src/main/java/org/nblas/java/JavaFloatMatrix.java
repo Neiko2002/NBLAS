@@ -3,7 +3,7 @@ package org.nblas.java;
 import org.jblas.util.Random;
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
-import org.nblas.FloatMatrixDefault;
+import org.nblas.impl.FloatMatrixDefault;
 import org.nblas.generic.AMatrix;
 
 /**

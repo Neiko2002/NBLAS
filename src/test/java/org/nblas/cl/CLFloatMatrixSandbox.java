@@ -4,12 +4,11 @@ import java.util.Random;
 
 import org.jocl.cl_kernel;
 import org.junit.Assert;
-import org.junit.Test;
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
-import org.nblas.FloatMatrixDefault;
 import org.nblas.FloatMatrixTest;
 import org.nblas.generic.Subprogram;
+import org.nblas.impl.FloatMatrixDefault;
 
 public class CLFloatMatrixSandbox extends FloatMatrixTest {
 
@@ -65,7 +64,7 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 		CLFloatMatrix weightMat = (CLFloatMatrix) FloatMatrix.create(weights, context);
 		CLFloatMatrix outputMat = (CLFloatMatrix) FloatMatrix.zeros(1, 4, context);
 		
-		inputMat.mmulCustom(subprogram.getKernel(), inputMat, weightMat, outputMat);
+		inputMat.mmulCustom(subprogram, inputMat, weightMat, outputMat);
 		
 		System.out.println(outputMat.toString2D());
 		
@@ -93,7 +92,7 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 		CORE.loadFromGeneratedSubprogram(subprogram);
 		
 		CLFloatMatrix clMat = (CLFloatMatrix) FloatMatrix.zeros(1, matA_GPU.getColumns(), context);
-		clMat.getCustom(subprogram.getKernel(), matA_GPU, clMat, 60, 0);
+		clMat.getCustom(subprogram, matA_GPU, clMat, 60, 0);
 //		clMat.getSubMatrix(matA_GPU, clMat, 60, 1);
 		
 		System.out.println(matA_GPU.toString2D());

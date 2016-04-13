@@ -5,6 +5,8 @@ import java.util.Optional;
 import org.jblas.util.Random;
 import org.jocl.cl_kernel;
 import org.jocl.cl_mem;
+import org.nblas.cl.model.CLMemory;
+import org.nblas.cl.model.CLPointer;
 import org.nblas.generic.AMatrix;
 import org.nblas.generic.Subprogram;
 
@@ -17,9 +19,9 @@ public abstract class CLMatrix extends AMatrix {
 	
 	protected static final CLCore CORE = CLCore.getCore();
 
-    protected cl_mem dataPointer;
-    protected int clRows, clColumns, clLength;
-    protected Optional<cl_mem> randomDataPointer;
+    protected CLMemory dataPointer;
+    protected int clRows, clColumns;
+    protected Optional<CLMemory> randomDataPointer;
 
     
 	public CLMatrix(int rows, int columns) {
@@ -28,7 +30,6 @@ public abstract class CLMatrix extends AMatrix {
 		// row or column vector else matrix
 		this.clRows = getValidSize(rows, CORE.getThreadCountX());			
 		this.clColumns = getValidSize(columns, CORE.getThreadCountY());
-		this.clLength = clColumns * clRows;
 
 		this.randomDataPointer = Optional.empty();
 	}
@@ -51,10 +52,9 @@ public abstract class CLMatrix extends AMatrix {
     
     @Override
     public void release() {
-        CORE.release(dataPointer);
-        if (randomDataPointer.isPresent()) {
-            CORE.release(randomDataPointer.get());
-        }
+        dataPointer.release();
+        if (randomDataPointer.isPresent()) 
+            randomDataPointer.get().release();
         released = true;
     }  
     
@@ -110,12 +110,7 @@ public abstract class CLMatrix extends AMatrix {
 	 * @param scalar
 	 * @param result
 	 */
-	protected static void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix scalar, CLMatrix result) {
-		checkScalarSize(scalar);
-        CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, scalar.dataPointer);
-	}
-	
-	protected static void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLScalar scalar, CLMatrix result) {
+	protected static void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLPointer scalar, CLMatrix result) {
         CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, scalar, a.dataPointer);
 	}
 

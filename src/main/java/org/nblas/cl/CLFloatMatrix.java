@@ -1,13 +1,13 @@
 package org.nblas.cl;
 
 
-import org.jocl.Pointer;
 import org.jocl.cl_kernel;
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
-import org.nblas.FloatMatrixDefault;
 import org.nblas.cl.blas.CLLevel1;
+import org.nblas.cl.model.CLPointer;
 import org.nblas.generic.Subprogram;
+import org.nblas.impl.FloatMatrixDefault;
 
 /**
  * 
@@ -41,9 +41,8 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
 	 */
     public CLFloatMatrix(int rows, int columns) {
         super(rows, columns);
- 		this.dataPointer = CORE.mallocSinglePrecision(this.clLength);
-// 		this.dataPointer = CORE.malloc(new float[clLength]);
-     }
+ 		this.dataPointer = CORE.mallocSinglePrecision(clRows * clColumns);
+    }
 
     public CLFloatMatrix(int rows, int columns, float[] values) {
        super(rows, columns);
@@ -56,7 +55,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     }
     
     private float[] getFloatArray2D(float[] values) {
-        float[] clValues = new float[clLength];
+        float[] clValues = new float[clRows * clColumns];
         for (int y = 0; y < columns; y++)
             for (int x = 0; x < rows; x++)
                 clValues[y * clRows + x] = values[y * rows + x];
@@ -80,7 +79,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
 	@Override
 	public FloatMatrix readRowMajor(float[] values) {
 		
-		float[] clValues = new float[clLength];
+		float[] clValues = new float[clRows * clColumns];
 		CORE.getData(dataPointer, clValues);
 		for (int y = 0; y < columns; y++)
 			for (int x = 0; x < rows; x++)
@@ -174,7 +173,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix add(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	level1.addScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
+    	level1.addScalar((CLFloatMatrix)matrix, CLPointer.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
 
@@ -213,7 +212,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix sub(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	level1.subScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
+    	level1.subScalar((CLFloatMatrix)matrix, CLPointer.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
 
@@ -240,7 +239,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix rsub(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	level1.rsubScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
+    	level1.rsubScalar((CLFloatMatrix)matrix, CLPointer.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
 
@@ -279,7 +278,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix mul(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	level1.mulScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
+    	level1.mulScalar((CLFloatMatrix)matrix, CLPointer.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
 
@@ -318,7 +317,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix div(FloatMatrix a, float scalar, FloatMatrix result) {
-    	level1.divScalar((CLFloatMatrix)a, CLScalar.of(scalar), (CLFloatMatrix)result);
+    	level1.divScalar((CLFloatMatrix)a, CLPointer.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -345,7 +344,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix rdiv(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	level1.rdivScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
+    	level1.rdivScalar((CLFloatMatrix)matrix, CLPointer.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
 
@@ -415,7 +414,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix gt(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	level1.gtScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
+    	level1.gtScalar((CLFloatMatrix)matrix, CLPointer.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -454,7 +453,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix ge(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	level1.geScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
+    	level1.geScalar((CLFloatMatrix)matrix, CLPointer.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -492,7 +491,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix lt(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	level1.ltScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
+    	level1.ltScalar((CLFloatMatrix)matrix, CLPointer.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -531,7 +530,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix le(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	level1.leScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
+    	level1.leScalar((CLFloatMatrix)matrix, CLPointer.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -570,7 +569,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix eq(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	level1.eqScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
+    	level1.eqScalar((CLFloatMatrix)matrix, CLPointer.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -609,7 +608,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix ne(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	level1.neScalar((CLFloatMatrix)matrix, CLScalar.of(scalar), (CLFloatMatrix)result);
+    	level1.neScalar((CLFloatMatrix)matrix, CLPointer.of(scalar), (CLFloatMatrix)result);
     	return result;
     }
     
@@ -645,11 +644,11 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
         return result;
     }
     
-     public FloatMatrix mmulCustom(cl_kernel kernel, FloatMatrix a, FloatMatrix b, FloatMatrix result) {
+     public FloatMatrix mmulCustom(Subprogram<cl_kernel> subprogram, FloatMatrix a, FloatMatrix b, FloatMatrix result) {
      	CLFloatMatrix matrixA = (CLFloatMatrix) a;
      	CLFloatMatrix matrixB = (CLFloatMatrix) b;
      	CLFloatMatrix matrixR = (CLFloatMatrix) result;
-        CORE.sgemm_nn_custom(kernel, matrixA.dataPointer, matrixB.dataPointer, matrixR.dataPointer, matrixA.clRows, matrixB.clColumns, matrixA.clColumns);
+        CORE.sgemm_nn_custom(subprogram, matrixA.dataPointer, matrixB.dataPointer, matrixR.dataPointer, matrixA.clRows, matrixB.clColumns, matrixA.clColumns);
         return result;
      }
 
@@ -810,10 +809,10 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     }
     
 
-    public FloatMatrix getCustom(cl_kernel kernel, FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
+    public FloatMatrix getCustom(Subprogram<cl_kernel> subprogram, FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
     	CLFloatMatrix src = (CLFloatMatrix) source;
     	CLFloatMatrix dst = (CLFloatMatrix) destination;
-        CORE.getCustom(kernel, src.dataPointer, dst.dataPointer, dst.clRows, dst.clColumns, dst.rows, dst.columns, rowOffset, columnOffset, src.clRows);
+        CORE.getCustom(subprogram, src.dataPointer, dst.dataPointer, dst.clRows, dst.clColumns, dst.rows, dst.columns, rowOffset, columnOffset, src.clRows);
         return destination;
     }
 

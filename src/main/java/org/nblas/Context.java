@@ -2,6 +2,10 @@ package org.nblas;
 
 /**
  * Created by Moritz on 4/27/2015.
+ * 
+ * Kein Host mehr. Context zu Backend umbenennen.
+ * nur noch Cuda, OpenCL, Java, MKL, CBLAS
+ * 
  */
 public final class Context {
 

@@ -1,5 +1,7 @@
-package org.nblas;
+package org.nblas.impl;
 
+import org.nblas.Context;
+import org.nblas.FloatMatrix;
 import org.nblas.cl.CLFloatMatrix;
 import org.nblas.cuda.CudaFloatMatrix;
 import org.nblas.java.JavaFloatMatrix;

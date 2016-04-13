@@ -2,9 +2,12 @@ package org.nblas;
 
 import org.nblas.cl.CLFloatMatrix;
 import org.nblas.cuda.CudaFloatMatrix;
+import org.nblas.impl.FloatMatrixDefault;
 import org.nblas.java.JavaFloatMatrix;
 
 /**
+ * Enduser Interface.
+ * 
  * TODO: DropIn Replacement für JBLAS. Methoden header passt oftmals nicht (Parameter Reihenfolge)
  * 
  * @author Nico

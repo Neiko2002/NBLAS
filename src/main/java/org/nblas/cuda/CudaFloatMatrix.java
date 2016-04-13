@@ -3,7 +3,7 @@ package org.nblas.cuda;
 
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
-import org.nblas.FloatMatrixDefault;
+import org.nblas.impl.FloatMatrixDefault;
 import org.nblas.cuda.blas.CudaLevel1;
 import org.nblas.generic.Subprogram;
 

@@ -7,6 +7,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.nblas.impl.FloatMatrixDefault;
 
 /**
  * operation prefix:
@@ -31,7 +32,7 @@ public class FloatMatrixTest {
 	public static void main(String[] args) throws Exception {
 		FloatMatrixTest testSuit = new FloatMatrixTest();
 		testSuit.setUp();
-		testSuit.setSubMatrixTest();
+		testSuit.addiScalarTest();
 	}
 	
 	protected Context context = Context.OpenCLSinglePrecisionContext;

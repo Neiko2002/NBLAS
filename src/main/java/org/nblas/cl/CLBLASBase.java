@@ -1,6 +1,7 @@
 package org.nblas.cl;
 
 import org.jocl.cl_kernel;
+import org.nblas.cl.model.CLPointer;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.generic.AFunctionObject;
@@ -86,7 +87,7 @@ public abstract class CLBLASBase {
 	 * @param scalar
 	 * @param result
 	 */
-	protected void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLScalar scalar, CLMatrix result) {
+	protected void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLPointer scalar, CLMatrix result) {
 		CLMatrix.runMatrixScalarElementWiseOperation(subprogram, a, scalar, result);
 	}
 	
