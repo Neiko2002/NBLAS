@@ -39,7 +39,7 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
      */
     public CudaFloatMatrix(int rows, int columns) {
         super(rows, columns);
-        this.dataPointer = CORE.malloc(this.length, Sizeof.FLOAT);
+        this.dataPointer = CORE.malloc(this.getLength(), Sizeof.FLOAT);
      }
 
     public CudaFloatMatrix(int rows, int columns, float[] values) {
@@ -105,13 +105,13 @@ public class CudaFloatMatrix extends CudaMatrix implements FloatMatrixDefault  {
 
 	@Override
     public FloatMatrix randi() {
-        CORE.rand(dataPointer, length);
+        CORE.rand(dataPointer, getLength());
         return this;
     }
 
 	@Override
     public FloatMatrix randni() {
-        CORE.randn(dataPointer, length);
+        CORE.randn(dataPointer, getLength());
         return this;
     }
 	

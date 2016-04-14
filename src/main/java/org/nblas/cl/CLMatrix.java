@@ -3,10 +3,11 @@ package org.nblas.cl;
 import java.util.Optional;
 
 import org.jblas.util.Random;
+import org.jocl.Pointer;
 import org.jocl.cl_kernel;
-import org.jocl.cl_mem;
 import org.nblas.cl.model.CLMemory;
-import org.nblas.cl.model.CLPointer;
+import org.nblas.cl.model.CLScalar;
+import org.nblas.cl.model.CLStorage;
 import org.nblas.generic.AMatrix;
 import org.nblas.generic.Subprogram;
 
@@ -15,18 +16,19 @@ import org.nblas.generic.Subprogram;
  * @author Nico
  *
  */
-public abstract class CLMatrix extends AMatrix {
-	
+public abstract class CLMatrix extends AMatrix implements CLStorage {
+		
 	protected static final CLCore CORE = CLCore.getCore();
 
-    protected CLMemory dataPointer;
+	// memory on the device
+	protected CLMemory clMemory;    
     protected int clRows, clColumns;
     protected Optional<CLMemory> randomDataPointer;
 
     
 	public CLMatrix(int rows, int columns) {
 		super(rows, columns);
-
+	
 		// row or column vector else matrix
 		this.clRows = getValidSize(rows, CORE.getThreadCountX());			
 		this.clColumns = getValidSize(columns, CORE.getThreadCountY());
@@ -38,7 +40,6 @@ public abstract class CLMatrix extends AMatrix {
 		if(size == 1) return 1;
 		return (int) Math.ceil((double)size / divisor) * divisor;
 	}
-
 	
     protected void initRandom() {
         if (!randomDataPointer.isPresent()) {
@@ -50,9 +51,20 @@ public abstract class CLMatrix extends AMatrix {
         }
     }
     
+    
+    @Override
+    public Pointer getPointer() {
+    	return clMemory.getPointer();
+    }
+    
+    @Override
+    public int getSizeof() {
+    	return clMemory.getSizeof();
+    }
+    
     @Override
     public void release() {
-        dataPointer.release();
+        clMemory.release();
         if (randomDataPointer.isPresent()) 
             randomDataPointer.get().release();
         released = true;
@@ -69,7 +81,7 @@ public abstract class CLMatrix extends AMatrix {
      * @param a
      */
 	protected static void runMatrixOperation(Subprogram<cl_kernel> subprogram, CLMatrix a) {
-		CORE.execute(subprogram, a.clRows, a.clColumns, a.rows, a.columns, a.dataPointer);
+		CORE.execute(subprogram, a.clRows, a.clColumns, a, CLScalar.of(a.rows), CLScalar.of(a.columns));
 	}
     
     /**
@@ -83,7 +95,7 @@ public abstract class CLMatrix extends AMatrix {
      */
 	protected static void runMatrixMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix b, CLMatrix result) {
 		checkSameSize(a, b, result);
-        CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+        CORE.execute(subprogram, a.clRows, a.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), a, b);
 	}
 	
 	
@@ -98,7 +110,7 @@ public abstract class CLMatrix extends AMatrix {
 	 */
 	protected static void runMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix result) {
 		checkSameSize(a, result);
-        CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer);
+        CORE.execute(subprogram, a.clRows, a.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), a);
 	}
 	
 	/**
@@ -110,8 +122,8 @@ public abstract class CLMatrix extends AMatrix {
 	 * @param scalar
 	 * @param result
 	 */
-	protected static void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLPointer scalar, CLMatrix result) {
-        CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, scalar, a.dataPointer);
+	protected static void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLScalar scalar, CLMatrix result) {
+        CORE.execute(subprogram, a.clRows, a.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), a, scalar);
 	}
 
 	/**
@@ -125,7 +137,7 @@ public abstract class CLMatrix extends AMatrix {
 	 */
 	protected static void runMatrixRowVectorElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix b, CLMatrix result) {
         checkRowVectorSize(a, b, result);
-        CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+        CORE.execute(subprogram, a.clRows, a.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), a, b);
 	}	
 	
 	/**
@@ -139,7 +151,7 @@ public abstract class CLMatrix extends AMatrix {
 	 */
 	protected static void runMatrixColumnVectorElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix b, CLMatrix result) {
 		checkColumnVectorSize(a, b, result);
-		CORE.execute(subprogram, a.clRows, a.clColumns, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+		CORE.execute(subprogram, a.clRows, a.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), a, b);
 	}	
 
 	/**
