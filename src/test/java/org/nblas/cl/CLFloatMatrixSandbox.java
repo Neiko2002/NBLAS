@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
 import org.nblas.FloatMatrixTest;
+import org.nblas.cl.model.CLScalar;
 import org.nblas.generic.Subprogram;
 import org.nblas.impl.FloatMatrixDefault;
 
@@ -39,13 +40,13 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
     	    "	float result = 0.0f;\n" +
     	    "	int numTiles = K / localSize0;\n" + // 32
     	    "	int index = tid1 * localSize0 + tid0;\n" + // 0 bis 31
-    	    "	for (int t =0; t < numTiles; t + +) {\n" + // 0 bis 31
+    	    "	for (int t =0; t < numTiles; t++) {\n" + // 0 bis 31
     	    "	    int tiled0 = localSize0 * t + tid0;\n" + // 0 bis 31
     	    "	    int tiled1 = localSize1 * t + tid1;\n" + // 32*0...31 + 0...31
     	    "	    aSub[index] = a[tiled1 * M + gid0];\n" +
     	    "	    bSub[index] = b[gid1 * K + tiled0];\n" +
     	    "	    barrier(CLK_LOCAL_MEM_FENCE);\n" +
-    	    "	    for (int k = 0; k < localSize0; k + +) {\n" + // wird durchlaufen auch wenn aSub und bSub noch nicht gefüllt sind
+    	    "	    for (int k = 0; k < localSize0; k++) {\n" + // wird durchlaufen auch wenn aSub und bSub noch nicht gefüllt sind
     	    "	        result += aSub[k * localSize0 + tid0] * bSub[tid1 * localSize0 + k];\n" +
     	    "	    }\n" +
     	    "	    barrier(CLK_LOCAL_MEM_FENCE);\n" +
@@ -65,6 +66,7 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 		CLFloatMatrix outputMat = (CLFloatMatrix) FloatMatrix.zeros(1, 4, context);
 		
 		inputMat.mmulCustom(subprogram, inputMat, weightMat, outputMat);
+		inputMat.mmul(inputMat, weightMat, outputMat);
 		
 		System.out.println(outputMat.toString2D());
 		
@@ -91,8 +93,8 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 		CLCore CORE = CLCore.getCore();
 		CORE.loadFromGeneratedSubprogram(subprogram);
 		
-		CLFloatMatrix clMat = (CLFloatMatrix) FloatMatrix.zeros(1, matA_GPU.getColumns(), context);
-		clMat.getCustom(subprogram, matA_GPU, clMat, 60, 0);
+		CLFloatMatrix clMat = (CLFloatMatrix) FloatMatrix.zeros(1, matA_GPU.getColumns(), context);    	
+		clMat.getCustom(subprogram, matA_GPU, clMat, 10, 0);
 //		clMat.getSubMatrix(matA_GPU, clMat, 60, 1);
 		
 		System.out.println(matA_GPU.toString2D());

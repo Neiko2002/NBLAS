@@ -8,7 +8,7 @@ public class CLScalar implements CLStorage {
 	protected Pointer pointer;
 	protected int sizeof;
 	
-	public CLScalar(Pointer pointer, int sizeof) {
+	protected CLScalar(Pointer pointer, int sizeof) {
 		this.pointer = pointer;
 		this.sizeof = sizeof;
 	}

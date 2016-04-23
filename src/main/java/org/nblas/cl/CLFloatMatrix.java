@@ -5,6 +5,7 @@ import org.jocl.cl_kernel;
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
 import org.nblas.cl.blas.CLLevel1;
+import org.nblas.cl.model.CLArray;
 import org.nblas.cl.model.CLScalar;
 import org.nblas.generic.Subprogram;
 import org.nblas.impl.FloatMatrixDefault;
@@ -106,9 +107,13 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix transpose(FloatMatrix matrix, FloatMatrix transposed) {
-    	CLFloatMatrix mat = (CLFloatMatrix) matrix;
-    	CLFloatMatrix result = (CLFloatMatrix) transposed;
-        CORE.transpose(mat, result, mat.clRows, mat.clColumns, mat.rows, mat.columns);
+    	CLFloatMatrix src = (CLFloatMatrix) matrix;
+    	CLFloatMatrix dst = (CLFloatMatrix) transposed;
+    	
+    	Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("transpose");
+      	CORE.execute(subprogram, src.clRows, src.clColumns, src, dst, CLArray.ofFloat(CORE.getThreadCount()),
+    			CLScalar.of(src.rows), CLScalar.of(src.columns));
+      	
         return transposed;
     }
 
@@ -140,7 +145,10 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     @Override
     public FloatMatrix randi() {
         initRandom();
-        CORE.uniform(this, randomDataPointer.get(), this.clRows, this.clColumns, this.rows, this.columns);
+        Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("auniform");
+      	CORE.execute(subprogram, CORE.getThreadCountY(), CORE.getThreadCountX(), randomDataPointer.get(), this,
+    			CLScalar.of(this.clRows), CLScalar.of(this.rows), CLScalar.of(this.columns));
+
         return this;
     }
 
@@ -149,8 +157,11 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix randni() {
-        initRandom();
-        CORE.boxMuller(this, randomDataPointer.get(), this.clRows, this.clColumns, this.rows, this.columns);
+        initRandom();        
+        Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("boxmuller");
+      	CORE.execute(subprogram, CORE.getThreadCountY(), CORE.getThreadCountX(), randomDataPointer.get(), this,
+    			CLScalar.of(this.clRows), CLScalar.of(this.rows), CLScalar.of(this.columns));
+      	
         return this;
     }
     
@@ -632,6 +643,19 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     
     // --------------------------------------- matrix multiplication ----------------------------------------    
 
+    
+    public FloatMatrix mmulCustom(Subprogram<cl_kernel> subprogram, FloatMatrix a, FloatMatrix b, FloatMatrix result) {
+    	CLFloatMatrix matrixA = (CLFloatMatrix) a;
+    	CLFloatMatrix matrixB = (CLFloatMatrix) b;
+    	CLFloatMatrix matrixR = (CLFloatMatrix) result;    	
+    	
+    	CORE.execute(subprogram, matrixA.clRows, matrixB.clColumns, matrixA, matrixB, matrixR, 
+      			CLArray.ofFloat(CORE.getThreadCount()), CLArray.ofFloat(CORE.getThreadCount()),
+    			CLScalar.of(matrixA.clRows), CLScalar.of(matrixB.clColumns), CLScalar.of(matrixA.clColumns));
+           
+       return result;
+    }
+    
     /**
   	 * @see FloatMatrix#mmul(FloatMatrix, FloatMatrix, FloatMatrix)
   	 */
@@ -640,17 +664,14 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     	CLFloatMatrix matrixA = (CLFloatMatrix) a;
     	CLFloatMatrix matrixB = (CLFloatMatrix) b;
     	CLFloatMatrix matrixR = (CLFloatMatrix) result;
-        CORE.sgemm_nn(matrixA, matrixB, matrixR, matrixA.clRows, matrixB.clColumns, matrixA.clColumns);
+    	
+    	Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("sgemm_nn");
+      	CORE.execute(subprogram, matrixA.clRows, matrixB.clColumns, matrixA, matrixB, matrixR, 
+      			CLArray.ofFloat(CORE.getThreadCount()), CLArray.ofFloat(CORE.getThreadCount()),
+    			CLScalar.of(matrixA.clRows), CLScalar.of(matrixB.clColumns), CLScalar.of(matrixA.clColumns));
+      	
         return result;
     }
-    
-     public FloatMatrix mmulCustom(Subprogram<cl_kernel> subprogram, FloatMatrix a, FloatMatrix b, FloatMatrix result) {
-     	CLFloatMatrix matrixA = (CLFloatMatrix) a;
-     	CLFloatMatrix matrixB = (CLFloatMatrix) b;
-     	CLFloatMatrix matrixR = (CLFloatMatrix) result;
-        CORE.sgemm_nn_custom(subprogram, matrixA, matrixB, matrixR, matrixA.clRows, matrixB.clColumns, matrixA.clColumns);
-        return result;
-     }
 
     /**
   	 * @see FloatMatrix#mmulTN(FloatMatrix, FloatMatrix, FloatMatrix)
@@ -660,7 +681,12 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     	CLFloatMatrix matrixA = (CLFloatMatrix) a;
     	CLFloatMatrix matrixB = (CLFloatMatrix) b;
     	CLFloatMatrix matrixR = (CLFloatMatrix) result;
-        CORE.sgemm_tn(matrixA, matrixB, matrixR, matrixA.clColumns, matrixB.clColumns, matrixA.clRows);
+    	
+     	Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("sgemm_tn");
+      	CORE.execute(subprogram, matrixA.clColumns, matrixB.clColumns, matrixA, matrixB, matrixR, 
+      			CLArray.ofFloat(CORE.getThreadCount()), CLArray.ofFloat(CORE.getThreadCount()),
+    			CLScalar.of(matrixA.clColumns), CLScalar.of(matrixB.clColumns), CLScalar.of(matrixA.clRows));
+      	
         return result;
     }
 
@@ -672,7 +698,12 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     	CLFloatMatrix matrixA = (CLFloatMatrix) a;
     	CLFloatMatrix matrixB = (CLFloatMatrix) b;
     	CLFloatMatrix matrixR = (CLFloatMatrix) result;
-        CORE.sgemm_nt(matrixA, matrixB, matrixR, matrixA.clRows, matrixB.clRows, matrixA.clColumns);
+    	
+     	Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("sgemm_nt");
+      	CORE.execute(subprogram, matrixA.clRows, matrixB.clRows, matrixA, matrixB, matrixR, 
+      			CLArray.ofFloat(CORE.getThreadCount()), CLArray.ofFloat(CORE.getThreadCount()),
+    			CLScalar.of(matrixA.clRows), CLScalar.of(matrixB.clRows), CLScalar.of(matrixA.clColumns));
+
         return result;
     }
 
@@ -779,10 +810,15 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix repmat(FloatMatrix source, FloatMatrix destination, int rowMultiplicator, int columnMultiplicator) {
-        CLFloatMatrix result = (CLFloatMatrix)destination;
-        CORE.repmat((CLFloatMatrix)source, result,
-                result.clRows, result.clColumns,
-                result.rows, result.columns, rows, columns, clRows);
+    	CLFloatMatrix src = (CLFloatMatrix) source;
+    	CLFloatMatrix dst = (CLFloatMatrix)destination;
+        
+        Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("repmat");
+    	CORE.execute(subprogram, dst.clRows, dst.clColumns, src, dst,
+    			CLScalar.of(dst.rows), CLScalar.of(dst.columns), 
+    			CLScalar.of(rows), CLScalar.of(columns), 
+    			CLScalar.of(clRows));
+    	
         return destination;
     }
     
@@ -793,7 +829,13 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix setSubMatrix(FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
     	CLFloatMatrix src = (CLFloatMatrix) source;
     	CLFloatMatrix dst = (CLFloatMatrix) destination;
-    	CORE.setSubMatrix(src, dst, src.clRows, src.clColumns, src.rows, src.columns, rowOffset, columnOffset, dst.clRows);
+    	
+    	Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("setSubMatrix");
+    	CORE.execute(subprogram, src.clRows, src.clColumns, src, dst,
+    			CLScalar.of(src.rows), CLScalar.of(src.columns), 
+    			CLScalar.of(rowOffset), CLScalar.of(columnOffset), 
+    			CLScalar.of(dst.clRows));
+    	
     	return destination;
     }
 
@@ -804,15 +846,25 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     public FloatMatrix getSubMatrix(FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
     	CLFloatMatrix src = (CLFloatMatrix) source;
     	CLFloatMatrix dst = (CLFloatMatrix) destination;
-        CORE.getSubMatrix(src, dst, dst.clRows, dst.clColumns, dst.rows, dst.columns, rowOffset, columnOffset, src.clRows);
+    		
+    	Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("getSubMatrix");
+      	CORE.execute(subprogram, dst.clRows, dst.clColumns, src, dst,
+    			CLScalar.of(rowOffset+dst.rows), CLScalar.of(columnOffset+dst.columns), 
+    			CLScalar.of(rowOffset), CLScalar.of(columnOffset), 
+    			CLScalar.of(src.clRows));
+      	
         return destination;
     }
     
 
     public FloatMatrix getCustom(Subprogram<cl_kernel> subprogram, FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
     	CLFloatMatrix src = (CLFloatMatrix) source;
-    	CLFloatMatrix dst = (CLFloatMatrix) destination;
-        CORE.getCustom(subprogram, src, dst, dst.clRows, dst.clColumns, dst.rows, dst.columns, rowOffset, columnOffset, src.clRows);
+    	CLFloatMatrix dst = (CLFloatMatrix) destination;    	
+    	CORE.execute(subprogram, dst.clRows, dst.clColumns, src, dst,
+    			CLScalar.of(rowOffset+dst.rows), CLScalar.of(columnOffset+dst.columns),
+    			CLScalar.of(rowOffset), CLScalar.of(columnOffset),
+    			CLScalar.of(src.clRows));
+        
         return destination;
     }
 
