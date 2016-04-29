@@ -21,18 +21,13 @@ public class FloatMatrixTest {
 
 	protected static final int seed = 7;
 	protected static final int runs = 100_000;
-	protected static final int matrixSize = 100; 
-	
-	protected static final int matARows = matrixSize;
-	protected static final int matAColumns = matrixSize;
-	
-	protected static final int matBRows = matrixSize;
-	protected static final int matBColumns = matrixSize;
+	protected static final int matrixRows = 80; 
+	protected static final int matrixColumns = 100; 
 	
 	public static void main(String[] args) throws Exception {
 		FloatMatrixTest testSuit = new FloatMatrixTest();
 		testSuit.setUp();
-		testSuit.addiScalarTest();
+		testSuit.transposeTest();
 	}
 	
 	protected Context context = Context.OpenCLSinglePrecisionContext;
@@ -56,10 +51,10 @@ public class FloatMatrixTest {
 		Random rnd = new Random(seed);
 		
 		// Test-Daten anlegen
-		float[] matAFloatArray = new float[matARows*matAColumns];
-		float[] matBFloatArray = new float[matBRows*matBColumns];
-		float[] rowVecFloatArray = new float[matAColumns];
-		float[] colVecFloatArray = new float[matARows];
+		float[] matAFloatArray = new float[matrixRows*matrixColumns];
+		float[] matBFloatArray = new float[matrixRows*matrixColumns];
+		float[] rowVecFloatArray = new float[matrixColumns];
+		float[] colVecFloatArray = new float[matrixRows];
 		
 		// Arrays mit Zufallszahlen füllen
 		for (int i = 0; i < matAFloatArray.length; i++) 
@@ -75,17 +70,17 @@ public class FloatMatrixTest {
 			colVecFloatArray[i] = rnd.nextFloat();
 		
 		// die Daten auf die Grafikkarte kopieren
-		matA_CPU = new org.jblas.FloatMatrix(matARows, matAColumns, matAFloatArray.clone());
-		matA_GPU = FloatMatrix.create(matARows, matAColumns, matAFloatArray.clone(), context);
+		matA_CPU = new org.jblas.FloatMatrix(matrixRows, matrixColumns, matAFloatArray.clone());
+		matA_GPU = FloatMatrix.create(matrixRows, matrixColumns, matAFloatArray.clone(), context);
 		
-		matB_CPU = new org.jblas.FloatMatrix(matBRows, matBColumns, matBFloatArray.clone());
-		matB_GPU = FloatMatrix.create(matBRows, matBColumns, matBFloatArray.clone(), context);
+		matB_CPU = new org.jblas.FloatMatrix(matrixRows, matrixColumns, matBFloatArray.clone());
+		matB_GPU = FloatMatrix.create(matrixRows, matrixColumns, matBFloatArray.clone(), context);
 		
-		rowVector_CPU = new org.jblas.FloatMatrix(1, matAColumns, rowVecFloatArray.clone());
-		rowVector_GPU = FloatMatrix.create(1, matAColumns, rowVecFloatArray.clone(), context);
+		rowVector_CPU = new org.jblas.FloatMatrix(1, matrixColumns, rowVecFloatArray.clone());
+		rowVector_GPU = FloatMatrix.create(1, matrixColumns, rowVecFloatArray.clone(), context);
 		
-		columnVector_CPU = new org.jblas.FloatMatrix(matARows, 1, colVecFloatArray.clone());
-		columnVector_GPU = FloatMatrix.create(matARows, 1, colVecFloatArray.clone(), context);
+		columnVector_CPU = new org.jblas.FloatMatrix(matrixRows, 1, colVecFloatArray.clone());
+		columnVector_GPU = FloatMatrix.create(matrixRows, 1, colVecFloatArray.clone(), context);
 	}
 
 	@After
@@ -336,8 +331,7 @@ public class FloatMatrixTest {
 		org.jblas.FloatMatrix matC_CPU = matA_CPU.sub(matB_CPU);
 		
 		// Berechnung auf der GPU
-		FloatMatrix matC_GPU = matA_GPU.dup();
-		matC_GPU.subi(matB_GPU);
+		FloatMatrix matC_GPU = matA_GPU.dup().subi(matB_GPU);
 				
 		// Ergebnisse vergleichen 
 		assertAndFree(matC_CPU, matC_GPU);
@@ -2159,10 +2153,10 @@ public class FloatMatrixTest {
 	public void mmulTest() {
 		
 		// Berechnung auf der CPU
-		org.jblas.FloatMatrix matC_CPU = matA_CPU.mmul(matB_CPU);
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.mmul(matB_CPU.transpose());
 		
 		// Berechnung auf der GPU
-		FloatMatrix matC_GPU = matA_GPU.mmul(matB_GPU);		
+		FloatMatrix matC_GPU = matA_GPU.mmul(matB_GPU.transpose());		
 		
 		// Ergebnisse vergleichen 
 		assertAndFree(matC_CPU, matC_GPU);
@@ -2172,11 +2166,11 @@ public class FloatMatrixTest {
 	public void mmuloTest() {
 		
 		// Berechnung auf der CPU
-		org.jblas.FloatMatrix matC_CPU = matA_CPU.mmul(matB_CPU);
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.mmul(matB_CPU.transpose());
 		
 		// Berechnung auf der GPU
-    	FloatMatrix matC_GPU = FloatMatrixDefault.dirtyAllocation(matA_GPU.getRows(), matB_GPU.getColumns(), matA_GPU.getContext());
-		matA_GPU.mmul(matB_GPU, matC_GPU);		
+    	FloatMatrix matC_GPU = FloatMatrixDefault.dirtyAllocation(matA_GPU.getRows(), matB_GPU.getRows(), matA_GPU.getContext());
+		matA_GPU.mmul(matB_GPU.transpose(), matC_GPU);		
 		
 		// Ergebnisse vergleichen 
 		assertAndFree(matC_CPU, matC_GPU);

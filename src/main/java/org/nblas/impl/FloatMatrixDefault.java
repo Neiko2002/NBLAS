@@ -935,7 +935,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix gtColumnVector(FloatMatrix ColumnVector) {
-    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getColumns(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	gtColumnVector(this, ColumnVector, result);
         return result;
     }
@@ -1047,7 +1047,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix geColumnVector(FloatMatrix ColumnVector) {
-    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getColumns(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	geColumnVector(this, ColumnVector, result);
         return result;
     }
@@ -1159,7 +1159,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix ltColumnVector(FloatMatrix ColumnVector) {
-    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getColumns(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	ltColumnVector(this, ColumnVector, result);
         return result;
     }
@@ -1271,7 +1271,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix leColumnVector(FloatMatrix ColumnVector) {
-    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getColumns(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	leColumnVector(this, ColumnVector, result);
         return result;
     }
@@ -1382,7 +1382,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix eqColumnVector(FloatMatrix ColumnVector) {
-    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getColumns(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	eqColumnVector(this, ColumnVector, result);
         return result;
     }
@@ -1494,7 +1494,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
     }
 
     public default FloatMatrix neColumnVector(FloatMatrix ColumnVector) {
-    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getColumns(), this.getColumns(), this.getContext());
+    	FloatMatrix result = FloatMatrixDefault.dirtyAllocation(this.getRows(), this.getColumns(), this.getContext());
     	neColumnVector(this, ColumnVector, result);
         return result;
     }
@@ -1742,7 +1742,7 @@ public interface FloatMatrixDefault extends FloatMatrix {
 	}
 	
 	public default FloatMatrix getColumn(int columnIndex) {
-		FloatMatrix column = FloatMatrixDefault.dirtyAllocation(this.getColumns(), 1, this.getContext());
+		FloatMatrix column = FloatMatrixDefault.dirtyAllocation(this.getRows(), 1, this.getContext());
 		return getColumn(this, column, columnIndex);
 	}
 
