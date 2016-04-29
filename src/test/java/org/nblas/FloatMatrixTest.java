@@ -110,6 +110,20 @@ public class FloatMatrixTest {
 			mat.release();
 	}
 
+	protected void assertAndFree(FloatMatrix jblasMat, FloatMatrix nblasMat, FloatMatrix ... other) {
+		// Ergebnisse vergleichen 
+		float[] result_CPU = jblasMat.toArray();
+		float[] result_GPU = nblasMat.toArray();
+		
+		Assert.assertArrayEquals(result_CPU, result_GPU, 0.1f);
+		
+		// free the resources
+		jblasMat.release();
+		nblasMat.release();
+		for (FloatMatrix mat : other)
+			mat.release();
+	}
+	
 	
 	@Test
 	public void duplicateTest() {

@@ -234,6 +234,15 @@ class CLCore {
 	}
 	
 	
+	public void enqueue2DRangeKernelTest(cl_kernel kernel, int clRows, int clColumns, int localRows, int localCols) {
+
+		long[] global_work_offset = new long[] { 0,0 };
+		long[] global_work_size = new long[] { clColumns, clRows };
+		long[] local_work_size = new long[] { localCols, localRows };
+
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, global_work_offset, global_work_size, local_work_size, 0, null, null);
+	}
+	
 	
     // -----------------------------------------------------------------------------------------
     // ----------------------------------- reduce methods --------------------------------------
