@@ -111,8 +111,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     	CLFloatMatrix dst = (CLFloatMatrix) transposed;
     	
     	Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("transpose");
-      	CORE.execute(subprogram, src.clRows, src.clColumns, src, dst, CLArray.ofFloat(CORE.getThreadCount()),
-    			CLScalar.of(src.rows), CLScalar.of(src.columns));
+      	CORE.execute(subprogram, src.clRows, src.clColumns, src, dst, CLScalar.of(src.rows), CLScalar.of(src.columns));
       	
         return transposed;
     }

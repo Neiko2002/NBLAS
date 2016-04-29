@@ -259,7 +259,7 @@ class CLPredefined {
             "   output[gid*clRows] = input[gid];\n" +
             "}\n";
 
-    private static final String transpose = "__kernel void transpose(const __global float* input,\n" +
+    private static final String transposeInPlace = "__kernel void transposeInPlace(const __global float* input,\n" +
             "                        __global float* output, __local float* buffer, int rows, int columns) {\n" +
             "\n" +
             "    const int tx = get_local_id(0);\n" +
@@ -273,6 +273,13 @@ class CLPredefined {
             "    const int gid0t = get_group_id(1) * get_local_size(1) + tx;\n" +
             "    const int gid1t = get_group_id(0) * get_local_size(0) + ty;\n" +
             "    output[gid1t * get_global_size(1) + gid0t] = buffer[tx * get_local_size(1) + ty];\n" +
+            "}";
+    
+    private static final String transpose = "__kernel void transpose(const __global float* input, __global float* output, int rows, int columns) {\n" +
+            "\n" +
+            "    const int column = get_global_id(0);\n" +
+            "    const int row = get_global_id(1);\n" +
+            "    output[row * get_global_size(0) + column] = input[column * get_global_size(1) + row];\n" + 
             "}";
 
     private static final String setZero = "__kernel void setZero(__global float* input)\n" +
@@ -398,6 +405,7 @@ class CLPredefined {
         addSubprogram(new Subprogram<cl_kernel>("boxmuller", boxmuller, false));
         addSubprogram(new Subprogram<cl_kernel>("copyColumnMajor", copyColumnMajor, false));
         addSubprogram(new Subprogram<cl_kernel>("copyRowMajor", copyRowMajor, false));
+        addSubprogram(new Subprogram<cl_kernel>("transposeInPlace", transposeInPlace, false));
         addSubprogram(new Subprogram<cl_kernel>("transpose", transpose, false));
         addSubprogram(new Subprogram<cl_kernel>("setZero", setZero, false));
         addSubprogram(new Subprogram<cl_kernel>("sgemm_nn", sgemm_nn, false));

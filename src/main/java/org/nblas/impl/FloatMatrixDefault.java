@@ -116,6 +116,17 @@ public interface FloatMatrixDefault extends FloatMatrix {
     
     public FloatMatrix transpose(FloatMatrix matrix, FloatMatrix transposed);
     
+    public default FloatMatrix transpose(FloatMatrix transposed) {
+    	transpose(this, transposed);
+        return transposed;
+    }
+
+    public default FloatMatrix transpose() {    	
+    	FloatMatrix transposed = FloatMatrixDefault.dirtyAllocation(this.getColumns(), this.getRows(), this.getContext());
+    	transpose(this, transposed);
+        return transposed;
+    }   
+    
     public FloatMatrix repmat(FloatMatrix source, FloatMatrix destination, int rowMultiplicator, int columnMultiplicator);
     
     public default FloatMatrix repmat(int rowMultiplicator, int columnMultiplicator) {

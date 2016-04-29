@@ -2670,15 +2670,28 @@ public class FloatMatrixTest {
 //	}
 	
 	@Test
+	public void transposeoTest() {
+		
+		// Berechnung auf der CPU
+		org.jblas.FloatMatrix matC_CPU = matA_CPU.transpose();
+		
+		// Berechnung auf der GPU
+		FloatMatrix matC_GPU = FloatMatrixDefault.dirtyAllocation(matA_GPU.getColumns(), matA_GPU.getRows(), context);
+		matA_GPU.transpose(matC_GPU);
+		
+		// Ergebnisse vergleichen 
+		assertAndFree(matC_CPU, matC_GPU);
+	}	
+	
+	@Test
 	public void transposeTest() {
 		
 		// Berechnung auf der CPU
 		org.jblas.FloatMatrix matC_CPU = matA_CPU.transpose();
 		
 		// Berechnung auf der GPU
-		FloatMatrix matC_GPU = FloatMatrixDefault.dirtyAllocation(matA_GPU.getRows(), matA_GPU.getColumns(), context);
-		matA_GPU.transpose(matA_GPU, matC_GPU);
-		
+		FloatMatrix matC_GPU = matA_GPU.transpose();	
+				
 		// Ergebnisse vergleichen 
 		assertAndFree(matC_CPU, matC_GPU);
 	}	

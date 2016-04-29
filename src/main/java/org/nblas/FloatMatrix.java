@@ -116,9 +116,11 @@ public interface FloatMatrix  {
      * @return
      */
     public FloatMatrix dup(FloatMatrix result);
+        
+    public FloatMatrix transpose();
     
-    public FloatMatrix transpose(FloatMatrix matrix, FloatMatrix transposed);
-    
+    public FloatMatrix transpose(FloatMatrix transposed);
+        
     public FloatMatrix repmat(FloatMatrix source, FloatMatrix destination, int rowMultiplicator, int columnMultiplicator);
     
     public FloatMatrix repmat(int rowMultiplicator, int columnMultiplicator);
