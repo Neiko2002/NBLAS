@@ -813,10 +813,7 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
     	CLFloatMatrix dst = (CLFloatMatrix)destination;
         
         Subprogram<cl_kernel> subprogram = CLPredefined.getSubprogram("repmat");
-    	CORE.execute(subprogram, dst.clRows, dst.clColumns, src, dst,
-    			CLScalar.of(dst.rows), CLScalar.of(dst.columns), 
-    			CLScalar.of(rows), CLScalar.of(columns), 
-    			CLScalar.of(clRows));
+    	CORE.execute(subprogram, dst.clRows, dst.clColumns, src, dst, CLScalar.of(rows), CLScalar.of(columns), CLScalar.of(clRows));
     	
         return destination;
     }

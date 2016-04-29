@@ -19,40 +19,34 @@ import org.nblas.generic.Subprogram;
  */
 class CLPredefined {
 		
-	private static final String repmat = "__kernel void repmat(__global const float* source, __global float* result, \n" +
-		"const uint m, const uint n, const uint subM, const uint subN, const uint subStride)\n" +
+	private static final String repmat = "__kernel void repmat(const __global float* source, __global float* destination, const uint srcRows, const uint srcColumns, const uint srcStride)\n" +
 		"{\n" +
-		"    uint id0 = get_global_id(0);\n" +
-		"    uint id1 = get_global_id(1);\n" +
-		"    uint id = id1 * get_global_size(0) + id0;\n" +
-		"    if(id0 >= m || id1 >= n )\n" +
-		"    {\n" +
-		"       result[id] = 0.0f;\n" +
-		"       return;\n" +
-		"    }\n" +
-		"    uint sid = (id1 % subN) * subStride + (id0 % subM);\n" +
-		"    result[id] = source[sid];\n" +
+		"    const uint dstX = get_global_id(0);\n" +
+		"    const uint dstY = get_global_id(1);\n" +
+		"    const uint idx = dstX * get_global_size(1) + dstY;\n" +
+		"    const uint sidx = (dstY % srcRows) + (dstX % srcColumns) * srcStride;\n" +
+		"    destination[idx] = source[sidx];\n" +
 		"}\n";
     
-    private static final String setSubMatrix = "__kernel void setSubMatrix(__global const float* source, __global float* destination, const uint srcRows, const uint srcColumns, const uint rowOffset, const uint columnOffset, const uint dstStride)\n" +
+    private static final String setSubMatrix = "__kernel void setSubMatrix(const __global float* source, __global float* destination, const uint srcRows, const uint srcColumns, const uint rowOffset, const uint columnOffset, const uint dstStride)\n" +
     		"{\n" + 
-    		"    uint srcX = get_global_id(0);\n" +
-    		"    uint srcY = get_global_id(1);\n" + 
+    		"    const uint srcX = get_global_id(0);\n" +
+    		"    const uint srcY = get_global_id(1);\n" + 
     		"	 if(srcX >= srcColumns || srcY >= srcRows) return;\n" +
     		"\n" +
-    		"    uint srcIndex = srcX * get_global_size(1) + srcY;" + 
-    		"    uint dstIndex = (srcX + columnOffset) * dstStride + (srcY + rowOffset);" +
+    		"    const uint srcIndex = srcX * get_global_size(1) + srcY;" + 
+    		"    const uint dstIndex = (srcX + columnOffset) * dstStride + (srcY + rowOffset);" +
     		"    destination[dstIndex] = source[srcIndex];\n" +
     		"}\n";
     
-    private static final String getSubMatrix = "__kernel void getSubMatrix(__global const float* source, __global float* destination, const uint dstRows, const uint dstColumns, const uint rowOffset, const uint columnOffset, const uint srcStride)\n" +
+    private static final String getSubMatrix = "__kernel void getSubMatrix(const __global float* source, __global float* destination, const uint dstRows, const uint dstColumns, const uint rowOffset, const uint columnOffset, const uint srcStride)\n" +
     		"{\n" + 
-    		"    uint dstX = get_global_id(0);\n" + 
-    		"    uint dstY = get_global_id(1);\n" +
+    		"    const uint dstX = get_global_id(0);\n" + 
+    		"    const uint dstY = get_global_id(1);\n" +
     		"	 if(dstX >= dstColumns || dstY >= dstRows) return;\n" +
     		"\n" +
-    		"    uint dstIndex = dstX * get_global_size(1) + dstY;" + 
-    		"    uint srcIndex = (dstX + columnOffset) * srcStride + (dstY + rowOffset);" +
+    		"    const uint dstIndex = dstX * get_global_size(1) + dstY;" + 
+    		"    const uint srcIndex = (dstX + columnOffset) * srcStride + (dstY + rowOffset);" +
     		"    destination[dstIndex] = source[srcIndex];\n" +
     		"}\n";
 	
