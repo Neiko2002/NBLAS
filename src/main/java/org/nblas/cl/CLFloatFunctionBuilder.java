@@ -22,11 +22,11 @@ class CLFloatFunctionBuilder extends AFunctionBuilder<cl_kernel> {
             } else {
             	
             	if (args[i] == ArgumentType.MATRIX) {
-                    function = function.replaceAll(id, id + "[id]");
+                    function = function.replaceAll(id, id + "[idx]");
                 } else if (args[i] == ArgumentType.COLUMN_VECTOR) {
-                    function = function.replaceAll(id, id + "[id0]");
+                    function = function.replaceAll(id, id + "[row]");
                 } else if (args[i] == ArgumentType.ROW_VECTOR) {
-                    function = function.replaceAll(id, id + "[id1]");
+                    function = function.replaceAll(id, id + "[column]");
                 }  
                 parameters.append(", __global const float* arg" + String.format("%02d", i));
             }           
@@ -36,18 +36,22 @@ class CLFloatFunctionBuilder extends AFunctionBuilder<cl_kernel> {
 //        String functionName = generateFunctionName(function);
         builder.append("__kernel void " + functionName + "(");
         builder.append("__global float* result");
-        builder.append(", const uint columns");
         builder.append(", const uint rows");
+        builder.append(", const uint columns");
         builder.append(parameters.toString());
 
         builder.append(")\n");
         builder.append("{\n");
 
-        builder.append("uint id0 = get_global_id(0);\n");
-        builder.append("uint id1 = get_global_id(1);\n");
-        builder.append("if(id0 >= rows || id1 >= columns ) return;\n");
-        builder.append("uint id = id1 * get_global_size(0) + id0;\n");
-        builder.append("result[id] = ");
+        builder.append("uint column = get_global_id(0);\n"); 
+        builder.append("uint row = get_global_id(1);\n"); 
+        
+        // TODO: teuer. sollte ganz raus
+        if(args.length > 1 && (args[1] == ArgumentType.COLUMN_VECTOR || args[1] == ArgumentType.ROW_VECTOR))
+        	builder.append("if(row >= rows || column >= columns ) return;\n");
+        
+        builder.append("uint idx = column * get_global_size(1) + row;\n");
+        builder.append("result[idx] = ");
         builder.append(function);
         builder.append(";\n");
         builder.append("}\n");
