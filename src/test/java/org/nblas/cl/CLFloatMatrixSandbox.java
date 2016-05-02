@@ -25,7 +25,7 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 		CLFloatMatrixSandbox testSuit = new CLFloatMatrixSandbox();
 		testSuit.context = Context.OpenCLSinglePrecisionContext;
 		testSuit.setUp();
-		testSuit.matrixBlockSize();
+		testSuit.sgemmBlockSize();
 	}
 	
 	public void functionTest() {
@@ -39,6 +39,41 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 		matrix.release();	
 	}
 	
+	public void sgemmBlockSize() {
+		CLCore CORE = CLCore.getCore();
+		int threadCount = CORE.getThreadCount();
+    	cl_kernel kernel = CLPredefined.getSubprogram("sgemm_nn").getKernel();
+
+		// erstelle eine 32x32 einser Matrix
+		CLFloatMatrix matrix1 = (CLFloatMatrix) FloatMatrix.ones(256, 2560, context).muli(3);
+		CLFloatMatrix matrix2 = (CLFloatMatrix) FloatMatrix.ones(2560, 1024, context).muli(3);
+		CLFloatMatrix matrix3 = (CLFloatMatrix) FloatMatrix.ones(256, 1024, context).muli(3);
+
+		
+		// führe den Kernel aus und messe die Zeit
+		CORE.waitOnComplete();
+		long start= System.currentTimeMillis();		
+    
+        CL.clSetKernelArg(kernel, 0, matrix1.getSizeof(), matrix1.getPointer());
+        CL.clSetKernelArg(kernel, 1, matrix2.getSizeof(), matrix2.getPointer());
+        CL.clSetKernelArg(kernel, 2, matrix3.getSizeof(), matrix3.getPointer());
+        CL.clSetKernelArg(kernel, 3, Sizeof.cl_float*threadCount, CLArray.ofFloat(threadCount).getPointer());
+        CL.clSetKernelArg(kernel, 4, Sizeof.cl_float*threadCount, CLArray.ofFloat(threadCount).getPointer());
+        CL.clSetKernelArg(kernel, 5, Sizeof.cl_uint, CLScalar.of(matrix1.clRows).getPointer());
+        CL.clSetKernelArg(kernel, 6, Sizeof.cl_uint, CLScalar.of(matrix2.clColumns).getPointer());
+        CL.clSetKernelArg(kernel, 7, Sizeof.cl_uint, CLScalar.of(matrix1.clColumns).getPointer());
+        
+        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 16, 16);
+//        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 32, 8);
+//        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 8, 32);
+//        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 256, 1);
+//        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 16, 4);
+        
+		CORE.waitOnComplete();
+		System.out.println("Matrix Multi Time: "+(System.currentTimeMillis()-start)+"ms");
+   
+        
+	}
 	/**
 	 * 
 	 */
@@ -61,11 +96,11 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 			
 		// erstelle eine 32x32 einser Matrix
 //		CLFloatMatrix matrix1 = (CLFloatMatrix) FloatMatrix.ones(8, 128 * 10000, context).muli(3);
-//		CLFloatMatrix matrix2 = (CLFloatMatrix) FloatMatrix.ones(8, 128 * 10000, context).muli(3)
-//		CLFloatMatrix matrix1 = (CLFloatMatrix) FloatMatrix.ones(16, 128 * 10000, context).muli(3);
-//		CLFloatMatrix matrix2 = (CLFloatMatrix) FloatMatrix.ones(16, 128 * 10000, context).muli(3);
-		CLFloatMatrix matrix1 = (CLFloatMatrix) FloatMatrix.ones(32, 128 * 10000, context).muli(3);
-		CLFloatMatrix matrix2 = (CLFloatMatrix) FloatMatrix.ones(32, 128 * 10000, context).muli(3);
+//		CLFloatMatrix matrix2 = (CLFloatMatrix) FloatMatrix.ones(8, 128 * 10000, context).muli(3);
+		CLFloatMatrix matrix1 = (CLFloatMatrix) FloatMatrix.ones(16, 128 * 100000, context).muli(3);
+		CLFloatMatrix matrix2 = (CLFloatMatrix) FloatMatrix.ones(16, 128 * 100000, context).muli(3);
+//		CLFloatMatrix matrix1 = (CLFloatMatrix) FloatMatrix.ones(32, 128 * 10000, context).muli(3);
+//		CLFloatMatrix matrix2 = (CLFloatMatrix) FloatMatrix.ones(32, 128 * 10000, context).muli(3);
 		
 		// führe den Kernel aus und messe die Zeit
 		CORE.waitOnComplete();
@@ -87,14 +122,14 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 //        CORE.enqueue2DRangeKernelTest(kernel, 16, matrix1.clColumns, 16, 32);
 //        CORE.enqueue2DRangeKernelTest(kernel, 16, matrix1.clColumns, 16, 16);
 //        CORE.enqueue2DRangeKernelTest(kernel, 16, matrix1.clColumns, 16, 8);
-//        CORE.enqueue2DRangeKernelTest(kernel, 16, matrix1.clColumns, 16, 4);
+        CORE.enqueue2DRangeKernelTest(kernel, 16, matrix1.clColumns, 16, 4);
 //        CORE.enqueue2DRangeKernelTest(kernel, 16, matrix1.clColumns, 16, 2);
 //        CORE.enqueue2DRangeKernelTest(kernel, 16, matrix1.clColumns, 16, 1);
         
 //        CORE.enqueue2DRangeKernelTest(kernel, 32, matrix1.clColumns, 32, 32);
 //        CORE.enqueue2DRangeKernelTest(kernel, 32, matrix1.clColumns, 32, 16);
 //        CORE.enqueue2DRangeKernelTest(kernel, 32, matrix1.clColumns, 32, 8);
-        CORE.enqueue2DRangeKernelTest(kernel, 32, matrix1.clColumns, 32, 4);
+//        CORE.enqueue2DRangeKernelTest(kernel, 32, matrix1.clColumns, 32, 4);
 //        CORE.enqueue2DRangeKernelTest(kernel, 32, matrix1.clColumns, 32, 2);
 //        CORE.enqueue2DRangeKernelTest(kernel, 32, matrix1.clColumns, 32, 1);
         

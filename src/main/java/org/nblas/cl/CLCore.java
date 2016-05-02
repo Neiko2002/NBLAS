@@ -25,7 +25,6 @@ import org.nblas.cl.model.CLStorage;
 import org.nblas.generic.Subprogram;
 
 /**
- * Matrix funktionen wie transpose() gehören in eine allgemeine CLMatrix Klasse und sgemm_nn sogar in die CLFloatMatrix.
  *   
  * @author Nico
  *
@@ -58,7 +57,6 @@ class CLCore {
     private CLMemory sharedBuffer;
 
     private CLCore() {
-
         device = setupDevice();
         
         computeUnits = device.getComputeUnits();
