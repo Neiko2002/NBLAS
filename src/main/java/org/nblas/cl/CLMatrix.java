@@ -18,16 +18,18 @@ import org.nblas.generic.Subprogram;
  */
 public abstract class CLMatrix extends AMatrix implements CLStorage {
 		
-	protected static final CLCore CORE = CLCore.getCore();
+	protected CLCore CORE;
 
 	// memory on the device
 	protected CLMemory clMemory;    
     protected int clRows, clColumns;
     protected Optional<CLMemory> randomDataPointer;
-
     
-	public CLMatrix(int rows, int columns) {
+	public CLMatrix(int rows, int columns, CLCore core) {
 		super(rows, columns);
+		
+		// Backend 
+		this.CORE = core;
 	
 		// row or column vector else matrix
 		this.clRows = getValidSize(rows, CORE.getThreadCountX());			
@@ -50,8 +52,7 @@ public abstract class CLMatrix extends AMatrix implements CLStorage {
             randomDataPointer = Optional.of(CORE.malloc(initRandom));
         }
     }
-    
-    
+	
     @Override
     public Pointer getPointer() {
     	return clMemory.getPointer();
@@ -80,8 +81,8 @@ public abstract class CLMatrix extends AMatrix implements CLStorage {
      * @param subprogram
      * @param a
      */
-	protected static void runMatrixOperation(Subprogram<cl_kernel> subprogram, CLMatrix a) {
-		CORE.execute(subprogram, a.clRows, a.clColumns, a, CLScalar.of(a.rows), CLScalar.of(a.columns));
+	protected void runMatrixOperation(Subprogram<cl_kernel> subprogram) {
+		CORE.execute(subprogram, this.clRows, this.clColumns, this, CLScalar.of(this.rows), CLScalar.of(this.columns));
 	}
     
     /**
@@ -93,9 +94,9 @@ public abstract class CLMatrix extends AMatrix implements CLStorage {
      * @param b
      * @param result
      */
-	protected static void runMatrixMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix b, CLMatrix result) {
-		checkSameSize(a, b, result);
-        CORE.execute(subprogram, a.clRows, a.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), a, b);
+	protected void runMatrixMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix b, CLMatrix result) {
+		checkSameSize(this, b, result);
+        CORE.execute(subprogram, this.clRows, this.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), this, b);
 	}
 	
 	
@@ -108,9 +109,9 @@ public abstract class CLMatrix extends AMatrix implements CLStorage {
 	 * @param scalar
 	 * @param result
 	 */
-	protected static void runMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix result) {
-		checkSameSize(a, result);
-        CORE.execute(subprogram, a.clRows, a.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), a);
+	protected void runMatrixElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix result) {
+		checkSameSize(this, result);
+        CORE.execute(subprogram, this.clRows, this.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), this);
 	}
 	
 	/**
@@ -122,8 +123,8 @@ public abstract class CLMatrix extends AMatrix implements CLStorage {
 	 * @param scalar
 	 * @param result
 	 */
-	protected static void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLScalar scalar, CLMatrix result) {
-        CORE.execute(subprogram, a.clRows, a.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), a, scalar);
+	protected void runMatrixScalarElementWiseOperation(Subprogram<cl_kernel> subprogram, CLScalar scalar, CLMatrix result) {
+        CORE.execute(subprogram, this.clRows, this.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), this, scalar);
 	}
 
 	/**
@@ -135,9 +136,9 @@ public abstract class CLMatrix extends AMatrix implements CLStorage {
 	 * @param row vector
 	 * @param result
 	 */
-	protected static void runMatrixRowVectorElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix b, CLMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(subprogram, a.clRows, a.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), a, b);
+	protected void runMatrixRowVectorElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix b, CLMatrix result) {
+        checkRowVectorSize(this, b, result);
+        CORE.execute(subprogram, this.clRows, this.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), this, b);
 	}	
 	
 	/**
@@ -149,15 +150,15 @@ public abstract class CLMatrix extends AMatrix implements CLStorage {
 	 * @param column vector
 	 * @param result
 	 */
-	protected static void runMatrixColumnVectorElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix a, CLMatrix b, CLMatrix result) {
-		checkColumnVectorSize(a, b, result);
-		CORE.execute(subprogram, a.clRows, a.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), a, b);
+	protected void runMatrixColumnVectorElementWiseOperation(Subprogram<cl_kernel> subprogram, CLMatrix b, CLMatrix result) {
+		checkColumnVectorSize(this, b, result);
+		CORE.execute(subprogram, this.clRows, this.clColumns, result, CLScalar.of(result.rows), CLScalar.of(result.columns), this, b);
 	}	
 
 	/**
 	 * Warte so lange bis alle anstehenden Operationen auf der GPU durchgeführt wurden
 	 */
-    public static void waitOnComplete() {
+    public void waitOnComplete() {
         CORE.waitOnComplete();
     }
 

@@ -51,12 +51,12 @@ public class CLPlatform {
 	}
 	
 	public CLDevice getFastestDevice() {
-		final Comparator<CLDevice> performanceComperator = (c1, c2) -> Integer.compare( c1.getTheoreticalComputingPower(), c2.getTheoreticalComputingPower());
+		final Comparator<CLDevice> performanceComperator = (c1, c2) -> Integer.compare( c1.getTheoreticalSpeed(), c2.getTheoreticalSpeed());
 		return Arrays.stream(devices).max(performanceComperator).get();
     }
 	
 	public CLDevice getFastestGPU() {
-		final Comparator<CLDevice> performanceComperator = (c1, c2) -> Integer.compare( c1.getTheoreticalComputingPower(), c2.getTheoreticalComputingPower());
+		final Comparator<CLDevice> performanceComperator = (c1, c2) -> Integer.compare( c1.getTheoreticalSpeed(), c2.getTheoreticalSpeed());
 		return Arrays.stream(devices).filter(CLDevice::isGPU).max(performanceComperator).orElse(null);
     }
 	

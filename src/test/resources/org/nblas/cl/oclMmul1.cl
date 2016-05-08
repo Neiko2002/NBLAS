@@ -10,7 +10,7 @@
 //	Mdim:4096	 152794ms
 
 
-#define BLOCK_SIZE 32
+#define BLOCK_SIZE 16
 #define AS(i, j) As[j + i * BLOCK_SIZE]
 #define BS(i, j) Bs[j + i * BLOCK_SIZE]
 

@@ -1,8 +1,9 @@
-package org.nblas.java;
+package org.nblas.jblas;
 
 import org.jblas.util.Random;
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
+import org.nblas.cl.CLContext;
 import org.nblas.impl.FloatMatrixDefault;
 import org.nblas.generic.AMatrix;
 
@@ -13,30 +14,34 @@ import org.nblas.generic.AMatrix;
  * @author Nico
  *
  */
-public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
+public class JBlasFloatMatrix extends AMatrix implements FloatMatrixDefault {
 
 	protected org.jblas.FloatMatrix matrix;
-	
-	public JavaFloatMatrix(int rows, int columns) {
+	protected JBlasContext context;
+
+	public JBlasFloatMatrix(int rows, int columns, JBlasContext context) {
 		super(rows, columns);
 		this.matrix = new org.jblas.FloatMatrix(rows, columns);
+		this.context = context;
 	}
 
-	public JavaFloatMatrix(int rows, int columns, float[] values) {
+	public JBlasFloatMatrix(int rows, int columns, float[] values, JBlasContext context) {
 		super(rows, columns);
 		this.matrix = new org.jblas.FloatMatrix(rows, columns, values);
+		this.context = context;
 	}
 	
-	public JavaFloatMatrix(org.jblas.FloatMatrix matrix) {
+	public JBlasFloatMatrix(org.jblas.FloatMatrix matrix, JBlasContext context) {
 		super(matrix.getRows(), matrix.getColumns());
 		this.matrix = matrix;
+		this.context = context;
 	}
 	
     // ---------------------------------- utility methods -------------------------------------
 
 	@Override
 	public Context getContext() {
-		return Context.JBLASSinglePrecisionContext;
+		return context;
 	}
 
     @Override
@@ -69,16 +74,16 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	
 	@Override
 	public FloatMatrix dup(FloatMatrix a, FloatMatrix result) {
-		org.jblas.FloatMatrix mat = ((JavaFloatMatrix) a).matrix;
-		org.jblas.FloatMatrix r = ((JavaFloatMatrix) result).matrix;
+		org.jblas.FloatMatrix mat = ((JBlasFloatMatrix) a).matrix;
+		org.jblas.FloatMatrix r = ((JBlasFloatMatrix) result).matrix;
 		System.arraycopy(mat.data, 0, r.data, 0, mat.data.length);
 		return result;
 	}
 	
 	@Override
 	public FloatMatrix transpose(FloatMatrix matrix, FloatMatrix transposed) {
-		org.jblas.FloatMatrix mat = ((JavaFloatMatrix) matrix).matrix;
-		org.jblas.FloatMatrix r = ((JavaFloatMatrix) transposed).matrix;
+		org.jblas.FloatMatrix mat = ((JBlasFloatMatrix) matrix).matrix;
+		org.jblas.FloatMatrix r = ((JBlasFloatMatrix) transposed).matrix;
 		
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
@@ -92,7 +97,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	@Override
 	public FloatMatrix repmat(FloatMatrix source, FloatMatrix destination, int rowMultiplicator, int columnMultiplicator) {
 		// TODO too many copies
-		((JavaFloatMatrix) destination).matrix.copy(((JavaFloatMatrix) source).matrix.repmat(rowMultiplicator, columnMultiplicator));
+		((JBlasFloatMatrix) destination).matrix.copy(((JBlasFloatMatrix) source).matrix.repmat(rowMultiplicator, columnMultiplicator));
 		return destination;
 	}
 	 
@@ -131,7 +136,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix add(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
-    	((JavaFloatMatrix) matrixA).matrix.addi(((JavaFloatMatrix) matrixB).matrix, ((JavaFloatMatrix) result).matrix);
+    	((JBlasFloatMatrix) matrixA).matrix.addi(((JBlasFloatMatrix) matrixB).matrix, ((JBlasFloatMatrix) result).matrix);
     	return result;
     }
     
@@ -140,7 +145,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix add(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	((JavaFloatMatrix) matrix).matrix.addi(scalar, ((JavaFloatMatrix) result).matrix);    	
+    	((JBlasFloatMatrix) matrix).matrix.addi(scalar, ((JBlasFloatMatrix) result).matrix);    	
     	return result;
     }   
     
@@ -149,7 +154,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
 	@Override
 	public FloatMatrix addColumnVector(FloatMatrix a, FloatMatrix columnVector, FloatMatrix result) {
-		((JavaFloatMatrix) dup(a, result)).matrix.addiColumnVector(((JavaFloatMatrix) columnVector).matrix);
+		((JBlasFloatMatrix) dup(a, result)).matrix.addiColumnVector(((JBlasFloatMatrix) columnVector).matrix);
 		return result;
 	}
     
@@ -158,7 +163,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
 	@Override
 	public FloatMatrix addRowVector(FloatMatrix a, FloatMatrix rowVector, FloatMatrix result) {
-		((JavaFloatMatrix) dup(a, result)).matrix.addiRowVector(((JavaFloatMatrix) rowVector).matrix);
+		((JBlasFloatMatrix) dup(a, result)).matrix.addiRowVector(((JBlasFloatMatrix) rowVector).matrix);
 		return result;
 	}
 
@@ -169,7 +174,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix sub(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
-    	((JavaFloatMatrix) matrixA).matrix.subi(((JavaFloatMatrix) matrixB).matrix, ((JavaFloatMatrix) result).matrix);
+    	((JBlasFloatMatrix) matrixA).matrix.subi(((JBlasFloatMatrix) matrixB).matrix, ((JBlasFloatMatrix) result).matrix);
     	return result;
     }
     
@@ -178,7 +183,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix sub(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	((JavaFloatMatrix) matrix).matrix.subi(scalar, ((JavaFloatMatrix) result).matrix);    	
+    	((JBlasFloatMatrix) matrix).matrix.subi(scalar, ((JBlasFloatMatrix) result).matrix);    	
     	return result;
     }   
     
@@ -187,7 +192,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
 	@Override
 	public FloatMatrix subColumnVector(FloatMatrix a, FloatMatrix columnVector, FloatMatrix result) {
-		((JavaFloatMatrix) dup(a, result)).matrix.subiColumnVector(((JavaFloatMatrix) columnVector).matrix);
+		((JBlasFloatMatrix) dup(a, result)).matrix.subiColumnVector(((JBlasFloatMatrix) columnVector).matrix);
 		return result;
 	}
     
@@ -196,7 +201,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
 	@Override
 	public FloatMatrix subRowVector(FloatMatrix a, FloatMatrix rowVector, FloatMatrix result) {
-		((JavaFloatMatrix) dup(a, result)).matrix.subiRowVector(((JavaFloatMatrix) rowVector).matrix);
+		((JBlasFloatMatrix) dup(a, result)).matrix.subiRowVector(((JBlasFloatMatrix) rowVector).matrix);
 		return result;
 	}
 
@@ -205,7 +210,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
 	@Override
 	public FloatMatrix rsub(FloatMatrix matrix, float scalar, FloatMatrix result) {
-		((JavaFloatMatrix) matrix).matrix.rsubi(scalar, ((JavaFloatMatrix) result).matrix);    	
+		((JBlasFloatMatrix) matrix).matrix.rsubi(scalar, ((JBlasFloatMatrix) result).matrix);    	
     	return result;
 	}
 
@@ -215,9 +220,9 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	@Override
 	public FloatMatrix rsubColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
 		
-		org.jblas.FloatMatrix vec = ((JavaFloatMatrix) columnVector).matrix;
-		org.jblas.FloatMatrix a = ((JavaFloatMatrix) matrix).matrix;
-		org.jblas.FloatMatrix dst = ((JavaFloatMatrix) result).matrix;
+		org.jblas.FloatMatrix vec = ((JBlasFloatMatrix) columnVector).matrix;
+		org.jblas.FloatMatrix a = ((JBlasFloatMatrix) matrix).matrix;
+		org.jblas.FloatMatrix dst = ((JBlasFloatMatrix) result).matrix;
 		
 		for (int c = 0; c < matrix.getColumns(); c++)
 			for (int r = 0; r < matrix.getRows(); r++)
@@ -232,9 +237,9 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	@Override
 	public FloatMatrix rsubRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
 
-		org.jblas.FloatMatrix vec = ((JavaFloatMatrix) rowVector).matrix;
-		org.jblas.FloatMatrix a = ((JavaFloatMatrix) matrix).matrix;
-		org.jblas.FloatMatrix dst = ((JavaFloatMatrix) result).matrix;
+		org.jblas.FloatMatrix vec = ((JBlasFloatMatrix) rowVector).matrix;
+		org.jblas.FloatMatrix a = ((JBlasFloatMatrix) matrix).matrix;
+		org.jblas.FloatMatrix dst = ((JBlasFloatMatrix) result).matrix;
 		
 		for (int c = 0; c < matrix.getColumns(); c++)
 			for (int r = 0; r < matrix.getRows(); r++)
@@ -250,7 +255,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix mul(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
-    	((JavaFloatMatrix) matrixA).matrix.muli(((JavaFloatMatrix) matrixB).matrix, ((JavaFloatMatrix) result).matrix);
+    	((JBlasFloatMatrix) matrixA).matrix.muli(((JBlasFloatMatrix) matrixB).matrix, ((JBlasFloatMatrix) result).matrix);
     	return result;
     }
     
@@ -259,7 +264,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix mul(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	((JavaFloatMatrix) matrix).matrix.muli(scalar, ((JavaFloatMatrix) result).matrix);    	
+    	((JBlasFloatMatrix) matrix).matrix.muli(scalar, ((JBlasFloatMatrix) result).matrix);    	
     	return result;
     }   
     
@@ -268,7 +273,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
 	@Override
 	public FloatMatrix mulColumnVector(FloatMatrix a, FloatMatrix columnVector, FloatMatrix result) {
-		((JavaFloatMatrix) dup(a, result)).matrix.muliColumnVector(((JavaFloatMatrix) columnVector).matrix);
+		((JBlasFloatMatrix) dup(a, result)).matrix.muliColumnVector(((JBlasFloatMatrix) columnVector).matrix);
 		return result;
 	}
     
@@ -277,7 +282,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
 	@Override
 	public FloatMatrix mulRowVector(FloatMatrix a, FloatMatrix rowVector, FloatMatrix result) {
-		((JavaFloatMatrix) dup(a, result)).matrix.muliRowVector(((JavaFloatMatrix) rowVector).matrix);
+		((JBlasFloatMatrix) dup(a, result)).matrix.muliRowVector(((JBlasFloatMatrix) rowVector).matrix);
 		return result;
 	}
     
@@ -288,7 +293,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix div(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
-    	((JavaFloatMatrix) matrixA).matrix.divi(((JavaFloatMatrix) matrixB).matrix, ((JavaFloatMatrix) result).matrix);
+    	((JBlasFloatMatrix) matrixA).matrix.divi(((JBlasFloatMatrix) matrixB).matrix, ((JBlasFloatMatrix) result).matrix);
     	return result;
     }
     
@@ -297,7 +302,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
     @Override
     public FloatMatrix div(FloatMatrix matrix, float scalar, FloatMatrix result) {
-    	((JavaFloatMatrix) matrix).matrix.divi(scalar, ((JavaFloatMatrix) result).matrix);    	
+    	((JBlasFloatMatrix) matrix).matrix.divi(scalar, ((JBlasFloatMatrix) result).matrix);    	
     	return result;
     }   
     
@@ -306,7 +311,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
 	@Override
 	public FloatMatrix divColumnVector(FloatMatrix a, FloatMatrix columnVector, FloatMatrix result) {
-		((JavaFloatMatrix) dup(a, result)).matrix.diviColumnVector(((JavaFloatMatrix) columnVector).matrix);
+		((JBlasFloatMatrix) dup(a, result)).matrix.diviColumnVector(((JBlasFloatMatrix) columnVector).matrix);
 		return result;
 	}
     
@@ -315,22 +320,22 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	 */
 	@Override
 	public FloatMatrix divRowVector(FloatMatrix a, FloatMatrix rowVector, FloatMatrix result) {
-		((JavaFloatMatrix) dup(a, result)).matrix.diviRowVector(((JavaFloatMatrix) rowVector).matrix);
+		((JBlasFloatMatrix) dup(a, result)).matrix.diviRowVector(((JBlasFloatMatrix) rowVector).matrix);
 		return result;
 	}
 	
 	@Override
 	public FloatMatrix rdiv(FloatMatrix matrix, float scalar, FloatMatrix result) {
-		((JavaFloatMatrix) matrix).matrix.rdivi(scalar, ((JavaFloatMatrix) result).matrix);    	
+		((JBlasFloatMatrix) matrix).matrix.rdivi(scalar, ((JBlasFloatMatrix) result).matrix);    	
     	return result;
 	}
 
 	@Override
 	public FloatMatrix rdivColumnVector(FloatMatrix matrix, FloatMatrix columnVector, FloatMatrix result) {
 
-		org.jblas.FloatMatrix vec = ((JavaFloatMatrix) columnVector).matrix;
-		org.jblas.FloatMatrix a = ((JavaFloatMatrix) matrix).matrix;
-		org.jblas.FloatMatrix dst = ((JavaFloatMatrix) result).matrix;
+		org.jblas.FloatMatrix vec = ((JBlasFloatMatrix) columnVector).matrix;
+		org.jblas.FloatMatrix a = ((JBlasFloatMatrix) matrix).matrix;
+		org.jblas.FloatMatrix dst = ((JBlasFloatMatrix) result).matrix;
 		
 		for (int c = 0; c < matrix.getColumns(); c++)
 			for (int r = 0; r < matrix.getRows(); r++)
@@ -342,9 +347,9 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	@Override
 	public FloatMatrix rdivRowVector(FloatMatrix matrix, FloatMatrix rowVector, FloatMatrix result) {
 		
-		org.jblas.FloatMatrix vec = ((JavaFloatMatrix) rowVector).matrix;
-		org.jblas.FloatMatrix a = ((JavaFloatMatrix) matrix).matrix;
-		org.jblas.FloatMatrix dst = ((JavaFloatMatrix) result).matrix;
+		org.jblas.FloatMatrix vec = ((JBlasFloatMatrix) rowVector).matrix;
+		org.jblas.FloatMatrix a = ((JBlasFloatMatrix) matrix).matrix;
+		org.jblas.FloatMatrix dst = ((JBlasFloatMatrix) result).matrix;
 		
 		for (int c = 0; c < matrix.getColumns(); c++)
 			for (int r = 0; r < matrix.getRows(); r++)
@@ -357,8 +362,8 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
     
 	@Override
 	public FloatMatrix exp(FloatMatrix a, FloatMatrix result) {
-		org.jblas.FloatMatrix x = ((JavaFloatMatrix) a).matrix;
-		org.jblas.FloatMatrix r = ((JavaFloatMatrix) result).matrix;
+		org.jblas.FloatMatrix x = ((JBlasFloatMatrix) a).matrix;
+		org.jblas.FloatMatrix r = ((JBlasFloatMatrix) result).matrix;
 		for (int i = 0; i < x.data.length; i++)
 			r.data[i] = (float) Math.exp(x.data[i]);
 		return result;
@@ -366,8 +371,8 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 
 	@Override
 	public FloatMatrix neg(FloatMatrix a, FloatMatrix result) {
-		org.jblas.FloatMatrix x = ((JavaFloatMatrix) a).matrix;
-		org.jblas.FloatMatrix r = ((JavaFloatMatrix) result).matrix;
+		org.jblas.FloatMatrix x = ((JBlasFloatMatrix) a).matrix;
+		org.jblas.FloatMatrix r = ((JBlasFloatMatrix) result).matrix;
 		for (int i = 0; i < x.data.length; i++)
 			r.data[i] = -x.data[i];
 		return result;
@@ -375,8 +380,8 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 
 	@Override
 	public FloatMatrix sigmoid(FloatMatrix a, FloatMatrix result) {
-		org.jblas.FloatMatrix x = ((JavaFloatMatrix) a).matrix;
-		org.jblas.FloatMatrix r = ((JavaFloatMatrix) result).matrix;
+		org.jblas.FloatMatrix x = ((JBlasFloatMatrix) a).matrix;
+		org.jblas.FloatMatrix r = ((JBlasFloatMatrix) result).matrix;
 		for (int i = 0; i < x.data.length; i++)
 			r.data[i] = (float) (1. / ( 1. + Math.exp(-x.data[i]) ));
 		return result;
@@ -392,7 +397,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix gt(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
-    	((JavaFloatMatrix) matrixA).matrix.gti(((JavaFloatMatrix) matrixB).matrix, ((JavaFloatMatrix) result).matrix);
+    	((JBlasFloatMatrix) matrixA).matrix.gti(((JBlasFloatMatrix) matrixB).matrix, ((JBlasFloatMatrix) result).matrix);
 		return result;
     }
     
@@ -401,7 +406,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix gt(FloatMatrix matrix, float scalar, FloatMatrix result) {
-		((JavaFloatMatrix) matrix).matrix.gti(scalar, ((JavaFloatMatrix) result).matrix);  
+		((JBlasFloatMatrix) matrix).matrix.gti(scalar, ((JBlasFloatMatrix) result).matrix);  
     	return result;
     }
     
@@ -429,7 +434,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix ge(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
-    	((JavaFloatMatrix) matrixA).matrix.gei(((JavaFloatMatrix) matrixB).matrix, ((JavaFloatMatrix) result).matrix);
+    	((JBlasFloatMatrix) matrixA).matrix.gei(((JBlasFloatMatrix) matrixB).matrix, ((JBlasFloatMatrix) result).matrix);
     	return result;
     }
     
@@ -438,7 +443,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix ge(FloatMatrix matrix, float scalar, FloatMatrix result) {
-		((JavaFloatMatrix) matrix).matrix.gei(scalar, ((JavaFloatMatrix) result).matrix);  
+		((JBlasFloatMatrix) matrix).matrix.gei(scalar, ((JBlasFloatMatrix) result).matrix);  
     	return result;
     }
     
@@ -465,7 +470,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix lt(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
-    	((JavaFloatMatrix) matrixA).matrix.lti(((JavaFloatMatrix) matrixB).matrix, ((JavaFloatMatrix) result).matrix);
+    	((JBlasFloatMatrix) matrixA).matrix.lti(((JBlasFloatMatrix) matrixB).matrix, ((JBlasFloatMatrix) result).matrix);
     	return result;
     }
     
@@ -474,7 +479,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix lt(FloatMatrix matrix, float scalar, FloatMatrix result) {
-		((JavaFloatMatrix) matrix).matrix.lti(scalar, ((JavaFloatMatrix) result).matrix);  
+		((JBlasFloatMatrix) matrix).matrix.lti(scalar, ((JBlasFloatMatrix) result).matrix);  
     	return result;
     }
     
@@ -502,7 +507,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix le(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
-    	((JavaFloatMatrix) matrixA).matrix.lei(((JavaFloatMatrix) matrixB).matrix, ((JavaFloatMatrix) result).matrix);
+    	((JBlasFloatMatrix) matrixA).matrix.lei(((JBlasFloatMatrix) matrixB).matrix, ((JBlasFloatMatrix) result).matrix);
     	return result;
     }
     
@@ -511,7 +516,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix le(FloatMatrix matrix, float scalar, FloatMatrix result) {
-		((JavaFloatMatrix) matrix).matrix.lei(scalar, ((JavaFloatMatrix) result).matrix);  
+		((JBlasFloatMatrix) matrix).matrix.lei(scalar, ((JBlasFloatMatrix) result).matrix);  
     	return result;
     }
     
@@ -539,7 +544,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix eq(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
-    	((JavaFloatMatrix) matrixA).matrix.eqi(((JavaFloatMatrix) matrixB).matrix, ((JavaFloatMatrix) result).matrix);
+    	((JBlasFloatMatrix) matrixA).matrix.eqi(((JBlasFloatMatrix) matrixB).matrix, ((JBlasFloatMatrix) result).matrix);
     	return result;
     }
     
@@ -548,7 +553,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix eq(FloatMatrix matrix, float scalar, FloatMatrix result) {
-		((JavaFloatMatrix) matrix).matrix.eqi(scalar, ((JavaFloatMatrix) result).matrix);  
+		((JBlasFloatMatrix) matrix).matrix.eqi(scalar, ((JBlasFloatMatrix) result).matrix);  
     	return result;
     }
     
@@ -576,7 +581,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix ne(FloatMatrix matrixA, FloatMatrix matrixB, FloatMatrix result) {
-    	((JavaFloatMatrix) matrixA).matrix.nei(((JavaFloatMatrix) matrixB).matrix, ((JavaFloatMatrix) result).matrix);
+    	((JBlasFloatMatrix) matrixA).matrix.nei(((JBlasFloatMatrix) matrixB).matrix, ((JBlasFloatMatrix) result).matrix);
     	return result;
     }
     
@@ -585,7 +590,7 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
   	 */
     @Override
     public FloatMatrix ne(FloatMatrix matrix, float scalar, FloatMatrix result) {
-		((JavaFloatMatrix) matrix).matrix.nei(scalar, ((JavaFloatMatrix) result).matrix);  
+		((JBlasFloatMatrix) matrix).matrix.nei(scalar, ((JBlasFloatMatrix) result).matrix);  
     	return result;
     }
     
@@ -610,27 +615,27 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	
 	@Override
 	public FloatMatrix mmul(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
-		org.jblas.FloatMatrix matrixA = ((JavaFloatMatrix) a).matrix;
-		org.jblas.FloatMatrix matrixB = ((JavaFloatMatrix) b).matrix;
-		org.jblas.FloatMatrix matrixR = ((JavaFloatMatrix) result).matrix;
+		org.jblas.FloatMatrix matrixA = ((JBlasFloatMatrix) a).matrix;
+		org.jblas.FloatMatrix matrixB = ((JBlasFloatMatrix) b).matrix;
+		org.jblas.FloatMatrix matrixR = ((JBlasFloatMatrix) result).matrix;
 		matrixA.mmuli(matrixB, matrixR);
 		return result;
 	}
 
 	@Override
 	public FloatMatrix mmulTN(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
-		org.jblas.FloatMatrix matrixA = ((JavaFloatMatrix) a).matrix;
-		org.jblas.FloatMatrix matrixB = ((JavaFloatMatrix) b).matrix;
-		org.jblas.FloatMatrix matrixR = ((JavaFloatMatrix) result).matrix;
+		org.jblas.FloatMatrix matrixA = ((JBlasFloatMatrix) a).matrix;
+		org.jblas.FloatMatrix matrixB = ((JBlasFloatMatrix) b).matrix;
+		org.jblas.FloatMatrix matrixR = ((JBlasFloatMatrix) result).matrix;
 		matrixA.transpose().mmuli(matrixB, matrixR);
 		return result;
 	}
 
 	@Override
 	public FloatMatrix mmulNT(FloatMatrix a, FloatMatrix b, FloatMatrix result) {
-		org.jblas.FloatMatrix matrixA = ((JavaFloatMatrix) a).matrix;
-		org.jblas.FloatMatrix matrixB = ((JavaFloatMatrix) b).matrix;
-		org.jblas.FloatMatrix matrixR = ((JavaFloatMatrix) result).matrix;
+		org.jblas.FloatMatrix matrixA = ((JBlasFloatMatrix) a).matrix;
+		org.jblas.FloatMatrix matrixB = ((JBlasFloatMatrix) b).matrix;
+		org.jblas.FloatMatrix matrixR = ((JBlasFloatMatrix) result).matrix;
 		matrixA.mmuli(matrixB.transpose(), matrixR);
 		return result;
 	}
@@ -641,27 +646,27 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	
 	@Override
 	public float sum(FloatMatrix a) {
-		return ((JavaFloatMatrix) a).matrix.sum();
+		return ((JBlasFloatMatrix) a).matrix.sum();
 	}
 	
 	@Override
 	public float mean(FloatMatrix a) {
-		return ((JavaFloatMatrix) a).matrix.mean();
+		return ((JBlasFloatMatrix) a).matrix.mean();
 	}
 
 	@Override
 	public float prod(FloatMatrix a) {
-		return ((JavaFloatMatrix) a).matrix.prod();
+		return ((JBlasFloatMatrix) a).matrix.prod();
 	}
 
 	@Override
 	public float max(FloatMatrix a) {
-		return ((JavaFloatMatrix) a).matrix.max();
+		return ((JBlasFloatMatrix) a).matrix.max();
 	}
 
 	@Override
 	public float min(FloatMatrix a) {
-		return ((JavaFloatMatrix) a).matrix.min();
+		return ((JBlasFloatMatrix) a).matrix.min();
 	}
 
 	// --------------------------------------- getter and setter methods ----------------------------------------
@@ -669,8 +674,8 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	@Override
 	public FloatMatrix setSubMatrix(FloatMatrix src, FloatMatrix dst, int rowOffset, int columnOffset) {
 		
-		org.jblas.FloatMatrix matrix = ((JavaFloatMatrix) src).matrix;
-		org.jblas.FloatMatrix result = ((JavaFloatMatrix) dst).matrix;
+		org.jblas.FloatMatrix matrix = ((JBlasFloatMatrix) src).matrix;
+		org.jblas.FloatMatrix result = ((JBlasFloatMatrix) dst).matrix;
 		
 		for (int c = 0; c < matrix.getColumns(); c++)
 			for (int r = 0; r < matrix.getRows(); r++)
@@ -681,28 +686,28 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 
 	@Override
 	public FloatMatrix getSubMatrix(FloatMatrix source, FloatMatrix destination, int rowOffset, int columnOffset) {
-		org.jblas.FloatMatrix dst = ((JavaFloatMatrix) destination).matrix;
-		org.jblas.FloatMatrix src = ((JavaFloatMatrix) source).matrix;
+		org.jblas.FloatMatrix dst = ((JBlasFloatMatrix) destination).matrix;
+		org.jblas.FloatMatrix src = ((JBlasFloatMatrix) source).matrix;
 		dst.copy(src.getRange(rowOffset, rowOffset + destination.getRows(), columnOffset, columnOffset + destination.getColumns()));
 		return destination;
 	}
 
 	@Override
 	public FloatMatrix put(FloatMatrix src, int rowIndex, int columnIndex, float value) {
-		((JavaFloatMatrix) src).matrix.put(rowIndex, columnIndex, value);
+		((JBlasFloatMatrix) src).matrix.put(rowIndex, columnIndex, value);
 		return src;
 	}
 
 	@Override
 	public float get(FloatMatrix src, int rowIndex, int columnIndex) {
-		return ((JavaFloatMatrix) src).matrix.get(rowIndex, columnIndex);
+		return ((JBlasFloatMatrix) src).matrix.get(rowIndex, columnIndex);
 	}
 
 	@Override
 	public FloatMatrix getRow(FloatMatrix src, FloatMatrix row, int rowIndex) {
 		
-		org.jblas.FloatMatrix srcMatrix = ((JavaFloatMatrix) src).matrix;
-		org.jblas.FloatMatrix rowMatrix = ((JavaFloatMatrix) row).matrix;
+		org.jblas.FloatMatrix srcMatrix = ((JBlasFloatMatrix) src).matrix;
+		org.jblas.FloatMatrix rowMatrix = ((JBlasFloatMatrix) row).matrix;
 		srcMatrix.getRow(rowIndex, rowMatrix);
 		
 		return row;
@@ -711,8 +716,8 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	@Override
 	public FloatMatrix getColumn(FloatMatrix src, FloatMatrix column, int columnIndex) {
 		
-		org.jblas.FloatMatrix srcMatrix = ((JavaFloatMatrix) src).matrix;
-		org.jblas.FloatMatrix columnMatrix = ((JavaFloatMatrix) column).matrix;
+		org.jblas.FloatMatrix srcMatrix = ((JBlasFloatMatrix) src).matrix;
+		org.jblas.FloatMatrix columnMatrix = ((JBlasFloatMatrix) column).matrix;
 		srcMatrix.getColumn(columnIndex, columnMatrix);
 		
 		return column;
@@ -722,8 +727,8 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	@Override
 	public FloatMatrix putRow(FloatMatrix dst, FloatMatrix row, int rowIndex) {
 		
-		org.jblas.FloatMatrix dstMatrix = ((JavaFloatMatrix) dst).matrix;
-		org.jblas.FloatMatrix rowMatrix = ((JavaFloatMatrix) row).matrix;
+		org.jblas.FloatMatrix dstMatrix = ((JBlasFloatMatrix) dst).matrix;
+		org.jblas.FloatMatrix rowMatrix = ((JBlasFloatMatrix) row).matrix;
 		dstMatrix.putRow(rowIndex, rowMatrix);
 		
 		return dst;
@@ -732,8 +737,8 @@ public class JavaFloatMatrix extends AMatrix implements FloatMatrixDefault {
 	@Override
 	public FloatMatrix putColumn(FloatMatrix dst, FloatMatrix column, int columnIndex) {
 		
-		org.jblas.FloatMatrix dstMatrix = ((JavaFloatMatrix) dst).matrix;
-		org.jblas.FloatMatrix columnMatrix = ((JavaFloatMatrix) column).matrix;
+		org.jblas.FloatMatrix dstMatrix = ((JBlasFloatMatrix) dst).matrix;
+		org.jblas.FloatMatrix columnMatrix = ((JBlasFloatMatrix) column).matrix;
 		dstMatrix.putColumn(columnIndex, columnMatrix);
 		
 		return dst;

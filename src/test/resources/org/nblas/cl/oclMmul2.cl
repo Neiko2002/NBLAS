@@ -3,8 +3,8 @@
 // http://www.informit.com/articles/article.aspx?p=1732873&seqNum=3
 // https://developer.apple.com/library/mac/samplecode/OpenCL_Parallel_Reduction_Example/Listings/reduce_float4_kernel_cl.html
 
-#define BLOCK_SIZE 32
-#define BLOCK_DIM 32
+#define BLOCK_SIZE 16
+#define BLOCK_DIM 16
 #define AS(i, j) As[j + i * BLOCK_SIZE]
 #define BS(i, j) Bs[j + i * BLOCK_SIZE]
 

@@ -13,12 +13,13 @@ import jcuda.driver.CUfunction;
  */
 public class CudaMatrix extends AMatrix {
 
-	protected static final CudaCore CORE = CudaCore.getCore();
+	protected CudaCore CORE;
 	
 	protected Pointer dataPointer;
 	  
-	protected CudaMatrix(int rows, int columns) {
+	protected CudaMatrix(int rows, int columns, CudaCore core) {
 		super(rows, columns);
+		this.CORE = core;
 	}
 	
     @Override
@@ -36,8 +37,8 @@ public class CudaMatrix extends AMatrix {
      * @param subprogram
      * @param a
      */
-	protected static void runMatrixOperation(Subprogram<CUfunction> subprogram, CudaMatrix a) {
-		CORE.execute(subprogram, a.rows, a.columns, a.dataPointer);
+	protected void runMatrixOperation(Subprogram<CUfunction> subprogram) {
+		CORE.execute(subprogram, this.rows, this.columns, this.dataPointer);
 	}
 	
     
@@ -50,9 +51,9 @@ public class CudaMatrix extends AMatrix {
      * @param b
      * @param result
      */
-	protected static void runMatrixMatrixElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix a, CudaMatrix b, CudaMatrix result) {
-		checkSameSize(a, b, result);
-        CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+	protected void runMatrixMatrixElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix b, CudaMatrix result) {
+		checkSameSize(this, b, result);
+        CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, this.dataPointer, b.dataPointer);
 	}
 	
 	
@@ -65,9 +66,9 @@ public class CudaMatrix extends AMatrix {
 	 * @param scalar
 	 * @param result
 	 */
-	protected static void runMatrixElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix a, CudaMatrix result) {
-		checkSameSize(a, result);
-        CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, a.dataPointer);
+	protected void runMatrixElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix result) {
+		checkSameSize(this, result);
+        CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, this.dataPointer);
 	}
 	
 	/**
@@ -79,8 +80,8 @@ public class CudaMatrix extends AMatrix {
 	 * @param scalar
 	 * @param result
 	 */
-	protected static void runMatrixScalarElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix a, CudaMatrix scalar, CudaMatrix result) {
-        CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, a.dataPointer, scalar.dataPointer);
+	protected void runMatrixScalarElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix scalar, CudaMatrix result) {
+        CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, this.dataPointer, scalar.dataPointer);
 	}
 	
 	/**
@@ -92,9 +93,9 @@ public class CudaMatrix extends AMatrix {
 	 * @param row vector
 	 * @param result
 	 */
-	protected static void runMatrixRowVectorElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix a, CudaMatrix b, CudaMatrix result) {
-        checkRowVectorSize(a, b, result);
-        CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+	protected void runMatrixRowVectorElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix b, CudaMatrix result) {
+        checkRowVectorSize(this, b, result);
+        CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, this.dataPointer, b.dataPointer);
 	}	
 	
 	/**
@@ -106,8 +107,8 @@ public class CudaMatrix extends AMatrix {
 	 * @param column vector
 	 * @param result
 	 */
-	protected static void runMatrixColumnVectorElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix a, CudaMatrix b, CudaMatrix result) {
-		checkColumnVectorSize(a, b, result);
-		CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, a.dataPointer, b.dataPointer);
+	protected void runMatrixColumnVectorElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix b, CudaMatrix result) {
+		checkColumnVectorSize(this, b, result);
+		CORE.execute(subprogram, result.rows, result.columns, result.dataPointer, this.dataPointer, b.dataPointer);
 	}	
 }

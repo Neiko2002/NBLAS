@@ -2,6 +2,7 @@ package org.nblas.cl.blas;
 
 import org.jocl.cl_kernel;
 import org.nblas.cl.CLBLASBase;
+import org.nblas.cl.CLContext;
 import org.nblas.cl.CLMatrix;
 import org.nblas.cl.model.CLScalar;
 import org.nblas.function.AFunctionBuilder;
@@ -102,8 +103,8 @@ public class CLLevel1 extends CLBLASBase {
     private final Subprogram<cl_kernel> NEG;
     private final Subprogram<cl_kernel> SIGMOID;
     
-    public CLLevel1(AFunctionBuilder<cl_kernel> builder) {
-		super(builder);
+    public CLLevel1(CLContext context, AFunctionBuilder<cl_kernel> builder) {
+		super(context, builder);
 		
         // add Functions
         AFunctionObject add = new Add(new Arg(0), new Arg(1));

@@ -1,6 +1,7 @@
 package org.nblas;
 
 import org.jblas.FloatMatrix;
+import org.nblas.cuda.CudaContext;
 import org.nblas.cuda.CudaFloatMatrix;
 
 import java.io.IOException;
@@ -10,14 +11,17 @@ import java.io.IOException;
  */
 public class CudaTest {
 
+	protected static CudaContext cudaContext = (CudaContext)Context.createCudaSinglePrecisionContext();
+
+	
     public static void main(String[] args) throws IOException {
 
 		// Thread Count: 256 (16x16)
 		// time: 210ms
 
-		CudaFloatMatrix u = new CudaFloatMatrix(2, 2);
+		CudaFloatMatrix u = new CudaFloatMatrix(2, 2, cudaContext);
 		u.randni();
-		CudaFloatMatrix uout = new CudaFloatMatrix(2, 2);
+		CudaFloatMatrix uout = new CudaFloatMatrix(2, 2, cudaContext);
 		uout.randni();
 		u.transpose(u, uout);
 		System.out.println(u.toString());
@@ -28,11 +32,11 @@ public class CudaTest {
 		int n = i;// 1431;
 		int k = i;// 1449;
 
-		CudaFloatMatrix a = new CudaFloatMatrix(i, i);
+		CudaFloatMatrix a = new CudaFloatMatrix(i, i, cudaContext);
 		a.randni();
-		CudaFloatMatrix b = new CudaFloatMatrix(i, i);
+		CudaFloatMatrix b = new CudaFloatMatrix(i, i, cudaContext);
 		b.randni();
-		CudaFloatMatrix result = new CudaFloatMatrix(i, i);
+		CudaFloatMatrix result = new CudaFloatMatrix(i, i, cudaContext);
 		result.randni();
 
 		long start2 = System.currentTimeMillis();
@@ -81,11 +85,11 @@ public class CudaTest {
         int n = i;//1431;
         int k = i;//1449;
 
-		CudaFloatMatrix a = new CudaFloatMatrix(i, i);
+		CudaFloatMatrix a = new CudaFloatMatrix(i, i, cudaContext);
         a.setOne();
-        CudaFloatMatrix b = new CudaFloatMatrix(i, i);
+        CudaFloatMatrix b = new CudaFloatMatrix(i, i, cudaContext);
         a.setOne();
-        CudaFloatMatrix c = new CudaFloatMatrix(i,i);
+        CudaFloatMatrix c = new CudaFloatMatrix(i,i, cudaContext);
         c.mmul(a, b, c);
         System.out.println(c.toString2D());
 
@@ -157,7 +161,7 @@ public class CudaTest {
         int rows = 1;
         int columns = 254;
         FloatMatrix test = FloatMatrix.rand(rows, columns);
-        CudaFloatMatrix gpuTest = new CudaFloatMatrix(rows, columns, test.data);
+        CudaFloatMatrix gpuTest = new CudaFloatMatrix(rows, columns, test.data, cudaContext);
 //        CudaFloatMatrix gpuTestResult = CudaFloatMatrix.testsum(gpuTest);
 //        System.out.println(gpuTestResult.toString2());
         System.out.println(columns * rows);

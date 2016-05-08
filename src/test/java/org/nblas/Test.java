@@ -2,7 +2,9 @@ package org.nblas;
 
 import org.jblas.FloatMatrix;
 import org.jblas.MatrixFunctions;
+import org.nblas.cl.CLContext;
 import org.nblas.cl.CLFloatMatrix;
+import org.nblas.cuda.CudaContext;
 import org.nblas.cuda.CudaFloatMatrix;
 import org.nblas.function.ArgumentType;
 import org.nblas.function.common.Arg;
@@ -21,14 +23,17 @@ import java.util.Random;
  */
 public class Test {
 	
+	protected static CLContext clContext = (CLContext)Context.createOpenCLSinglePrecisionContext();
+	protected static CudaContext cudaContext = (CudaContext)Context.createCudaSinglePrecisionContext();
+
     public static void main(String[] args) throws IOException {
     		 
 		// Thread Count: 256 (16x16)
 		// time: 210ms
 
-		CLFloatMatrix u = new CLFloatMatrix(2, 2);
+		CLFloatMatrix u = new CLFloatMatrix(2, 2, clContext);
 		u.randni();
-		CLFloatMatrix uout = new CLFloatMatrix(2, 2);
+		CLFloatMatrix uout = new CLFloatMatrix(2, 2, clContext);
 		uout.randni();
 		u.transpose(u, uout);
 		System.out.println(u.toString());
@@ -39,11 +44,11 @@ public class Test {
 		int n = i;// 1431;
 		int k = i;// 1449;
 
-		CLFloatMatrix a = new CLFloatMatrix(i, i);
+		CLFloatMatrix a = new CLFloatMatrix(i, i, clContext);
 		a.randni();
-		CLFloatMatrix b = new CLFloatMatrix(i, i);
+		CLFloatMatrix b = new CLFloatMatrix(i, i, clContext);
 		b.randni();
-		CLFloatMatrix result = new CLFloatMatrix(i, i);
+		CLFloatMatrix result = new CLFloatMatrix(i, i, clContext);
 		result.randni();
 
 		long start2 = System.currentTimeMillis();
@@ -78,11 +83,11 @@ public class Test {
         int n = i;//1431;
         int k = i;//1449;
 
-        CudaFloatMatrix a = new CudaFloatMatrix(i, i);
+        CudaFloatMatrix a = new CudaFloatMatrix(i, i, cudaContext);
         a.setOne();
-        CudaFloatMatrix b = new CudaFloatMatrix(i, i);
+        CudaFloatMatrix b = new CudaFloatMatrix(i, i, cudaContext);
         a.setOne();
-        CudaFloatMatrix c = new CudaFloatMatrix(i,i);
+        CudaFloatMatrix c = new CudaFloatMatrix(i,i, cudaContext);
         c.mmul(a, b, c);
         System.out.println(c.toString2D());
 
@@ -154,7 +159,7 @@ public class Test {
         int rows = 1;
         int columns = 254;
         org.jblas.FloatMatrix test = org.jblas.FloatMatrix.rand(rows, columns);
-        CLFloatMatrix gpuTest = new CLFloatMatrix(rows, columns, test.data);
+        CLFloatMatrix gpuTest = new CLFloatMatrix(rows, columns, test.data, clContext);
 //        CLFloatMatrix gpuTestResult = CLFloatMatrix.testsum(gpuTest);
 //        System.out.println(gpuTestResult.toString2());
         System.out.println(columns * rows);
