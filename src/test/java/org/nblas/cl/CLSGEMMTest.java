@@ -1,16 +1,12 @@
 package org.nblas.cl;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 import org.jocl.CL;
 import org.jocl.Sizeof;
@@ -29,11 +25,11 @@ import org.nblas.generic.Subprogram;
  */
 public class CLSGEMMTest {
 
-	protected CLCore CORE = CLCore.getCore();
-	protected Context context = Context.OpenCLSinglePrecisionContext;
+	protected Context context = Context.createOpenCLSinglePrecisionContext();
+	protected CLCore CORE = CLCore.getCore(context.getDeviceId());
 	protected Map<String, Subprogram<cl_kernel>> kernels = new HashMap<>();
 	
-	protected int TS = 32;		// Tile Size
+	protected int TS = 16;		// Tile Size
 	protected int WPT = 8;		// The amount of work-per-thread, i.e. the thread-coarsening factor
 	protected int WIDTH = 4;	// Wider data-types float4
 	
@@ -61,9 +57,9 @@ public class CLSGEMMTest {
 	
 	// 256 512 1024 2048 4096
 	protected int iterations = 10;
-	protected int M = 2048; // matrix1 und matrix3 rows 
-	protected int N = 2048; // matrix2 und matrix3 columns
-	protected int K = 2048; // matrix1 column und matrix2 rows
+	protected int M = 256; // matrix1 und matrix3 rows 
+	protected int N = 256; // matrix2 und matrix3 columns
+	protected int K = 256; // matrix1 column und matrix2 rows
 	protected CLFloatMatrix matrix1;
 	protected CLFloatMatrix matrix2;
 	protected CLFloatMatrix matrix2T;
@@ -74,17 +70,45 @@ public class CLSGEMMTest {
 		CLSGEMMTest testSuit = new CLSGEMMTest();
 		testSuit.setUp();
 		testSuit.oclMmul1();
-		testSuit.oclMmul2();
+//		testSuit.oclMmul2();
 		testSuit.SGEMM();
 		testSuit.mySGEMM1();
-		testSuit.mySGEMM2();
-		testSuit.mySGEMM3();
-		testSuit.mySGEMM4();
-		testSuit.mySGEMM5();
-		testSuit.mySGEMM6();
-		testSuit.mySGEMM7();
+//		testSuit.mySGEMM2();
+//		testSuit.mySGEMM3();
+//		testSuit.mySGEMM4();
+//		testSuit.mySGEMM5();
+//		testSuit.mySGEMM6();
+//		testSuit.mySGEMM7();
 		testSuit.mySGEMM11();
 		testSuit.mySGEMM12();
+		testSuit.mySGEMM13();
+		testSuit.release();
+	}
+	
+	protected void mySGEMM13() {
+		cl_kernel kernel = kernels.get("mySGEMM13").getKernel();
+				
+		// führe den Kernel aus und messe die Zeit
+		CORE.waitOnComplete();
+		long start= System.currentTimeMillis();		
+
+		CL.clSetKernelArg(kernel, 0, matrix1.getSizeof(), matrix1.getPointer());
+		CL.clSetKernelArg(kernel, 1, matrix2.getSizeof(), matrix2.getPointer());
+		CL.clSetKernelArg(kernel, 2, matrix3.getSizeof(), matrix3.getPointer());
+		CL.clSetKernelArg(kernel, 3, Sizeof.cl_uint, CLScalar.of(M).getPointer());
+		CL.clSetKernelArg(kernel, 4, Sizeof.cl_uint, CLScalar.of(N).getPointer());
+		CL.clSetKernelArg(kernel, 5, Sizeof.cl_uint, CLScalar.of(K).getPointer());
+		CL.clSetKernelArg(kernel, 6, Sizeof.cl_uint, CLScalar.of(matrix1.clColumns).getPointer());
+		CL.clSetKernelArg(kernel, 7, Sizeof.cl_uint, CLScalar.of(matrix2.clColumns).getPointer());
+		CL.clSetKernelArg(kernel, 8, Sizeof.cl_uint, CLScalar.of(matrix3.clColumns).getPointer());
+		
+		for (int i = 0; i < iterations; i++)
+			CORE.enqueue2DRangeKernelTest(kernel, N/RY, M/RX, THREADSY, THREADSX); 
+		CORE.waitOnComplete();
+		long duration = System.currentTimeMillis() - start;
+		double iterationsPerSecond = 1_000. / ((double)duration / iterations);
+		int gflops = (int)(iterationsPerSecond * flopPerIteration / 1_000_000_000);
+		System.out.printf("mySGEMM13 took %3dms for %3d iterations and had %d GFLOPS \n", duration, iterations, gflops);   
 	}
 	
 	protected void mySGEMM12() {
@@ -325,7 +349,7 @@ public class CLSGEMMTest {
 		CL.clSetKernelArg(kernel, 7, Sizeof.cl_float*CORE.getThreadCount(), CLArray.ofFloat(CORE.getThreadCount()).getPointer());
   
 		for (int i = 0; i < iterations; i++)
-			CORE.enqueue2DRangeKernelTest(kernel, matrix3.clRows, matrix3.clColumns, TS, TS); 
+			CORE.enqueue2DRangeKernelTest(kernel, matrix3.clRows, matrix3.clColumns, CORE.getThreadCountY()/2, CORE.getThreadCountX()/2); 
 		CORE.waitOnComplete();
 		long duration = System.currentTimeMillis() - start;
 		double iterationsPerSecond = 1_000. / ((double)duration / iterations);
@@ -349,7 +373,7 @@ public class CLSGEMMTest {
 		CL.clSetKernelArg(kernel, 6, Sizeof.cl_uint, CLScalar.of(matrix2.clColumns).getPointer());
   
 		for (int i = 0; i < iterations; i++)
-			CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, TS, TS); 
+			CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, CORE.getThreadCountY(), CORE.getThreadCountX()); 
 		CORE.waitOnComplete();
 		long duration = System.currentTimeMillis() - start;
 		double iterationsPerSecond = 1_000. / ((double)duration / iterations);
@@ -374,7 +398,7 @@ public class CLSGEMMTest {
 		CL.clSetKernelArg(kernel, 7, Sizeof.cl_uint, CLScalar.of(matrix1.clColumns).getPointer());	
   
 		for (int i = 0; i < iterations; i++)
-			CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, TS, TS); 
+			CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, CORE.getThreadCountY(), CORE.getThreadCountX()); 
 		CORE.waitOnComplete();
 		long duration = System.currentTimeMillis() - start;
 		double iterationsPerSecond = 1_000. / ((double)duration / iterations);
@@ -393,15 +417,23 @@ public class CLSGEMMTest {
 		CORE.enqueue2DRangeKernelTest(kernel, matrix2.clRows, matrix2.clColumns, TRANSPOSEY, TRANSPOSEX); 
 	}
 
+	private void release() throws IOException, URISyntaxException {
+		matrix1.release();
+		matrix2.release();
+		matrix2T.release();
+		matrix3.release();
+	}
+	
 	private void setUp() throws IOException, URISyntaxException {
-		for (String kernelName : new String[] {"fastTranspose","oclMmul1","oclMmul2","mySGEMM1","mySGEMM2",
-				"mySGEMM3","mySGEMM4","mySGEMM5","mySGEMM6","mySGEMM7","mySGEMM11","mySGEMM12"}) {			
+//		String[] kernelNames = new String[] {"fastTranspose","oclMmul1","oclMmul2","mySGEMM1","mySGEMM2",
+//				"mySGEMM3","mySGEMM4","mySGEMM5","mySGEMM6","mySGEMM7","mySGEMM11","mySGEMM12","mySGEMM13"};
+		String[] kernelNames = new String[] {"oclMmul1","mySGEMM1","mySGEMM11","mySGEMM12","mySGEMM13"};
+		for (String kernelName : kernelNames) {			
 			String sourceCode = readString(this.getClass().getResource(kernelName+".cl"));
 			Subprogram<cl_kernel> subprogram = new Subprogram<>(kernelName, sourceCode, true);
 			CORE.loadFromGeneratedSubprogram(subprogram);
 			kernels.put(kernelName, subprogram);
 		}
-		CORE.compileMatrixFunctions();
 		
 		this.matrix1 = (CLFloatMatrix) FloatMatrix.ones(M, K, context).muli(3);
 		this.matrix2 = (CLFloatMatrix) FloatMatrix.ones(K, N, context).muli(3);

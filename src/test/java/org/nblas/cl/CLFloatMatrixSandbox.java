@@ -20,12 +20,15 @@ import org.nblas.impl.FloatMatrixDefault;
 
 public class CLFloatMatrixSandbox extends FloatMatrixTest {
 
+	protected static CLCore CORE;
 	
 	public static void main(String[] args) throws Exception {
 		CLFloatMatrixSandbox testSuit = new CLFloatMatrixSandbox();
-		testSuit.context = Context.OpenCLSinglePrecisionContext;
+		testSuit.context = Context.createOpenCLSinglePrecisionContext();
+		CORE = CLCore.getCore(testSuit.context.getDeviceId());
+		
 		testSuit.setUp();
-		testSuit.sgemmBlockSize();
+		testSuit.sgemmBlockSize();		
 	}
 	
 	public void functionTest() {
@@ -40,7 +43,6 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 	}
 	
 	public void sgemmBlockSize() {
-		CLCore CORE = CLCore.getCore();
 		int threadCount = CORE.getThreadCount();
     	cl_kernel kernel = CLPredefined.getSubprogram("sgemm_nn").getKernel();
 
@@ -94,7 +96,6 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 
 		
 		Subprogram<cl_kernel> subprogram = new Subprogram<>("times2", sourceCode, true);
-		CLCore CORE = CLCore.getCore();
 		CORE.loadFromGeneratedSubprogram(subprogram);
 		cl_kernel kernel = subprogram.getKernel();
 			
@@ -181,7 +182,6 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 
 		
 		Subprogram<cl_kernel> subprogram = new Subprogram<>("times2", sourceCode, true);
-		CLCore CORE = CLCore.getCore();
 		CORE.loadFromGeneratedSubprogram(subprogram);
 			
 		// erstelle eine 32x32 einser Matrix
@@ -230,7 +230,6 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 
 		
 		Subprogram<cl_kernel> subprogram = new Subprogram<>("groupIdTest", sourceCode, true);
-		CLCore CORE = CLCore.getCore();
 		CORE.loadFromGeneratedSubprogram(subprogram);
 			
 		int size = 1000000;
@@ -295,7 +294,6 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
     		"}\n";
 		
 		Subprogram<cl_kernel> subprogram = new Subprogram<>("smallMmulTest", sourceCode, true);
-		CLCore CORE = CLCore.getCore();
 		CORE.loadFromGeneratedSubprogram(subprogram);
 		
 		float[][] input = new float[][] { {1,0,0},{1,0,1},{1,1,0},{1,1,1} };
@@ -330,7 +328,6 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
     		"}\n";
 		
 		Subprogram<cl_kernel> subprogram = new Subprogram<>("gTest", sourceCode, true);
-		CLCore CORE = CLCore.getCore();
 		CORE.loadFromGeneratedSubprogram(subprogram);
 		
 		CLFloatMatrix clMat = (CLFloatMatrix) FloatMatrix.zeros(1, matA_GPU.getColumns(), context);    	
@@ -356,11 +353,10 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
 				+ "}";
 		
 		Subprogram<cl_kernel> subprogram = new Subprogram<>("customTest", sourceCode, true);
-		CLCore CORE = CLCore.getCore();
 		CORE.loadFromGeneratedSubprogram(subprogram);
 		
 		CLFloatMatrix clMat = (CLFloatMatrix) FloatMatrix.zeros(matA_GPU.getRows(), matA_GPU.getColumns(), context);
-		CLFloatMatrix.runMatrixRowVectorElementWiseOperation(subprogram, clMat, (CLFloatMatrix) rowVector_GPU, clMat);
+		clMat.runMatrixRowVectorElementWiseOperation(subprogram, (CLFloatMatrix) rowVector_GPU, clMat);
 		
 		System.out.println(rowVector_GPU.toString2D());
 		System.out.println(clMat.toString2D());

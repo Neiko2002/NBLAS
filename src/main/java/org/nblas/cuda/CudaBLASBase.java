@@ -20,13 +20,13 @@ import jcuda.driver.CUfunction;
  *
  */
 public abstract class CudaBLASBase {
-	
-	private static final CudaCore CORE = CudaCore.getCore();
-    
+	    
 	private final AFunctionBuilder<CUfunction> builder;
+	private final CudaCore CORE;
 	
-    protected CudaBLASBase(AFunctionBuilder<CUfunction> builder) {
+    protected CudaBLASBase(CudaContext context, AFunctionBuilder<CUfunction> builder) {
 		this.builder = builder;
+		this.CORE = CudaCore.getCore(context.getDeviceId());
 	}
 	
     /**
@@ -50,7 +50,7 @@ public abstract class CudaBLASBase {
      * @param a
      */
 	protected void runMatrixOperation(Subprogram<CUfunction> subprogram, CudaMatrix a) {
-		CudaMatrix.runMatrixOperation(subprogram, a);
+		a.runMatrixOperation(subprogram);
 	}
 	
     /**
@@ -63,7 +63,7 @@ public abstract class CudaBLASBase {
      * @param result
      */
 	protected void runMatrixMatrixElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix a, CudaMatrix b, CudaMatrix result) {
-		CudaMatrix.runMatrixMatrixElementWiseOperation(subprogram, a, b, result);
+		a.runMatrixMatrixElementWiseOperation(subprogram, b, result);
 	}
 	
 	/**
@@ -76,7 +76,7 @@ public abstract class CudaBLASBase {
 	 * @param result
 	 */
 	protected void runMatrixElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix a, CudaMatrix result) {
-		CudaMatrix.runMatrixElementWiseOperation(subprogram, a, result);
+		a.runMatrixElementWiseOperation(subprogram, result);
 	}
 	
 	/**
@@ -89,7 +89,7 @@ public abstract class CudaBLASBase {
 	 * @param result
 	 */
 	protected void runMatrixScalarElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix a, CudaMatrix scalar, CudaMatrix result) {
-		CudaMatrix.runMatrixScalarElementWiseOperation(subprogram, a, scalar, result);
+		a.runMatrixScalarElementWiseOperation(subprogram, scalar, result);
 	}
 	
 	/**
@@ -102,7 +102,7 @@ public abstract class CudaBLASBase {
 	 * @param result
 	 */
 	protected void runMatrixRowVectorElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix a, CudaMatrix b, CudaMatrix result) {
-		CudaMatrix.runMatrixRowVectorElementWiseOperation(subprogram, a, b, result);
+		a.runMatrixRowVectorElementWiseOperation(subprogram, b, result);
 	}	
 	
 	
@@ -116,6 +116,6 @@ public abstract class CudaBLASBase {
 	 * @param result
 	 */
 	protected void runMatrixColumnVectorElementWiseOperation(Subprogram<CUfunction> subprogram, CudaMatrix a, CudaMatrix b, CudaMatrix result) {
-		CudaMatrix.runMatrixColumnVectorElementWiseOperation(subprogram, a, b, result);
+		a.runMatrixColumnVectorElementWiseOperation(subprogram, b, result);
 	}	
 }

@@ -2,7 +2,6 @@ package org.nblas.cuda;
 
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
-import org.nblas.Context;
 import org.nblas.generic.Subprogram;
 
 import jcuda.driver.CUfunction;
@@ -10,6 +9,10 @@ import jcuda.driver.CUfunction;
 
 class CudaFloatFunctionBuilder extends AFunctionBuilder<CUfunction> {
 
+	protected CudaContext context;
+	public CudaFloatFunctionBuilder(CudaContext context) {
+		this.context = context;
+	}
 
 	@Override
     protected Subprogram<CUfunction> buildFunction(String name, String function, ArgumentType[] args) {
@@ -53,7 +56,7 @@ class CudaFloatFunctionBuilder extends AFunctionBuilder<CUfunction> {
     }
 
     @Override
-    protected Context getContext() {
-        return Context.CudaSinglePrecisionContext;
+    protected CudaContext getContext() {
+        return context;
     }
 }

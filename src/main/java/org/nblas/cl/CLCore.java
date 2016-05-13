@@ -2,12 +2,13 @@ package org.nblas.cl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 import org.jocl.CL;
-import org.jocl.CLException;
 import org.jocl.Pointer;
 import org.jocl.Sizeof;
 import org.jocl.cl_command_queue;
@@ -31,14 +32,66 @@ import org.nblas.generic.Subprogram;
  */
 class CLCore {
 
-    private static final CLCore CORE = new CLCore();
-
-    public static CLCore getCore() {
-        return CORE;
+	private static final Map<Integer, CLCore> activeCores = new HashMap<>();
+	
+	/**
+	 * Setup the CLCore for a specific device. 
+	 * Device id -1 means the fastest avaiable device.
+	 * 
+	 * @param deviceId
+	 * @return
+	 */
+	protected static int setup(int deviceId) {
+		
+		CL.setExceptionsEnabled(true);
+		
+		// get a list of all OpenCL devices
+		final CLDevice[] devices = Arrays.stream(CLPlatform.getPlatforms())
+					   			 .filter(Objects::nonNull)
+					   			 .map(CLPlatform::getDevices)
+					   			 .filter(Objects::nonNull)
+					   			 .flatMap(Arrays::stream)
+					   			 .toArray(CLDevice[]::new);
+		
+		// find the fastest device
+		if(deviceId == -1 && devices.length > 0) {
+			deviceId = IntStream.range(0, devices.length).boxed().max((idx1, idx2) -> {
+				return Integer.compare(devices[idx1].getTheoreticalSpeed(), devices[idx2].getTheoreticalSpeed());
+			}).get();
+		}
+		
+		// already setup?
+    	CLCore core = activeCores.get(deviceId);
+    	if(core == null) {
+    		
+    		// get device for the new core
+    		CLDevice device = devices[deviceId];
+    		if(device == null) {
+    			System.out.println("Could not find device with id "+deviceId);
+    			return -1;
+    		}
+    		
+    		// create new core
+			core = new CLCore(device);    		
+			System.out.println("Use OpenCL device: \n"+device.toString());
+			activeCores.put(deviceId, core);
+    	}
+    	
+    	return deviceId;
+	}
+		
+	/**
+	 * OpenCL Core for a specific device. Creates a new core if there
+	 * is no core for the device, otherwise returns the existing one.
+	 * 
+	 * the device 
+	 * @param index
+	 * @return
+	 */
+    protected static CLCore getCore(int deviceId) {
+    	return activeCores.get(deviceId);
     }
-        
-    private CLDevice device;
-    
+ 
     private cl_context context;
     private cl_command_queue commandQueue;
     
@@ -56,8 +109,7 @@ class CLCore {
     private float[] sharedData;
     private CLMemory sharedBuffer;
 
-    private CLCore() {
-        device = setupDevice();
+    private CLCore(CLDevice device) {
         
         computeUnits = device.getComputeUnits();
         threadCount = device.getMaxWorkGroupSize();
@@ -81,22 +133,7 @@ class CLCore {
 
 
 
-    private CLDevice setupDevice() {
-    	
-    	CL.setExceptionsEnabled(true);
-    	
-    	CLPlatform[] platforms = CLPlatform.getPlatforms();
-        if (platforms.length == 0) {
-            throw new CLException("No OpenCL-Device found!\n " +
-                    "Please reconsider that all OpenCL-Drivers and OpenCL-Platforms are installed properly.");
-        }
-        
-    	final Comparator<CLDevice> performanceComperator = (c1, c2) -> Integer.compare( c1.getTheoreticalComputingPower(), c2.getTheoreticalComputingPower());
-    	CLDevice fastestDevice = Arrays.stream(platforms).map(CLPlatform::getFastestGPU).filter(Objects::nonNull).max(performanceComperator).get();
-        System.out.println("Use OpenCL device: \n"+fastestDevice.toString());
-        
-        return fastestDevice;
-	}
+   
 
     public int getThreadCount() {
         return threadCount;
@@ -130,6 +167,11 @@ class CLCore {
         return n;
     }
 
+    /** 
+     * TODO: Baut und released mehrfach die custom Programme. Bessere unterscheidung zwischen custom und matrix funktionen
+     * 
+     * @param subprogram
+     */
     public void loadFromGeneratedSubprogram(Subprogram<cl_kernel> subprogram) {
         if (subprogram.isCustom() == false) {
         	matrixSubprograms.add(subprogram);

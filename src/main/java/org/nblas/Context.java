@@ -1,5 +1,7 @@
 package org.nblas;
 
+import org.nblas.impl.ContextDefault;
+
 /**
  * Created by Moritz on 4/27/2015.
  * 
@@ -7,74 +9,75 @@ package org.nblas;
  * nur noch Cuda, OpenCL, Java, MKL, CBLAS
  * 
  */
-public final class Context {
+public interface Context {
 
-	public enum DeviceInterface { CUDA, OpenCL };
-	public enum Precision { SINGLE, DOUBLE };
-	public enum Host { CPU, GPU };
+	public enum Backend { CUDA, OpenCL, MKL, JBLAS };	
+	public enum Precision { HALF, SINGLE, DOUBLE };
+    
+    public static Context createCudaSinglePrecisionContext() {
+    	return createContext(Precision.SINGLE, Backend.CUDA, -1);
+    }
+    
+    public static Context createOpenCLSinglePrecisionContext() {
+    	return createContext(Precision.SINGLE, Backend.OpenCL, -1);
+    }
+    
+    public static Context createJBlasSinglePrecisionContext() {
+    	return createContext(Precision.SINGLE, Backend.JBLAS, -1);
+    }
+    
+    public static Context createContext(Precision precision, Backend backend) {
+    	return createContext(precision, backend, -1);
+    }
+    
+    /**
+     * Eine deviceId von -1 ermittelt das best geeigneste Device und verwendet dieses.
+     * 
+     * @param precision
+     * @param backend
+     * @param deviceId
+     * @return
+     */
+    public static Context createContext(Precision precision, Backend backend, int deviceId) {
+    	return ContextDefault.createContext(precision, backend, deviceId);
+    }
+    
+
+    public default boolean isDoublePrecision() {
+        return getPrecision() == Context.Precision.DOUBLE;
+    }
+    
+    public default boolean isSinglePrecision() {
+        return getPrecision() == Context.Precision.SINGLE;
+    }
+    
+    public default boolean isHalfPrecision() {
+        return getPrecision() == Context.Precision.HALF;
+    }
+    
+    public Precision getPrecision();
+    
+    
+    
+    public default boolean isCUDA() {
+        return getBackend() == Context.Backend.CUDA;
+    }
+    
+    public default boolean isOpenCL() {
+        return getBackend() == Context.Backend.OpenCL;
+    }
+    
+    public default boolean isMKL() {
+        return getBackend() == Context.Backend.MKL;
+    }
+    
+    public default boolean isJBLAS() {
+        return getBackend() == Context.Backend.JBLAS;
+    }
+    
+	public Backend getBackend();
 	
-	protected DeviceInterface deviceInterface;
-    protected Precision precision;
-    protected Host host;
+	public int getDeviceId();
+	
 
-    private Context(Precision precision, Host host, DeviceInterface deviceInterface) {
-    	this.deviceInterface = deviceInterface;
-    	this.precision = precision;
-    	this.host = host;
-    }
-
-//    public static Context createCudaDoublePrecisionContext() {
-//        return new Context(Precision.DOUBLE, Host.GPU, DeviceInterface.CUDA);
-//    }
-//
-//    public static Context createOpenCLDoublePrecisionContext() {
-//        return new Context(Precision.DOUBLE, Host.GPU, DeviceInterface.OpenCL);
-//    }
-//
-//    public static Context createJBLASDoublelePrecisionContext() {
-//        return new Context(Precision.DOUBLE, Host.CPU, DeviceInterface.OpenCL);
-//    }
-
-    public boolean isDoublePrecision() {
-        return precision == Context.Precision.DOUBLE;
-    }
-    
-    public boolean isSinglePrecision() {
-        return precision == Context.Precision.SINGLE;
-    }
-
-    public boolean isCPU() {
-        return host == Context.Host.CPU;
-    }
-    
-    public boolean isGPU() {
-        return host == Context.Host.GPU;
-    }
-
-    public boolean isCUDA() {
-        return deviceInterface == Context.DeviceInterface.CUDA;
-    }
-    
-    public boolean isOpenCL() {
-        return deviceInterface == Context.DeviceInterface.OpenCL;
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-    	if(obj instanceof Context) {
-    		Context otherContext = (Context) obj;
-    		if(host != otherContext.host) return false;
-    		if(deviceInterface != otherContext.deviceInterface) return false;
-    		if(precision != otherContext.precision) return false;
-    		return true;
-    	}
-    	return false;
-    }
-    
-    
-    
-
-    public static Context CudaSinglePrecisionContext = new Context(Precision.SINGLE, Host.GPU, DeviceInterface.CUDA);
-    public static Context OpenCLSinglePrecisionContext = new Context(Precision.SINGLE, Host.GPU, DeviceInterface.OpenCL);
-    public static Context JBLASSinglePrecisionContext = new Context(Precision.SINGLE, Host.CPU, DeviceInterface.OpenCL);
 }

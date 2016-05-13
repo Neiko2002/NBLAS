@@ -1,10 +1,13 @@
 package org.nblas.impl;
 
+import org.nblas.cuda.CudaContext;
+import org.nblas.cl.CLContext;
+import org.nblas.jblas.JBlasContext;
 import org.nblas.Context;
 import org.nblas.FloatMatrix;
 import org.nblas.cl.CLFloatMatrix;
 import org.nblas.cuda.CudaFloatMatrix;
-import org.nblas.java.JavaFloatMatrix;
+import org.nblas.jblas.JBlasFloatMatrix;
 
 /**
  * 
@@ -23,15 +26,15 @@ public interface FloatMatrixDefault extends FloatMatrix {
 	 */
     public static FloatMatrix dirtyAllocation(int rows, int columns, Context context) {
     	
-        if (context.isGPU()) {
-            if (context.isCUDA()) {
-            	return new CudaFloatMatrix(rows, columns);
-            } else {
-            	return new CLFloatMatrix(rows, columns);
-            }
-        } else {
-            return new JavaFloatMatrix(rows, columns);
-        }
+    	switch (context.getBackend()) {
+			case CUDA:
+				return new CudaFloatMatrix(rows, columns, (CudaContext)context);
+			case OpenCL:
+				return new CLFloatMatrix(rows, columns, (CLContext)context);
+			case JBLAS:
+			default:
+				return new JBlasFloatMatrix(rows, columns, (JBlasContext)context);
+		}
     }
     
     // ------------------------------------- java getter methods --------------------------------------

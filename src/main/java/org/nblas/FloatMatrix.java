@@ -1,9 +1,12 @@
 package org.nblas;
 
 import org.nblas.cl.CLFloatMatrix;
+import org.nblas.cuda.CudaContext;
+import org.nblas.cl.CLContext;
+import org.nblas.jblas.JBlasContext;
 import org.nblas.cuda.CudaFloatMatrix;
 import org.nblas.impl.FloatMatrixDefault;
-import org.nblas.java.JavaFloatMatrix;
+import org.nblas.jblas.JBlasFloatMatrix;
 
 /**
  * Enduser Interface.
@@ -38,20 +41,20 @@ public interface FloatMatrix  {
     
     public static FloatMatrix create(int rows, int columns, float[] values, Context context) {
     	
-        if (context.isGPU()) {
-            if (context.isCUDA()) {
-            	return new CudaFloatMatrix(rows, columns, values);
-            } else {
-            	return new CLFloatMatrix(rows, columns, values);
-            }
-        } else {
-            return new JavaFloatMatrix(rows, columns, values);
-        }
+    	switch (context.getBackend()) {
+			case CUDA:
+				return new CudaFloatMatrix(rows, columns, values, (CudaContext)context);
+			case OpenCL:
+				return new CLFloatMatrix(rows, columns, values, (CLContext)context);
+			case JBLAS:
+			default:
+				return new JBlasFloatMatrix(rows, columns, values, (JBlasContext)context);
+		}
     }
 
     public static FloatMatrix zeros(int rows, int columns, Context context) {
      	FloatMatrix matrix = FloatMatrixDefault.dirtyAllocation(rows, columns, context);    
-     	if (context.isGPU() && context.isOpenCL())
+     	if (context.isOpenCL())
      		matrix.setZero();
     	return matrix;
     }

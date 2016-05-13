@@ -8,6 +8,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Theoretical Speed
+ * https://github.com/krrishnarraj/clpeak
+ * 
+ * @author Neiko
+ *
+ */
 public class CLDevice {
 
     public enum CLDeviceType {CPU, GPU};
@@ -70,7 +77,7 @@ public class CLDevice {
         return sb.toString();
     }
 
-    public int getTheoreticalComputingPower() {
+    public int getTheoreticalSpeed() {
         return maxClockFrequency * computeUnits;
     }
 

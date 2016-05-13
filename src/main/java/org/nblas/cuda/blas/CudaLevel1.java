@@ -1,6 +1,7 @@
 package org.nblas.cuda.blas;
 
 import org.nblas.cuda.CudaBLASBase;
+import org.nblas.cuda.CudaContext;
 import org.nblas.cuda.CudaMatrix;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
@@ -100,8 +101,8 @@ public class CudaLevel1 extends CudaBLASBase {
     private final Subprogram<CUfunction> NEG;
     private final Subprogram<CUfunction> SIGMOID;
     
-    public CudaLevel1(AFunctionBuilder<CUfunction> builder) {
-		super(builder);
+    public CudaLevel1(CudaContext context, AFunctionBuilder<CUfunction> builder) {
+		super(context, builder);
 		
         // add Functions
         AFunctionObject add = new Add(new Arg(0), new Arg(1));

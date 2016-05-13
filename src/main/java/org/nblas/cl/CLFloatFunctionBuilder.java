@@ -3,12 +3,15 @@ package org.nblas.cl;
 import org.jocl.cl_kernel;
 import org.nblas.function.AFunctionBuilder;
 import org.nblas.function.ArgumentType;
-import org.nblas.Context;
 import org.nblas.generic.Subprogram;
 
 
 class CLFloatFunctionBuilder extends AFunctionBuilder<cl_kernel> {
 
+	protected CLContext context;
+	public CLFloatFunctionBuilder(CLContext context) {
+		this.context = context;
+	}
 	
 	@Override
     protected Subprogram<cl_kernel> buildFunction(String name, String function, ArgumentType[] args) {
@@ -60,7 +63,7 @@ class CLFloatFunctionBuilder extends AFunctionBuilder<cl_kernel> {
     }
 
     @Override
-    protected Context getContext() {
-        return Context.OpenCLSinglePrecisionContext;
+    protected CLContext getContext() {
+        return context;
     }
 }

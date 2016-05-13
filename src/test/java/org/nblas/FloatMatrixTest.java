@@ -30,9 +30,9 @@ public class FloatMatrixTest {
 		testSuit.transposeTest();
 	}
 	
-	protected Context context = Context.OpenCLSinglePrecisionContext;
-//	protected Context context = Context.CudaSinglePrecisionContext;
-//	protected Context context = Context.JBLASSinglePrecisionContext;
+	protected Context context = Context.createOpenCLSinglePrecisionContext();
+//	protected static Context context = Context.createCudaSinglePrecisionContext();
+//	protected static Context context = Context.createJBlasSinglePrecisionContext();
 	
 	protected org.jblas.FloatMatrix matA_CPU;
 	protected org.jblas.FloatMatrix matB_CPU;

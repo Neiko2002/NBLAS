@@ -57,8 +57,8 @@ class CudaDevice {
 	 * multiProcessor * clockRate * 2
 	 * @return
 	 */
-	public int getTheoreticalComputingPower() {
-		return props.multiProcessorCount * props.clockRate * 2;
+	public int getTheoreticalSpeed() {
+		return props.multiProcessorCount * props.clockRate;
 	}
 	
 	public void use() {
