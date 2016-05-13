@@ -121,6 +121,14 @@ class CLCore {
         CL.clWaitForEvents(1, new cl_event[]{event});
         return n;
     }
+    
+    public int[] getData(CLMemory buffer, int[] n, int offset) {
+        cl_event event = new cl_event();
+        waitOnComplete();
+        CL.clEnqueueReadBuffer(commandQueue, buffer.getMemory(), CL.CL_TRUE, offset, n.length * Sizeof.cl_uint, Pointer.to(n), 0, null, event);
+        CL.clWaitForEvents(1, new cl_event[]{event});
+        return n;
+    }
 
     public void loadFromGeneratedSubprogram(Subprogram<cl_kernel> subprogram) {
         if (subprogram.isCustom() == false) {
@@ -239,6 +247,15 @@ class CLCore {
 		long[] local_work_size = new long[] { localCols, localRows };
 
 		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 2, global_work_offset, global_work_size, local_work_size, 0, null, null);
+	}
+	
+	public void enqueue1DRangeKernelTest(cl_kernel kernel, int globalLength, int localLength) {
+
+		long[] global_work_offset = new long[] { 0 };
+		long[] global_work_size = new long[] { globalLength };
+		long[] local_work_size = new long[] { localLength };
+
+		CL.clEnqueueNDRangeKernel(commandQueue, kernel, 1, global_work_offset, global_work_size, local_work_size, 0, null, null);
 	}
 	
 	

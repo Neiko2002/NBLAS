@@ -45,9 +45,9 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
     	cl_kernel kernel = CLPredefined.getSubprogram("sgemm_nn").getKernel();
 
 		// erstelle eine 32x32 einser Matrix
-		CLFloatMatrix matrix1 = (CLFloatMatrix) FloatMatrix.ones(256, 2560, context).muli(3);
-		CLFloatMatrix matrix2 = (CLFloatMatrix) FloatMatrix.ones(2560, 1024, context).muli(3);
-		CLFloatMatrix matrix3 = (CLFloatMatrix) FloatMatrix.ones(256, 1024, context).muli(3);
+		CLFloatMatrix matrix1 = (CLFloatMatrix) FloatMatrix.ones(1024, 1024, context).muli(3);
+		CLFloatMatrix matrix2 = (CLFloatMatrix) FloatMatrix.ones(1024, 1024, context).muli(3);
+		CLFloatMatrix matrix3 = (CLFloatMatrix) FloatMatrix.ones(1024, 1024, context).muli(3);
 
 		
 		// führe den Kernel aus und messe die Zeit
@@ -63,17 +63,21 @@ public class CLFloatMatrixSandbox extends FloatMatrixTest {
         CL.clSetKernelArg(kernel, 6, Sizeof.cl_uint, CLScalar.of(matrix2.clColumns).getPointer());
         CL.clSetKernelArg(kernel, 7, Sizeof.cl_uint, CLScalar.of(matrix1.clColumns).getPointer());
         
-        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 16, 16);
+//        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 32, 32);	// 13ms
+//        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 16, 16); // 15ms
+//        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 8, 8); 	// 53ms
+        
+        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 64, 16);
+        
 //        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 32, 8);
 //        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 8, 32);
-//        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 256, 1);
+//        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 256, 4);
 //        CORE.enqueue2DRangeKernelTest(kernel, matrix1.clRows, matrix2.clColumns, 16, 4);
         
 		CORE.waitOnComplete();
-		System.out.println("Matrix Multi Time: "+(System.currentTimeMillis()-start)+"ms");
-   
-        
+		System.out.println("Matrix Multi Time: "+(System.currentTimeMillis()-start)+"ms");        
 	}
+	
 	/**
 	 * 
 	 */

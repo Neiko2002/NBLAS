@@ -748,7 +748,10 @@ public class CLFloatMatrix extends CLMatrix implements FloatMatrixDefault {
         int tempSizeX = (int) Math.ceil((double) matrix.rows / 32);
         int tempSizeY = (int) Math.ceil((double) matrix.columns / 32);
         CLFloatMatrix result = new CLFloatMatrix(tempSizeX, tempSizeY);
-        CORE.reduce2D("sumFloats", matrix, result, matrix.rows, matrix.columns, result.rows, result.columns, 0);
+//        CORE.reduce2D("sumFloats", matrix, result, matrix.rows, matrix.columns, result.rows, result.columns, 0);
+        float sum = CORE.reduce2D("sumFloats", matrix, matrix.rows, matrix.columns, 0);
+        System.out.println("sum floats  "+sum);
+        
         return result;
     }
     

@@ -43,14 +43,14 @@ class CLFloatFunctionBuilder extends AFunctionBuilder<cl_kernel> {
         builder.append(")\n");
         builder.append("{\n");
 
-        builder.append("uint column = get_global_id(0);\n"); 
-        builder.append("uint row = get_global_id(1);\n"); 
+        builder.append("const uint column = get_global_id(0);\n"); 
+        builder.append("const uint row = get_global_id(1);\n"); 
         
         // TODO: teuer. sollte ganz raus
         if(args.length > 1 && (args[1] == ArgumentType.COLUMN_VECTOR || args[1] == ArgumentType.ROW_VECTOR))
         	builder.append("if(row >= rows || column >= columns ) return;\n");
         
-        builder.append("uint idx = column * get_global_size(1) + row;\n");
+        builder.append("const uint idx = column * get_global_size(1) + row;\n");
         builder.append("result[idx] = ");
         builder.append(function);
         builder.append(";\n");

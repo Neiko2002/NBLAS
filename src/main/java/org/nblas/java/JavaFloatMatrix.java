@@ -1,5 +1,6 @@
 package org.nblas.java;
 
+import org.jblas.MatrixFunctions;
 import org.jblas.util.Random;
 import org.nblas.Context;
 import org.nblas.FloatMatrix;

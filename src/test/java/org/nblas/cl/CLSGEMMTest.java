@@ -102,9 +102,9 @@ public class CLSGEMMTest {
 		CL.clSetKernelArg(kernel, 5, Sizeof.cl_uint, CLScalar.of(K).getPointer());
 		CL.clSetKernelArg(kernel, 6, Sizeof.cl_float, CLScalar.of(1f).getPointer());
 		CL.clSetKernelArg(kernel, 7, Sizeof.cl_float, CLScalar.of(1f).getPointer());
-		CL.clSetKernelArg(kernel, 8, Sizeof.cl_uint, CLScalar.of(0).getPointer());
-		CL.clSetKernelArg(kernel, 9, Sizeof.cl_uint, CLScalar.of(0).getPointer());
-		CL.clSetKernelArg(kernel, 10, Sizeof.cl_uint, CLScalar.of(0).getPointer());
+		CL.clSetKernelArg(kernel, 8, Sizeof.cl_uint, CLScalar.of(matrix1.clColumns).getPointer());
+		CL.clSetKernelArg(kernel, 9, Sizeof.cl_uint, CLScalar.of(matrix2.clColumns).getPointer());
+		CL.clSetKernelArg(kernel, 10, Sizeof.cl_uint, CLScalar.of(matrix3.clColumns).getPointer());
 		
 		for (int i = 0; i < iterations; i++)
 			CORE.enqueue2DRangeKernelTest(kernel, N/RY, M/RX, THREADSY, THREADSX); 
