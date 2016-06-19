@@ -1,6 +1,8 @@
-apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'eclipse'
+plugins {
+	id 'java'
+	id 'idea'
+	id 'eclipse'
+}
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -8,12 +10,13 @@ targetCompatibility = 1.8
 version = '1.0'
 
 // wie soll das Projekt in Eclipse heißen
-eclipse.project.name = 'NBLAS'
-
+def projectName = 'NBLAS'
+eclipse.project.name = projectName
+idea.module.name = projectName
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'NBLAS', 'Implementation-Version': version
+        attributes 'Implementation-Title': projectName, 'Implementation-Version': version
     }
 }
 
@@ -21,12 +24,14 @@ repositories {
     mavenCentral()
 }
 
+// https://github.com/MysterionRise/mavenized-jcuda
+// http://forum.byte-welt.net/archive/index.php/t-11567.html
 dependencies {
-	compile fileTree('lib'),			// putting all jars from 'lib' onto compile classpath
-		'org.jocl:jocl:0.1.9',			// for OpenCL 2.0 'org.jocl:jocl:0.2.0-RC00'
-		'org.jblas:jblas:1.2.4',
-		'ch.qos.logback:logback-classic:1.1.3';
-	testCompile 'junit:junit:4.+';		// jUnit für alle Tests 
+	compile fileTree('lib')												// include all jars from 'lib' dir
+	compile group: 'org.jocl', name: 'jocl', version: '2.0.0'			// for OpenCL up to 2.0 
+	compile group: 'org.jocl', name: 'jocl-blast', version: '0.7.1'		// for CLBlast
+	compile group: 'org.jblas', name: 'jblas', version: '1.2.4'			// for Fortran BLAS 
+	testCompile 'junit:junit:4.+';										// for all junit tests 
 }
 
 /**
@@ -34,6 +39,6 @@ dependencies {
  * Erstellt die .bat und .sh Datei gradlew
  */
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.8';
-	distributionUrl = 'https://services.gradle.org/distributions/gradle-2.8-all.zip';	
+    gradleVersion = '2.14';
+	distributionUrl = 'https://services.gradle.org/distributions/gradle-2.14-all.zip';	
 }
